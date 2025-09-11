@@ -1,0 +1,412 @@
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { ShoppingCart, MapPin, CreditCard, MessageCircle, Check } from 'lucide-react';
+import AddressForm from './address-form';
+import PaymentOptions, { PaymentMethod } from './payment-options';
+import DeliveryInfo from './delivery-info';
+import toast from 'react-hot-toast';
+import { ClientRestaurant } from '@/lib/restaurant';
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  customizations?: string[];
+}
+
+interface Address {
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  zipCode: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+}
+
+interface PaymentData {
+  method: PaymentMethod;
+  cardData?: {
+    number: string;
+    name: string;
+    expiry: string;
+    cvv: string;
+  };
+  cashChange?: number;
+}
+
+interface CheckoutFlowProps {
+  items: CartItem[];
+  restaurant: ClientRestaurant;
+  onBack: () => void;
+  onClose: () => void;
+}
+
+type CheckoutStep = 'cart' | 'address' | 'payment' | 'confirmation';
+
+export default function CheckoutFlow({ 
+  items, 
+  restaurant, 
+  onBack, 
+  onClose 
+}: CheckoutFlowProps) {
+  const [currentStep, setCurrentStep] = useState<CheckoutStep>('cart');
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentData | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Configurações de entrega (podem vir de uma API)
+  const deliveryConfig = {
+    deliveryTime: '40-50min',
+    deliveryFee: 4.00,
+    minOrderValue: 25.00
+  };
+
+  const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const total = subtotal + deliveryConfig.deliveryFee;
+
+  const handleAddressSelect = (address: Address) => {
+    setSelectedAddress(address);
+    setCurrentStep('payment');
+  };
+
+  const handlePaymentSelect = (paymentData: PaymentData) => {
+    setSelectedPayment(paymentData);
+    setCurrentStep('confirmation');
+  };
+
+  const generateOrderSummary = () => {
+    const itemsList = items.map(item => {
+      let itemText = `${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}`;
+      if (item.customizations && item.customizations.length > 0) {
+        itemText += `\n   Obs: ${item.customizations.join(', ')}`;
+      }
+      return itemText;
+    }).join('\n');
+
+    const addressText = selectedAddress ? 
+      `${selectedAddress.street}, ${selectedAddress.number}${selectedAddress.complement ? `, ${selectedAddress.complement}` : ''} - ${selectedAddress.neighborhood}, ${selectedAddress.city}` : 
+      'Endereço não informado';
+
+    const paymentText = selectedPayment ? 
+      (selectedPayment.method === 'pix' ? 'PIX' :
+       selectedPayment.method === 'credit_card' ? 'Cartão de Crédito' :
+       selectedPayment.method === 'cash_on_delivery' ? 
+         (selectedPayment.cashChange ? `Dinheiro (Troco para R$ ${selectedPayment.cashChange.toFixed(2)})` : 'Dinheiro (Sem troco)') :
+       'Não informado') : 'Não informado';
+
+    return `🍽️ *NOVO PEDIDO - ${restaurant.name}*\n\n` +
+           `📋 *ITENS:*\n${itemsList}\n\n` +
+           `📍 *ENDEREÇO DE ENTREGA:*\n${addressText}\n\n` +
+           `💳 *FORMA DE PAGAMENTO:*\n${paymentText}\n\n` +
+           `💰 *RESUMO:*\n` +
+           `Subtotal: R$ ${subtotal.toFixed(2)}\n` +
+           `Taxa de entrega: R$ ${deliveryConfig.deliveryFee.toFixed(2)}\n` +
+           `*Total: R$ ${total.toFixed(2)}*\n\n` +
+           `⏰ Tempo estimado: ${deliveryConfig.deliveryTime}\n\n` +
+           `Obrigado pela preferência! 😊`;
+  };
+
+  const handleFinishOrder = async () => {
+    if (!selectedAddress || !selectedPayment) {
+      toast.error('Por favor, complete todas as etapas');
+      return;
+    }
+
+    if (subtotal < deliveryConfig.minOrderValue) {
+      toast.error(`Pedido mínimo de R$ ${deliveryConfig.minOrderValue.toFixed(2)}`);
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Simular processamento do pedido
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const orderData = {
+        items: items,
+        address: selectedAddress,
+        payment: selectedPayment,
+        subtotal,
+        deliveryFee: deliveryConfig.deliveryFee,
+        total,
+        timestamp: new Date().toISOString()
+      };
+
+      // Gerar mensagem para WhatsApp
+      const message = generateOrderSummary();
+      const encodedMessage = encodeURIComponent(message);
+      const phone = restaurant.whatsapp || restaurant.phone || '5562999999999';
+      const whatsappUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodedMessage}`;
+
+      toast.success('Pedido finalizado! Redirecionando para WhatsApp...');
+      
+      // Redirecionar para WhatsApp após um breve delay
+      setTimeout(() => {
+        window.open(whatsappUrl, '_blank');
+      }, 1500);
+
+    } catch (error) {
+      toast.error('Erro ao processar pedido. Tente novamente.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const getStepIcon = (step: CheckoutStep) => {
+    const isCompleted = 
+      (step === 'cart') ||
+      (step === 'address' && selectedAddress) ||
+      (step === 'payment' && selectedPayment) ||
+      (step === 'confirmation' && selectedAddress && selectedPayment);
+    
+    const isCurrent = currentStep === step;
+    
+    return (
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+        isCompleted ? 'bg-green-500 text-white' :
+        isCurrent ? 'bg-red-600 text-white' :
+        'bg-gray-200 text-gray-500'
+      }`}>
+        {isCompleted ? <Check className="w-4 h-4" /> : 
+         (step as CheckoutStep) === 'cart' ? <ShoppingCart className="w-4 h-4" /> :
+         (step as CheckoutStep) === 'address' ? <MapPin className="w-4 h-4" /> :
+         (step as CheckoutStep) === 'payment' ? <CreditCard className="w-4 h-4" /> :
+         <MessageCircle className="w-4 h-4" />}
+      </div>
+    );
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
+      {/* Progress Steps */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            {(['cart', 'address', 'payment', 'confirmation'] as CheckoutStep[]).map((step, index) => (
+              <div key={step} className="flex items-center">
+                <div className="flex flex-col items-center">
+                  {getStepIcon(step)}
+                  <span className="text-xs mt-1 capitalize">
+                    {step === 'cart' ? 'Carrinho' :
+                     step === 'address' ? 'Endereço' :
+                     step === 'payment' ? 'Pagamento' :
+                     'Finalizar'}
+                  </span>
+                </div>
+                {index < 3 && (
+                  <div className={`w-16 h-0.5 mx-4 ${
+                    (step === 'cart') ||
+                    (step === 'address' && selectedAddress) ||
+                    (step === 'payment' && selectedPayment)
+                      ? 'bg-green-500' : 'bg-gray-200'
+                  }`} />
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Delivery Info Banner */}
+      <DeliveryInfo
+        deliveryTime={deliveryConfig.deliveryTime}
+        deliveryFee={deliveryConfig.deliveryFee}
+        minOrderValue={deliveryConfig.minOrderValue}
+        address={selectedAddress ? 
+          `${selectedAddress.street}, ${selectedAddress.number} - ${selectedAddress.neighborhood}` : 
+          undefined
+        }
+      />
+
+      {/* Step Content */}
+      {currentStep === 'cart' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-red-600" />
+              Seu Pedido
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {items.map((item) => (
+              <div key={item.id} className="flex justify-between items-start p-3 border rounded-lg">
+                <div className="flex-1">
+                  <div className="font-medium">{item.name}</div>
+                  {item.customizations && item.customizations.length > 0 && (
+                    <div className="text-sm text-gray-600 mt-1">
+                      {item.customizations.join(', ')}
+                    </div>
+                  )}
+                  <div className="text-sm text-gray-500">Quantidade: {item.quantity}</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-medium">R$ {(item.price * item.quantity).toFixed(2)}</div>
+                  <div className="text-sm text-gray-500">R$ {item.price.toFixed(2)} cada</div>
+                </div>
+              </div>
+            ))}
+            
+            <Separator />
+            
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span>Subtotal:</span>
+                <span>R$ {subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Taxa de entrega:</span>
+                <span>R$ {deliveryConfig.deliveryFee.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-bold text-lg">
+                <span>Total:</span>
+                <span>R$ {total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {subtotal < deliveryConfig.minOrderValue && (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  Pedido mínimo: R$ {deliveryConfig.minOrderValue.toFixed(2)}. 
+                  Adicione mais R$ {(deliveryConfig.minOrderValue - subtotal).toFixed(2)} para continuar.
+                </p>
+              </div>
+            )}
+
+            <Button
+              onClick={() => setCurrentStep('address')}
+              disabled={subtotal < deliveryConfig.minOrderValue}
+              className="w-full bg-red-600 hover:bg-red-700"
+            >
+              Continuar para Endereço
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {currentStep === 'address' && (
+        <AddressForm
+          onAddressSelect={handleAddressSelect}
+          selectedAddress={selectedAddress || undefined}
+        />
+      )}
+
+      {currentStep === 'payment' && (
+        <PaymentOptions
+          onPaymentSelect={handlePaymentSelect}
+          selectedPayment={selectedPayment || undefined}
+          totalAmount={total}
+        />
+      )}
+
+      {currentStep === 'confirmation' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-600">
+              <Check className="w-5 h-5" />
+              Confirmar Pedido
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Resumo do Pedido */}
+            <div>
+              <h4 className="font-medium mb-2">Itens do Pedido:</h4>
+              {items.map((item) => (
+                <div key={item.id} className="flex justify-between text-sm py-1">
+                  <span>{item.quantity}x {item.name}</span>
+                  <span>R$ {(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            <Separator />
+
+            {/* Endereço */}
+            <div>
+              <h4 className="font-medium mb-2">Endereço de Entrega:</h4>
+              <p className="text-sm text-gray-600">
+                {selectedAddress?.street}, {selectedAddress?.number}
+                {selectedAddress?.complement && `, ${selectedAddress.complement}`}
+                <br />
+                {selectedAddress?.neighborhood} - {selectedAddress?.city}
+                {selectedAddress?.zipCode && ` - ${selectedAddress.zipCode}`}
+              </p>
+            </div>
+
+            <Separator />
+
+            {/* Pagamento */}
+            <div>
+              <h4 className="font-medium mb-2">Forma de Pagamento:</h4>
+              <p className="text-sm text-gray-600">
+                {selectedPayment?.method === 'pix' && 'PIX - Pagamento instantâneo'}
+                {selectedPayment?.method === 'credit_card' && 'Cartão de Crédito - Pagamento antecipado'}
+                {selectedPayment?.method === 'cash_on_delivery' && (
+                  selectedPayment.cashChange ? 
+                    `Dinheiro na entrega - Troco para R$ ${selectedPayment.cashChange.toFixed(2)}` :
+                    'Dinheiro na entrega - Sem troco'
+                )}
+              </p>
+            </div>
+
+            <Separator />
+
+            {/* Total */}
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span>Subtotal:</span>
+                <span>R$ {subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Taxa de entrega:</span>
+                <span>R$ {deliveryConfig.deliveryFee.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-bold text-lg">
+                <span>Total:</span>
+                <span>R$ {total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageCircle className="w-4 h-4 text-green-600" />
+                <span className="font-medium text-green-800">Próximo Passo</span>
+              </div>
+              <p className="text-sm text-green-700">
+                Após confirmar, você será redirecionado para o WhatsApp para finalizar seu pedido 
+                e acompanhar a entrega diretamente com o restaurante.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentStep('payment')}
+                className="flex-1"
+              >
+                Voltar
+              </Button>
+              <Button
+                onClick={handleFinishOrder}
+                disabled={isProcessing}
+                className="flex-1 bg-green-600 hover:bg-green-700"
+              >
+                {isProcessing ? 'Processando...' : 'Finalizar Pedido'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
