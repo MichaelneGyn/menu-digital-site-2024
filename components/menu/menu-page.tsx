@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTheme } from 'next-themes';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/auth-provider';
 import Link from 'next/link';
 import { ClientRestaurant, ClientMenuItem } from '@/lib/restaurant';
 import { ProductCustomization } from './product-card';
@@ -29,7 +29,7 @@ export interface CartItem extends ClientMenuItem {
 
 export default function MenuPage({ restaurant }: MenuPageProps) {
   const { setTheme } = useTheme();
-  const { data: session } = useSession();
+  const { session } = useAuth();
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showNotification, setShowNotification] = useState(false);

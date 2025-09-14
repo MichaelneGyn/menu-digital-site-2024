@@ -54,9 +54,11 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/auth/login', req.url));
   }
 
-  // Se usuário está autenticado e tenta acessar rotas de auth
-  if (session && isAuthRoute) {
-    console.log('[Middleware] Redirecting to admin - authenticated user on auth route');
+  // Permitir acesso à página de login mesmo para usuários autenticados
+  // (necessário para demonstrações e vendas do serviço)
+  // Se usuário está autenticado e tenta acessar registro, redirecionar para admin
+  if (session && pathname.startsWith('/auth/register')) {
+    console.log('[Middleware] Redirecting to admin - authenticated user on register route');
     return NextResponse.redirect(new URL('/admin/dashboard', req.url));
   }
 
