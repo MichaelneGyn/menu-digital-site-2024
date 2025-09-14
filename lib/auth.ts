@@ -62,6 +62,8 @@ export async function signUp({ email, password, name }: SignUpData) {
 export async function signIn({ email, password }: SignInData) {
   try {
     const supabaseClient = createSupabaseClient();
+    console.log('Iniciando processo de login para:', email);
+    
     const { data, error } = await supabaseClient.auth.signInWithPassword({
       email,
       password
@@ -73,6 +75,15 @@ export async function signIn({ email, password }: SignInData) {
     }
 
     console.log('Login bem-sucedido:', data.user?.id);
+    
+    // Delay para garantir estabelecimento da sessão
+    console.log('Aguardando estabelecimento da sessão...');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Verificar se a sessão foi estabelecida corretamente
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    console.log('Sessão após delay:', session ? 'Estabelecida' : 'Não encontrada');
+    
     return { user: data.user, session: data.session };
   } catch (error) {
     console.error('Erro no signin:', error);

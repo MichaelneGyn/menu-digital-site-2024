@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { User, Session } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
 import { AuthUser } from '@/lib/auth';
 
 interface AuthContextType {
@@ -36,25 +37,53 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClientComponentClient();
+  const router = useRouter();
 
-  // Função para buscar dados do usuário via API
-  const fetchUserData = async (session: Session) => {
+  // Função para buscar dados do usuário via API com retry
+  const fetchUserData = async (session: Session, retryCount = 0) => {
+    const maxRetries = 3;
+    
     try {
+      console.log(`Tentativa ${retryCount + 1} de buscar dados do usuário`);
+      
       const response = await fetch('/api/auth/user', {
-        credentials: 'include'
+        credentials: 'include',
+        cache: 'no-cache'
       });
       
       if (response.ok) {
         const userData = await response.json();
+        console.log('Dados do usuário obtidos via API:', userData);
         setUser(userData);
+        return;
       } else {
-        console.error('Erro ao buscar dados do usuário:', response.statusText);
-        setUser(null);
+        console.error(`Erro ${response.status} ao buscar dados do usuário:`, response.statusText);
+        
+        if (retryCount < maxRetries - 1) {
+          console.log(`Tentando novamente em 1 segundo... (${retryCount + 1}/${maxRetries})`);
+          setTimeout(() => fetchUserData(session, retryCount + 1), 1000);
+          return;
+        }
       }
     } catch (error) {
-      console.error('Erro ao buscar dados do usuário:', error);
-      setUser(null);
+      console.error(`Erro na tentativa ${retryCount + 1}:`, error);
+      
+      if (retryCount < maxRetries - 1) {
+        console.log(`Tentando novamente em 1 segundo... (${retryCount + 1}/${maxRetries})`);
+        setTimeout(() => fetchUserData(session, retryCount + 1), 1000);
+        return;
+      }
     }
+    
+    // Fallback: usar dados da sessão se API falhar
+    console.log('API falhou após todas as tentativas, usando dados da sessão como fallback');
+    const fallbackUser = {
+      id: session.user.id,
+      email: session.user.email || '',
+      name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null
+    };
+    console.log('Usando dados de fallback:', fallbackUser);
+    setUser(fallbackUser);
   };
 
   useEffect(() => {
@@ -86,6 +115,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         if (session?.user) {
           await fetchUserData(session);
+          
+          // Redirecionamento automático após login bem-sucedido
+          if (event === 'SIGNED_IN') {
+            console.log('Login detectado, redirecionando...');
+            // Pequeno delay para garantir que o estado seja atualizado
+            setTimeout(() => {
+              const currentPath = window.location.pathname;
+              if (currentPath === '/auth/login' || currentPath === '/auth/register') {
+                console.log('Redirecionando para dashboard após login');
+                router.push('/admin/dashboard');
+              }
+            }, 500);
+          }
         } else {
           setUser(null);
         }
