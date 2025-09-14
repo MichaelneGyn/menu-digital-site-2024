@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createSupabaseClient } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabaseClient = createSupabaseClient();
     
     console.log('API /api/auth/user: Verificando autenticação...');
     
     // Verificar se o usuário está autenticado
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data: { user }, error } = await supabaseClient.auth.getUser();
     
     console.log('API /api/auth/user: User data:', user ? { id: user.id, email: user.email } : null);
     console.log('API /api/auth/user: Error:', error);

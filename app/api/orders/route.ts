@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/auth';
+import { createSupabaseClient } from '@/lib/auth';
 import { prisma } from '../../../lib/db';
 
 // GET - Buscar todos os pedidos
 export async function GET(request: NextRequest) {
   try {
-    // Usando cliente Supabase global
-    const { data: { session } } = await supabase.auth.getSession();
+    // Criar cliente Supabase com contexto da requisição
+    const supabaseClient = createSupabaseClient();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });

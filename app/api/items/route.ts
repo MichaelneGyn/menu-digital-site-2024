@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { supabase } from '@/lib/auth';
+import { createSupabaseClient } from '@/lib/auth';
 import { z } from 'zod';
 
 const createItemSchema = z.object({
@@ -33,8 +33,9 @@ const createItemSchema = z.object({
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Usando cliente Supabase global
-    const { data: { session } } = await supabase.auth.getSession();
+    // Criar cliente Supabase com contexto da requisição
+    const supabaseClient = createSupabaseClient();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
@@ -75,7 +76,8 @@ export async function DELETE(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const supabaseClient = createSupabaseClient();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
