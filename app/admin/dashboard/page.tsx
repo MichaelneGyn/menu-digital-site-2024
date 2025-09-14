@@ -1,8 +1,6 @@
-
-
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/auth-provider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +11,1598 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { useTheme } from 'next-themes';
+
+// Modal Components (these would need to be created or imported from existing files)
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+interface CreateRestaurantModalProps extends ModalProps {
+  onSuccess: (restaurant: Restaurant) => void;
+}
+
+interface AddItemModalProps extends ModalProps {
+  restaurantId: string;
+  categories: Category[];
+  onSuccess: () => void;
+}
+
+interface AddCategoryModalProps extends ModalProps {
+  restaurantId: string;
+  onSuccess: () => void;
+}
+
+interface EditRestaurantModalProps extends ModalProps {
+  restaurant: Restaurant;
+  onSuccess: () => void;
+}
+
+interface PersonalizeModalProps extends ModalProps {
+  restaurant: Restaurant;
+  onSuccess: () => void;
+}
+
+interface ReportsModalProps extends ModalProps {
+  restaurant: Restaurant;
+}
+
+interface ImportCatalogModalProps extends ModalProps {
+  restaurantId: string;
+  onSuccess: () => void;
+}
+
+// Placeholder Modal Components
+function CreateRestaurantModal({ isOpen, onClose, onSuccess }: CreateRestaurantModalProps) {
+  const [formData, setFormData] = useState({
+    name: '',
+    slug: '',
+    phone: '',
+    address: '',
+    whatsapp: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleLogoFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Tipo de arquivo não permitido. Use apenas imagens.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Arquivo muito grande. Máximo 5MB.');
+        return;
+      }
+      // Need to declare setSelectedLogoFile state first
+      const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
+      setSelectedLogoFile(file);
+    }
+  };
+
+  const handleBannerFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Tipo de arquivo não permitido. Use apenas imagens.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Arquivo muito grande. Máximo 5MB.');
+        return;
+      }
+      const [selectedBannerFile, setSelectedBannerFile] = useState<File | null>(null);
+      setSelectedBannerFile(file);
+    }
+  };
+
+  const uploadFile = async (file: File, setUploading: (loading: boolean) => void): Promise<string> => {
+    setUploading(true);
+    try {
+      // Primeiro, obter URL pré-assinada
+      const presignedResponse = await fetch('/api/upload/presigned', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+        }),
+      });
+      
+      if (!presignedResponse.ok) {
+        const errorData = await presignedResponse.json();
+        throw new Error(errorData.error || 'Erro ao gerar URL de upload');
+      }
+      
+      const { uploadUrl, cloud_storage_path } = await presignedResponse.json();
+      
+      // Fazer upload direto para S3
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+      
+      if (!uploadResponse.ok) {
+        throw new Error('Erro no upload da imagem para S3');
+      }
+      
+      return cloud_storage_path;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('handleSubmit chamado');
+    console.log('formData atual:', formData);
+    
+    // Validação manual dos campos obrigatórios
+    if (!formData.name.trim()) {
+      toast.error('Nome é obrigatório');
+      return;
+    }
+    if (!formData.address.trim()) {
+      toast.error('Endereço é obrigatório');
+      return;
+    }
+    if (!formData.phone.trim()) {
+      toast.error('Telefone é obrigatório');
+      return;
+    }
+    
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/restaurant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        const restaurant = await response.json();
+        toast.success('Restaurante criado com sucesso!');
+        onSuccess(restaurant);
+        onClose();
+      } else {
+        toast.error('Erro ao criar restaurante');
+      }
+    } catch (error) {
+      toast.error('Erro ao criar restaurante');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+        <h2 className="text-xl font-bold mb-4 dark:text-white">Criar Restaurante</h2>
+        <form onSubmit={(e) => { console.log('Form submit event triggered'); handleSubmit(e); }} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Nome do Restaurante</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => {
+                const name = e.target.value;
+                const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+                setFormData({ ...formData, name, slug });
+              }}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="slug">URL (Slug)</Label>
+            <Input
+              id="slug"
+              value={formData.slug}
+              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="phone">Telefone</Label>
+            <Input
+              id="phone"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="whatsapp">WhatsApp</Label>
+            <Input
+              id="whatsapp"
+              value={formData.whatsapp}
+              onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="address">Endereço</Label>
+            <Input
+              id="address"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            />
+          </div>
+          <div className="flex gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
+              {isSubmitting ? 'Criando...' : 'Criar Restaurante'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: AddItemModalProps) {
+  console.log('AddItemModal renderizado, isOpen:', isOpen);
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    price: '',
+    promoPrice: '',
+    isPromo: false,
+    categoryId: '',
+    image: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Função para aplicar máscara de preço brasileiro
+  const formatPrice = (value: string) => {
+    // Remove tudo que não é número
+    const numericValue = value.replace(/\D/g, '');
+    
+    if (numericValue === '') {
+      return '';
+    }
+    
+    // Converte para formato decimal e depois para formato brasileiro
+    const decimalValue = (parseFloat(numericValue) / 100).toFixed(2);
+    return decimalValue.replace('.', ',');
+  };
+
+  // Função para converter preço brasileiro para número
+  const parsePrice = (value: string) => {
+    if (!value) return 0;
+    return parseFloat(value.replace(',', '.'));
+  };
+
+  const handlePriceChange = (field: 'price' | 'promoPrice', value: string) => {
+    const formattedValue = formatPrice(value);
+    setFormData({ ...formData, [field]: formattedValue });
+  };
+
+  if (!isOpen) return null;
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validar tipo de arquivo
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Tipo de arquivo não permitido. Use apenas imagens.');
+        return;
+      }
+      
+      // Validar tamanho (máx 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('Arquivo muito grande. Máximo 10MB.');
+        return;
+      }
+      
+      setSelectedFile(file);
+    }
+  };
+
+  const uploadImage = async (): Promise<string> => {
+    if (!selectedFile) return '';
+    
+    setIsUploading(true);
+    try {
+      // Usar FormData para upload tradicional
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData, // Não definir Content-Type, deixar o browser definir automaticamente
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro no upload da imagem');
+      }
+      
+      const { cloud_storage_path } = await response.json();
+      return cloud_storage_path;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    console.log('AddItemModal handleSubmit chamada!');
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Validações básicas
+      if (!formData.name.trim()) {
+        toast.error('Nome do item é obrigatório');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (!formData.categoryId) {
+        toast.error('Categoria é obrigatória');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (!formData.price || parsePrice(formData.price) <= 0) {
+        toast.error('Preço deve ser maior que zero');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (!restaurantId) {
+        toast.error('Restaurante não identificado');
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log('Validações passaram, iniciando upload...');
+      
+      // Upload da imagem se houver arquivo selecionado
+      let imagePath = formData.image;
+      if (selectedFile) {
+        console.log('Fazendo upload da imagem...');
+        imagePath = await uploadImage();
+        console.log('Upload concluído:', imagePath);
+      }
+      
+      const requestData = {
+        ...formData,
+        image: imagePath,
+        price: parsePrice(formData.price),
+        promoPrice: formData.isPromo ? parsePrice(formData.promoPrice) : null,
+        originalPrice: formData.isPromo ? parsePrice(formData.price) : null,
+        restaurantId
+      };
+      
+      console.log('Dados que serão enviados:', requestData);
+      
+      const response = await fetch('/api/items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      console.log('Status da resposta:', response.status);
+      
+      const responseText = await response.text();
+      console.log('Resposta completa:', responseText);
+
+      if (response.ok) {
+        toast.success('Item adicionado com sucesso!');
+        onSuccess();
+        onClose();
+        setFormData({ name: '', description: '', price: '', promoPrice: '', isPromo: false, categoryId: '', image: '' });
+        setSelectedFile(null);
+      } else {
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+        } catch {
+          errorData = { error: 'Erro desconhecido do servidor' };
+        }
+        console.error('Erro da API:', errorData);
+        toast.error(errorData.error || 'Erro ao adicionar item');
+      }
+    } catch (error) {
+      console.error('Erro completo:', error);
+      toast.error('Erro ao adicionar item: ' + (error instanceof Error ? error.message : 'Erro desconhecido'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <h2 className="text-xl font-bold mb-4 dark:text-white">Adicionar Novo Item</h2>
+        <form onSubmit={(e) => { console.log('AddItemModal form submit event triggered'); handleSubmit(e); }} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Nome do Item</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="description">Descrição</Label>
+            <Input
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="price">Preço (R$)</Label>
+            <Input
+              id="price"
+              type="text"
+              value={formData.price}
+              onChange={(e) => handlePriceChange('price', e.target.value)}
+              placeholder="0,00"
+              required
+              style={{
+                padding: '10px',
+                border: '1px solid #ccc',
+                borderRadius: '8px',
+                fontSize: '16px',
+                transition: 'border-color 0.2s'
+              }}
+            />
+          </div>
+          <div>
+            <div className="flex items-center space-x-2 mb-2" style={{
+              marginTop: '15px',
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <input
+                type="checkbox"
+                id="isPromo"
+                checked={formData.isPromo}
+                onChange={(e) => setFormData({ ...formData, isPromo: e.target.checked, promoPrice: e.target.checked ? formData.promoPrice : '' })}
+                className="rounded"
+                style={{ marginRight: '8px' }}
+              />
+              <Label htmlFor="isPromo" style={{ margin: '0', fontWeight: 'normal' }}>Item em promoção</Label>
+            </div>
+            {formData.isPromo && (
+              <div style={{ display: 'block' }}>
+                <Label htmlFor="promoPrice">Preço Promocional (R$)</Label>
+                <Input
+                  id="promoPrice"
+                  type="text"
+                  value={formData.promoPrice}
+                  onChange={(e) => handlePriceChange('promoPrice', e.target.value)}
+                  placeholder="0,00"
+                  required={formData.isPromo}
+                  style={{
+                    padding: '10px',
+                    border: '1px solid #ccc',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    transition: 'border-color 0.2s'
+                  }}
+                />
+              </div>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="categoryId">Categoria</Label>
+            <select
+              id="categoryId"
+              value={formData.categoryId}
+              onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+              className="w-full p-2 border rounded"
+              required
+            >
+              <option value="">Selecione uma categoria</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <Label htmlFor="image">Imagem do Item</Label>
+            <div className="space-y-2">
+              <input
+                type="file"
+                id="image"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="w-full p-2 border rounded cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              {selectedFile && (
+                <div className="flex items-center gap-2 p-2 bg-green-50 rounded">
+                  <span className="text-sm text-green-700">📷 {selectedFile.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFile(null)}
+                    className="text-red-500 hover:text-red-700 text-sm"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+              <p className="text-xs text-gray-500">
+                Formatos aceitos: JPG, PNG, GIF, WebP (máx. 5MB)
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              Cancelar
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || isUploading} 
+              className="flex-1"
+            >
+              {isUploading ? 'Enviando imagem...' : isSubmitting ? 'Adicionando...' : 'Adicionar Item'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCategoryModalProps) {
+  const [formData, setFormData] = useState({
+    name: '',
+    icon: '🍽️'
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          restaurantId
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('Categoria adicionada com sucesso!');
+        onSuccess();
+        onClose();
+        setFormData({ name: '', icon: '🍽️' });
+      } else {
+        toast.error('Erro ao adicionar categoria');
+      }
+    } catch (error) {
+      toast.error('Erro ao adicionar categoria');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const commonIcons = ['🍽️', '🍕', '🍔', '🍟', '🥗', '🍖', '🍗', '🥤', '🍰', '🍦', '☕', '🍺'];
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+        <h2 className="text-xl font-bold mb-4 dark:text-white">Adicionar Nova Categoria</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Nome da Categoria</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <Label>Ícone</Label>
+            <div className="grid grid-cols-6 gap-2 mt-2">
+              {commonIcons.map((icon) => (
+                <button
+                  key={icon}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, icon })}
+                  className={`p-2 text-2xl border rounded hover:bg-gray-100 ${
+                    formData.icon === icon ? 'bg-blue-100 border-blue-500' : ''
+                  }`}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+            <Input
+              className="mt-2"
+              value={formData.icon}
+              onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+              placeholder="Ou digite um emoji personalizado"
+            />
+          </div>
+          <div className="flex gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
+              {isSubmitting ? 'Adicionando...' : 'Adicionar Categoria'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRestaurantModalProps) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg">
+        <h2>Editar Restaurante</h2>
+        <p>Modal em desenvolvimento...</p>
+        <Button onClick={onClose}>Fechar</Button>
+      </div>
+    </div>
+  );
+}
+
+function PersonalizeModal({ isOpen, onClose, restaurant, onSuccess }: PersonalizeModalProps) {
+  const [formData, setFormData] = useState({
+    primaryColor: restaurant?.primaryColor || '#dc2626',
+    secondaryColor: restaurant?.secondaryColor || '#f97316',
+    logoUrl: restaurant?.logoUrl || '',
+    bannerUrl: restaurant?.bannerUrl || '',
+    theme: restaurant?.theme || 'light',
+    showDeliveryTime: restaurant?.showDeliveryTime ?? true,
+    showRatings: restaurant?.showRatings ?? true
+  });
+  
+  // Atualizar formData quando restaurant mudar
+  useEffect(() => {
+    if (restaurant) {
+      setFormData({
+        primaryColor: restaurant.primaryColor || '#dc2626',
+        secondaryColor: restaurant.secondaryColor || '#f97316',
+        logoUrl: restaurant.logoUrl || '',
+        bannerUrl: restaurant.bannerUrl || '',
+        theme: restaurant.theme || 'light',
+        showDeliveryTime: restaurant.showDeliveryTime ?? true,
+        showRatings: restaurant.showRatings ?? true
+      });
+    }
+  }, [restaurant]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState('colors');
+  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
+  const [selectedBannerFile, setSelectedBannerFile] = useState<File | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Upload das imagens se houver arquivos selecionados
+      let logoPath = formData.logoUrl;
+      let bannerPath = formData.bannerUrl;
+      
+      if (selectedLogoFile) {
+        // Primeiro, obter URL pré-assinada para logo
+        const presignedResponse = await fetch('/api/upload/presigned', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fileName: selectedLogoFile.name,
+            fileType: selectedLogoFile.type,
+            fileSize: selectedLogoFile.size,
+          }),
+        });
+        
+        if (!presignedResponse.ok) {
+          const errorData = await presignedResponse.json();
+          throw new Error(errorData.error || 'Erro ao gerar URL de upload do logo');
+        }
+        
+        const { uploadUrl, cloud_storage_path } = await presignedResponse.json();
+        
+        // Fazer upload direto para S3
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          body: selectedLogoFile,
+          headers: {
+            'Content-Type': selectedLogoFile.type,
+          },
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Erro no upload do logo para S3');
+        }
+        
+        logoPath = cloud_storage_path;
+      }
+      
+      if (selectedBannerFile) {
+        // Primeiro, obter URL pré-assinada para banner
+        const presignedResponse = await fetch('/api/upload/presigned', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fileName: selectedBannerFile.name,
+            fileType: selectedBannerFile.type,
+            fileSize: selectedBannerFile.size,
+          }),
+        });
+        
+        if (!presignedResponse.ok) {
+          const errorData = await presignedResponse.json();
+          throw new Error(errorData.error || 'Erro ao gerar URL de upload do banner');
+        }
+        
+        const { uploadUrl, cloud_storage_path } = await presignedResponse.json();
+        
+        // Fazer upload direto para S3
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          body: selectedBannerFile,
+          headers: {
+            'Content-Type': selectedBannerFile.type,
+          },
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Erro no upload do banner para S3');
+        }
+        
+        bannerPath = cloud_storage_path;
+      }
+      
+      console.log('Sending theme data:', formData.theme);
+      const response = await fetch(`/api/restaurant/${restaurant.id}/customize`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          logoUrl: logoPath,
+          bannerUrl: bannerPath
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('Personalização salva com sucesso!');
+        onSuccess();
+        onClose();
+        setSelectedLogoFile(null);
+        setSelectedBannerFile(null);
+      } else {
+        toast.error('Erro ao salvar personalização');
+      }
+    } catch (error) {
+      toast.error('Erro ao salvar personalização');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const colorPresets = [
+    { name: 'Vermelho', primary: '#dc2626', secondary: '#f97316' },
+    { name: 'Azul', primary: '#2563eb', secondary: '#0ea5e9' },
+    { name: 'Verde', primary: '#16a34a', secondary: '#22c55e' },
+    { name: 'Roxo', primary: '#9333ea', secondary: '#a855f7' },
+    { name: 'Rosa', primary: '#e11d48', secondary: '#f43f5e' }
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <h2 className="text-xl font-bold mb-4 dark:text-white">Personalizar Restaurante</h2>
+        
+        <div className="flex border-b mb-4">
+          <button
+            onClick={() => setActiveTab('colors')}
+            className={`px-4 py-2 ${activeTab === 'colors' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600'}`}
+          >
+            Cores
+          </button>
+          <button
+            onClick={() => setActiveTab('images')}
+            className={`px-4 py-2 ${activeTab === 'images' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600'}`}
+          >
+            Imagens
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`px-4 py-2 ${activeTab === 'settings' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600'}`}
+          >
+            Configurações
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {activeTab === 'colors' && (
+            <div className="space-y-4">
+              <div>
+                <Label>Presets de Cores</Label>
+                <div className="grid grid-cols-5 gap-2 mt-2">
+                  {colorPresets.map((preset) => (
+                    <button
+                      key={preset.name}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, primaryColor: preset.primary, secondaryColor: preset.secondary })}
+                      className="p-2 border rounded text-center hover:bg-gray-50"
+                    >
+                      <div className="flex gap-1 justify-center mb-1">
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.primary }}></div>
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.secondary }}></div>
+                      </div>
+                      <span className="text-xs">{preset.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="primaryColor">Cor Primária</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="primaryColor"
+                      type="color"
+                      value={formData.primaryColor}
+                      onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                      className="w-16 h-10"
+                    />
+                    <Input
+                      value={formData.primaryColor}
+                      onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="secondaryColor">Cor Secundária</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="secondaryColor"
+                      type="color"
+                      value={formData.secondaryColor}
+                      onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
+                      className="w-16 h-10"
+                    />
+                    <Input
+                      value={formData.secondaryColor}
+                      onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Preview das cores */}
+              <div className="mt-4 p-4 border rounded-lg">
+                <Label className="text-sm font-medium mb-2 block">Preview das Cores</Label>
+                <div className="space-y-2">
+                  <div 
+                    className="p-3 rounded text-white font-medium"
+                    style={{ backgroundColor: formData.primaryColor }}
+                  >
+                    Cor Primária - Botões e destaques
+                  </div>
+                  <div 
+                    className="p-3 rounded text-white font-medium"
+                    style={{ backgroundColor: formData.secondaryColor }}
+                  >
+                    Cor Secundária - Acentos e ícones
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'images' && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="logo">Logo do Restaurante</Label>
+                <div className="space-y-2">
+                  <input
+                    type="file"
+                    id="logo"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                        if (!allowedTypes.includes(file.type)) {
+                          toast.error('Tipo de arquivo não permitido. Use apenas imagens.');
+                          return;
+                        }
+                        if (file.size > 5 * 1024 * 1024) {
+                          toast.error('Arquivo muito grande. Máximo 5MB.');
+                          return;
+                        }
+                        setSelectedLogoFile(file);
+                      }
+                    }}
+                    className="w-full p-2 border rounded cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  {selectedLogoFile && (
+                    <div className="flex items-center gap-2 p-2 bg-green-50 rounded">
+                      <span className="text-sm text-green-700">🖼️ {selectedLogoFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedLogoFile(null)}
+                        className="text-red-500 hover:text-red-700 text-sm"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    Formatos aceitos: JPG, PNG, GIF, WebP (máx. 5MB)
+                  </p>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="banner">Banner do Restaurante</Label>
+                <div className="space-y-2">
+                  <input
+                    type="file"
+                    id="banner"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                        if (!allowedTypes.includes(file.type)) {
+                          toast.error('Tipo de arquivo não permitido. Use apenas imagens.');
+                          return;
+                        }
+                        if (file.size > 5 * 1024 * 1024) {
+                          toast.error('Arquivo muito grande. Máximo 5MB.');
+                          return;
+                        }
+                        setSelectedBannerFile(file);
+                      }
+                    }}
+                    className="w-full p-2 border rounded cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  {selectedBannerFile && (
+                    <div className="flex items-center gap-2 p-2 bg-green-50 rounded">
+                      <span className="text-sm text-green-700">🖼️ {selectedBannerFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBannerFile(null)}
+                        className="text-red-500 hover:text-red-700 text-sm"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    Formatos aceitos: JPG, PNG, GIF, WebP (máx. 5MB)
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
+            <div className="space-y-4">
+              <div>
+                <Label>Tema</Label>
+                <select
+                  value={formData.theme}
+                  onChange={(e) => setFormData({ ...formData, theme: e.target.value })}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="light">Claro</option>
+                  <option value="dark">Escuro</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.showDeliveryTime}
+                    onChange={(e) => setFormData({ ...formData, showDeliveryTime: e.target.checked })}
+                  />
+                  Mostrar tempo de entrega
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.showRatings}
+                    onChange={(e) => setFormData({ ...formData, showRatings: e.target.checked })}
+                  />
+                  Mostrar avaliações
+                </label>
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting || isUploadingLogo || isUploadingBanner} className="flex-1">
+              {isUploadingLogo || isUploadingBanner ? 'Enviando imagens...' : isSubmitting ? 'Salvando...' : 'Salvar Personalização'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ReportsModal({ isOpen, onClose, restaurant }: ReportsModalProps) {
+  const [reportData, setReportData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [dateRange, setDateRange] = useState({
+    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0]
+  });
+  const [activeTab, setActiveTab] = useState('overview');
+
+  if (!isOpen) return null;
+
+  const fetchReportData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/reports?restaurantId=${restaurant?.id}&startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`);
+      if (response.ok) {
+        const data = await response.json();
+        setReportData(data);
+      } else {
+        toast.error('Erro ao carregar relatórios');
+      }
+    } catch (error) {
+      toast.error('Erro ao carregar relatórios');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportReport = async (format: 'pdf' | 'excel') => {
+    try {
+      const response = await fetch(`/api/reports/export?restaurantId=${restaurant?.id}&format=${format}&startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `relatorio-${dateRange.startDate}-${dateRange.endDate}.${format === 'pdf' ? 'pdf' : 'xlsx'}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success('Relatório exportado com sucesso!');
+      } else {
+        toast.error('Erro ao exportar relatório');
+      }
+    } catch (error) {
+      toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && restaurant?.id) {
+      fetchReportData();
+    }
+  }, [isOpen, restaurant?.id, dateRange]);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Relatórios - {restaurant?.name}</h2>
+          <div className="flex gap-2">
+            <Button onClick={() => exportReport('excel')} variant="outline" size="sm">
+              📊 Excel
+            </Button>
+            <Button onClick={() => exportReport('pdf')} variant="outline" size="sm">
+              📄 PDF
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex gap-4 mb-4">
+          <div>
+            <Label htmlFor="startDate">Data Inicial</Label>
+            <Input
+              id="startDate"
+              type="date"
+              value={dateRange.startDate}
+              onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="endDate">Data Final</Label>
+            <Input
+              id="endDate"
+              type="date"
+              value={dateRange.endDate}
+              onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
+            />
+          </div>
+          <div className="flex items-end">
+            <Button onClick={fetchReportData} disabled={loading}>
+              {loading ? 'Carregando...' : 'Atualizar'}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex border-b mb-4">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`px-4 py-2 ${activeTab === 'overview' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600'}`}
+          >
+            Visão Geral
+          </button>
+          <button
+            onClick={() => setActiveTab('sales')}
+            className={`px-4 py-2 ${activeTab === 'sales' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600'}`}
+          >
+            Vendas
+          </button>
+          <button
+            onClick={() => setActiveTab('products')}
+            className={`px-4 py-2 ${activeTab === 'products' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-600'}`}
+          >
+            Produtos
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-gray-500">Carregando relatórios...</div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {activeTab === 'overview' && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-blue-800">Total de Pedidos</h3>
+                  <p className="text-2xl font-bold text-blue-600">{reportData?.totalOrders || 0}</p>
+                  <p className="text-sm text-blue-600">+12% vs período anterior</p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-green-800">Receita Total</h3>
+                  <p className="text-2xl font-bold text-green-600">R$ {reportData?.totalRevenue?.toFixed(2) || '0.00'}</p>
+                  <p className="text-sm text-green-600">+8% vs período anterior</p>
+                </div>
+                <div className="bg-orange-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-orange-800">Ticket Médio</h3>
+                  <p className="text-2xl font-bold text-orange-600">R$ {reportData?.averageTicket?.toFixed(2) || '0.00'}</p>
+                  <p className="text-sm text-orange-600">-3% vs período anterior</p>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'sales' && (
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-2">Vendas por Dia</h3>
+                  <div className="h-64 flex items-center justify-center text-gray-500">
+                    Gráfico de vendas por dia (implementar com Chart.js)
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2">Horários de Pico</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>12:00 - 14:00</span>
+                        <span className="font-semibold">35%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>19:00 - 21:00</span>
+                        <span className="font-semibold">28%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>18:00 - 19:00</span>
+                        <span className="font-semibold">22%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2">Métodos de Pagamento</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>PIX</span>
+                        <span className="font-semibold">45%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Cartão de Crédito</span>
+                        <span className="font-semibold">35%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Dinheiro</span>
+                        <span className="font-semibold">20%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'products' && (
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-4">Produtos Mais Vendidos</h3>
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4, 5].map((item) => (
+                      <div key={item} className="flex justify-between items-center p-2 bg-white rounded">
+                        <div>
+                          <span className="font-medium">Pizza Margherita #{item}</span>
+                          <p className="text-sm text-gray-600">Categoria: Pizzas</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">{50 - item * 8} vendas</p>
+                          <p className="text-sm text-gray-600">R$ {(25.90 * (50 - item * 8)).toFixed(2)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="flex justify-end pt-4">
+          <Button onClick={onClose}>Fechar</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ImportCatalogModal({ isOpen, onClose, restaurantId, onSuccess }: ImportCatalogModalProps) {
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
+  const [importResults, setImportResults] = useState<any>(null);
+  const [step, setStep] = useState<'upload' | 'preview' | 'importing' | 'results'>('upload');
+  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  if (!isOpen) return null;
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      const validTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+      if (validTypes.includes(selectedFile.type) || selectedFile.name.endsWith('.csv') || selectedFile.name.endsWith('.xlsx')) {
+        setFile(selectedFile);
+        setValidationErrors([]);
+      } else {
+        toast.error('Formato de arquivo não suportado. Use CSV ou Excel.');
+      }
+    }
+  };
+
+  const processFile = async () => {
+    if (!file || !restaurantId) return;
+    
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('restaurantId', restaurantId);
+
+    try {
+      const response = await fetch('/api/catalog/preview', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPreviewData(data.products || []);
+        setValidationErrors(data.errors || []);
+        setStep('preview');
+      } else {
+        const error = await response.json();
+        toast.error(error.message || 'Erro ao processar arquivo');
+      }
+    } catch (error) {
+      toast.error('Erro ao processar arquivo');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const confirmImport = async () => {
+    if (!file || !restaurantId) return;
+    
+    setStep('importing');
+    setImportProgress(0);
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('restaurantId', restaurantId);
+
+    try {
+      const response = await fetch('/api/catalog/import', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setImportResults(data);
+        setStep('results');
+        toast.success('Catálogo importado com sucesso!');
+        if (onSuccess) onSuccess();
+      } else {
+        const error = await response.json();
+        toast.error(error.message || 'Erro ao importar catálogo');
+        setStep('preview');
+      }
+    } catch (error) {
+      toast.error('Erro ao importar catálogo');
+      setStep('preview');
+    }
+  };
+
+  const downloadTemplate = () => {
+    const csvContent = "nome,descricao,preco,categoria,disponivel,imagem_url\nPizza Margherita,Pizza com molho de tomate e mussarela,25.90,Pizzas,true,\nHamburguer Clássico,Hamburguer com carne e queijo,18.50,Lanches,true,";
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'template-catalogo.csv';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
+  const resetModal = () => {
+    setFile(null);
+    setStep('upload');
+    setPreviewData([]);
+    setValidationErrors([]);
+    setImportResults(null);
+    setImportProgress(0);
+  };
+
+  useEffect(() => {
+    if (step === 'importing') {
+      const interval = setInterval(() => {
+        setImportProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(interval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+      return () => clearInterval(interval);
+    }
+  }, [step]);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Importar Catálogo</h2>
+          <Button onClick={downloadTemplate} variant="outline" size="sm">
+            📥 Baixar Template
+          </Button>
+        </div>
+
+        {step === 'upload' && (
+          <div className="space-y-6">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <div className="space-y-4">
+                <div className="text-4xl">📁</div>
+                <div>
+                  <h3 className="text-lg font-semibold">Selecione um arquivo</h3>
+                  <p className="text-gray-600">Formatos aceitos: CSV, Excel (.xlsx)</p>
+                </div>
+                <input
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  id="file-upload"
+                />
+                <label htmlFor="file-upload" className="cursor-pointer">
+                  <Button type="button" className="mt-2">
+                    Escolher Arquivo
+                  </Button>
+                </label>
+                {file && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded">
+                    <p className="text-sm font-medium">{file.name}</p>
+                    <p className="text-xs text-gray-600">{(file.size / 1024).toFixed(1)} KB</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-yellow-800 mb-2">📋 Instruções:</h4>
+              <ul className="text-sm text-yellow-700 space-y-1">
+                <li>• Use o template fornecido para garantir a formatação correta</li>
+                <li>• Colunas obrigatórias: nome, preço, categoria</li>
+                <li>• Preços devem usar ponto como separador decimal (ex: 25.90)</li>
+                <li>• Campo 'disponivel' deve ser 'true' ou 'false'</li>
+              </ul>
+            </div>
+
+            <div className="flex justify-between">
+              <Button onClick={onClose} variant="outline">Cancelar</Button>
+              <Button onClick={processFile} disabled={!file || uploading}>
+                {uploading ? 'Processando...' : 'Continuar'}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 'preview' && (
+          <div className="space-y-6">
+            {validationErrors.length > 0 && (
+              <div className="bg-red-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-red-800 mb-2">⚠️ Erros encontrados:</h4>
+                <ul className="text-sm text-red-700 space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index}>• {error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div>
+              <h3 className="font-semibold mb-3">Prévia dos Produtos ({previewData.length} itens)</h3>
+              <div className="max-h-64 overflow-y-auto border rounded">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="p-2 text-left">Nome</th>
+                      <th className="p-2 text-left">Preço</th>
+                      <th className="p-2 text-left">Categoria</th>
+                      <th className="p-2 text-left">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewData.slice(0, 10).map((product, index) => (
+                      <tr key={index} className="border-t">
+                        <td className="p-2">{product.nome}</td>
+                        <td className="p-2">R$ {product.preco}</td>
+                        <td className="p-2">{product.categoria}</td>
+                        <td className="p-2">
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            product.disponivel ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {product.disponivel ? 'Disponível' : 'Indisponível'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {previewData.length > 10 && (
+                  <div className="p-2 text-center text-gray-500 text-sm">
+                    ... e mais {previewData.length - 10} produtos
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-between">
+              <Button onClick={resetModal} variant="outline">Voltar</Button>
+              <Button 
+                onClick={confirmImport} 
+                disabled={validationErrors.length > 0}
+                className={validationErrors.length > 0 ? 'opacity-50 cursor-not-allowed' : ''}
+              >
+                Importar Catálogo
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 'importing' && (
+          <div className="space-y-6 text-center">
+            <div className="text-4xl">⏳</div>
+            <div>
+              <h3 className="text-lg font-semibold">Importando catálogo...</h3>
+              <p className="text-gray-600">Por favor, aguarde enquanto processamos seus produtos</p>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${importProgress}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-gray-600">{importProgress}% concluído</p>
+          </div>
+        )}
+
+        {step === 'results' && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="text-4xl mb-4">✅</div>
+              <h3 className="text-lg font-semibold text-green-600">Importação Concluída!</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-green-50 p-4 rounded-lg text-center">
+                <h4 className="font-semibold text-green-800">Produtos Importados</h4>
+                <p className="text-2xl font-bold text-green-600">{importResults?.imported || 0}</p>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg text-center">
+                <h4 className="font-semibold text-yellow-800">Produtos Atualizados</h4>
+                <p className="text-2xl font-bold text-yellow-600">{importResults?.updated || 0}</p>
+              </div>
+              <div className="bg-red-50 p-4 rounded-lg text-center">
+                <h4 className="font-semibold text-red-800">Erros</h4>
+                <p className="text-2xl font-bold text-red-600">{importResults?.errors || 0}</p>
+              </div>
+            </div>
+
+            {importResults?.errorDetails && importResults.errorDetails.length > 0 && (
+              <div className="bg-red-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-red-800 mb-2">Detalhes dos Erros:</h4>
+                <ul className="text-sm text-red-700 space-y-1">
+                  {importResults.errorDetails.map((error: string, index: number) => (
+                    <li key={index}>• {error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex justify-center">
+              <Button onClick={() => { resetModal(); onClose(); }}>
+                Concluir
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 interface Restaurant {
   id: string;
@@ -22,6 +1612,13 @@ interface Restaurant {
   address?: string;
   categories?: Category[];
   menuItems?: MenuItem[];
+  primaryColor?: string;
+  secondaryColor?: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  theme?: string;
+  showDeliveryTime?: boolean;
+  showRatings?: boolean;
 }
 
 interface Category {
@@ -42,9 +1639,38 @@ interface MenuItem {
   category: Category;
 }
 
+interface Order {
+  id: string;
+  customerName?: string;
+  items: OrderItem[];
+  total: number;
+  status: 'pending' | 'preparing' | 'ready' | 'delivered';
+  createdAt: string;
+  address?: string;
+  phone?: string;
+  paymentMethod?: string;
+}
+
+interface OrderItem {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+  customizations?: string[];
+}
+
 export default function AdminDashboard() {
-  const { data: session, status } = useSession() || {};
+  const { user, session, loading } = useAuth();
+  
+  // Debug da sessão
+  useEffect(() => {
+    console.log('Loading:', loading);
+    console.log('Dados da sessão:', session);
+    console.log('Usuário:', user);
+    console.log('Email do usuário:', user?.email);
+  }, [session, loading, user]);
   const router = useRouter();
+  const { setTheme, theme } = useTheme();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -58,17 +1684,42 @@ export default function AdminDashboard() {
   const [showEditRestaurantModal, setShowEditRestaurantModal] = useState(false);
   const [showPersonalizeModal, setShowPersonalizeModal] = useState(false);
   const [showReportsModal, setShowReportsModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
+
+  const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    if (status === 'loading') return;
+    // Aguarda o carregamento completo da autenticação
+    if (loading) {
+      console.log('Aguardando carregamento da autenticação...');
+      return;
+    }
 
-    if (!session) {
+    // Verifica se há sessão e usuário após o carregamento
+    if (!session || !user) {
+      console.log('Sem sessão ou usuário, redirecionando para login...');
+      console.log('Session:', session);
+      console.log('User:', user);
       router.push('/auth/login');
       return;
     }
 
+    console.log('Usuário autenticado, carregando dados do dashboard...');
     fetchRestaurantData();
-  }, [session, status, router]);
+    fetchOrders();
+  }, [session, loading, user, router]);
+
+  // Apply theme when restaurant theme changes
+  useEffect(() => {
+    if (restaurant?.theme) {
+      setTheme(restaurant.theme);
+      document.documentElement.className = restaurant.theme === 'dark' ? 'dark' : '';
+    }
+  }, [restaurant?.theme, setTheme]);
 
   const fetchRestaurantData = async () => {
     try {
@@ -98,6 +1749,42 @@ export default function AdminDashboard() {
     });
   };
 
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('/api/orders');
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data.sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      }
+    } catch (error) {
+      console.error('Erro ao buscar pedidos:', error);
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, status: Order['status']) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: status.toUpperCase() }),
+      });
+      
+      if (response.ok) {
+        setOrders(prev => prev.map(order => 
+          order.id === orderId ? { ...order, status } : order
+        ));
+        toast.success('Status do pedido atualizado!');
+        // Recarregar pedidos para garantir sincronização
+        fetchOrders();
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar status do pedido:', error);
+      toast.error('Erro ao atualizar status do pedido');
+    }
+  };
+
   const handleDeleteItem = async (itemId: string) => {
     if (!confirm('Tem certeza que deseja remover este item?')) {
       return;
@@ -119,7 +1806,56 @@ export default function AdminDashboard() {
     }
   };
 
-  if (status === 'loading' || isLoading) {
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) return;
+    
+    if (!confirm(`Tem certeza que deseja remover ${selectedItems.length} ${selectedItems.length === 1 ? 'item' : 'itens'}?`)) return;
+    
+    try {
+      const deletePromises = selectedItems.map(itemId => 
+        fetch(`/api/items?id=${itemId}`, { method: 'DELETE' })
+      );
+      
+      await Promise.all(deletePromises);
+      
+      toast.success(`🗑️ ${selectedItems.length} ${selectedItems.length === 1 ? 'item removido' : 'itens removidos'} com sucesso!`);
+      setSelectedItems([]);
+      setShowBulkActions(false);
+      fetchRestaurantData();
+    } catch (error) {
+      console.error('Erro ao remover itens:', error);
+      toast.error('Erro ao remover itens');
+    }
+  };
+
+  const handleSelectItem = (itemId: string) => {
+    setSelectedItems(prev => {
+      const newSelection = prev.includes(itemId) 
+        ? prev.filter(id => id !== itemId)
+        : [...prev, itemId];
+      
+      setShowBulkActions(newSelection.length > 0);
+      return newSelection;
+    });
+  };
+
+  const handleSelectAllInCategory = (categoryItems: any[]) => {
+    const categoryItemIds = categoryItems.map(item => item.id);
+    const allSelected = categoryItemIds.every(id => selectedItems.includes(id));
+    
+    if (allSelected) {
+      setSelectedItems(prev => prev.filter(id => !categoryItemIds.includes(id)));
+    } else {
+      setSelectedItems(prev => [...new Set([...prev, ...categoryItemIds])]);
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedItems([]);
+    setShowBulkActions(false);
+  };
+
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -135,16 +1871,16 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                 Painel Administrativo
               </h1>
-              <p className="text-gray-600">
-                Bem-vindo, {session.user?.name || session.user?.email}!
+              <p className="text-gray-600 dark:text-gray-300">
+                Bem-vindo, {user?.name || user?.email}!
               </p>
             </div>
             <div className="flex gap-3">
@@ -210,7 +1946,8 @@ export default function AdminDashboard() {
         </div>
 
         {/* Conteúdo Principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Ações Rápidas */}
           <div className="lg:col-span-2">
             <Card>
@@ -218,10 +1955,10 @@ export default function AdminDashboard() {
                 <CardTitle>Ações Rápidas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <Button 
                     className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float"
-                    onClick={() => setShowAddItemModal(true)}
+                    onClick={() => { console.log('Botão Adicionar Item clicado'); setShowAddItemModal(true); }}
                     disabled={!restaurant}
                   >
                     <span className="text-2xl">➕</span>
@@ -236,6 +1973,16 @@ export default function AdminDashboard() {
                   >
                     <span className="text-2xl">📁</span>
                     <span>Nova Categoria</span>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float bg-gradient-to-r from-green-50 to-blue-50 border-green-200 hover:from-green-100 hover:to-blue-100"
+                    onClick={() => setShowImportModal(true)}
+                    disabled={!restaurant}
+                  >
+                    <span className="text-2xl">📥</span>
+                    <span className="text-center">Importar do<br/>iFood</span>
                   </Button>
                   
                   <Button 
@@ -257,6 +2004,17 @@ export default function AdminDashboard() {
                     <span className="text-2xl">📊</span>
                     <span>Relatórios</span>
                   </Button>
+                  
+                  <Link href="/admin/dashboard/comandas">
+                    <Button 
+                      variant="outline" 
+                      className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float w-full"
+                      disabled={!restaurant}
+                    >
+                      <span className="text-2xl">📋</span>
+                      <span>Comandas</span>
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -272,17 +2030,17 @@ export default function AdminDashboard() {
                 {restaurant ? (
                   <div className="space-y-3">
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Nome</label>
-                      <p className="text-lg font-semibold">{restaurant.name}</p>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Nome</label>
+                      <p className="text-lg font-semibold dark:text-white">{restaurant.name}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">URL</label>
-                      <p className="text-sm text-blue-600">/{restaurant.slug}</p>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">URL</label>
+                      <p className="text-sm text-blue-600 dark:text-blue-400">/{restaurant.slug}</p>
                     </div>
                     {restaurant.phone && (
                       <div>
-                        <label className="text-sm font-medium text-gray-600">Telefone</label>
-                        <p>{restaurant.phone}</p>
+                        <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Telefone</label>
+                        <p className="dark:text-white">{restaurant.phone}</p>
                       </div>
                     )}
                     <div className="pt-3">
@@ -297,7 +2055,7 @@ export default function AdminDashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-4">
-                    <p className="text-gray-500 mb-3">Nenhum restaurante cadastrado</p>
+                    <p className="text-gray-500 dark:text-gray-400 mb-3">Nenhum restaurante cadastrado</p>
                     <Button 
                       className="animated-button"
                       onClick={() => setShowCreateRestaurantModal(true)}
@@ -311,64 +2069,281 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Itens Recentes */}
+        {/* Gerenciamento de Itens por Categoria */}
         <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Itens do Cardápio</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Gerenciar Cardápio por Categoria</CardTitle>
+            <div className="flex gap-2">
+              {showBulkActions && (
+                <div className="flex items-center gap-2 mr-4">
+                  <Badge variant="secondary">
+                    {selectedItems.length} {selectedItems.length === 1 ? 'item selecionado' : 'itens selecionados'}
+                  </Badge>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={handleBulkDelete}
+                  >
+                    🗑️ Remover Selecionados
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={clearSelection}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowAddItemModal(true)}
+                disabled={!restaurant}
+              >
+                <span className="mr-2">➕</span>
+                Novo Item
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            {restaurant?.menuItems && restaurant.menuItems.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {restaurant.menuItems.slice(0, 6).map((item) => (
-                  <div key={item.id} className="border rounded-lg p-4 hover-scale relative">
-                    <button
-                      onClick={() => handleDeleteItem(item.id)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 z-10"
-                      title="Remover item"
-                    >
-                      ✕
-                    </button>
-                    <img 
-                      src={
-                        item.image?.startsWith('/') 
-                          ? item.image 
-                          : item.image?.startsWith('http') 
-                            ? item.image 
-                            : item.image
-                              ? `/api/image?key=${encodeURIComponent(item.image)}`
-                              : 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'
-                      } 
-                      alt={item.name}
-                      className="w-full h-32 object-cover rounded-md mb-3"
+            {/* Filtros e Busca */}
+            {restaurant?.categories && restaurant.categories.length > 0 && (
+              <div className="mb-6 space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="🔍 Buscar itens do cardápio..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full"
                     />
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-red-600">
-                        R$ {Number(item.price).toFixed(2)}
-                      </span>
-                      {item.isPromo && (
-                        <Badge variant="secondary">Promoção</Badge>
+                  </div>
+                  <div className="sm:w-48">
+                    <select
+                      value={selectedCategoryFilter}
+                      onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">📁 Todas as categorias</option>
+                      {restaurant.categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {(searchTerm || selectedCategoryFilter !== 'all') && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setSelectedCategoryFilter('all');
+                      }}
+                    >
+                      🗑️ Limpar
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {restaurant?.categories && restaurant.categories.length > 0 ? (
+              <div className="space-y-6">
+                 {restaurant.categories
+                   .filter(category => {
+                     // Filtrar por categoria selecionada
+                     if (selectedCategoryFilter !== 'all' && category.id !== selectedCategoryFilter) {
+                       return false;
+                     }
+                     
+                     // Se há busca por texto, verificar se a categoria tem itens que correspondem
+                     if (searchTerm) {
+                       const categoryItems = restaurant.menuItems?.filter(item => 
+                         item.category.id === category.id &&
+                         (item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          item.description.toLowerCase().includes(searchTerm.toLowerCase()))
+                       ) || [];
+                       return categoryItems.length > 0 || category.name.toLowerCase().includes(searchTerm.toLowerCase());
+                     }
+                     
+                     return true;
+                   })
+                   .map((category) => {
+const allCategoryItems = restaurant.menuItems?.filter(item => item.category.id === category.id) || [];
+                   
+                   // Filtrar itens por termo de busca
+                   const categoryItems = searchTerm 
+                     ? allCategoryItems.filter(item => 
+                         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.description.toLowerCase().includes(searchTerm.toLowerCase())
+                       )
+                     : allCategoryItems;
+                  
+                  return (
+                    <div key={category.id} className="border rounded-lg p-4">
+                       <div className="flex items-center justify-between mb-4">
+                         <div className="flex items-center gap-3">
+                           {categoryItems.length > 0 && (
+                             <input
+                               type="checkbox"
+                               checked={categoryItems.every(item => selectedItems.includes(item.id))}
+                               onChange={() => handleSelectAllInCategory(categoryItems)}
+                               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                               title="Selecionar todos os itens desta categoria"
+                             />
+                           )}
+                           <h3 className="text-lg font-semibold text-gray-800">{category.name}</h3>
+                           <Badge variant="outline" className="text-xs">
+                             {categoryItems.length} {categoryItems.length === 1 ? 'item' : 'itens'}
+                           </Badge>
+                           {categoryItems.length > 0 && selectedItems.some(id => categoryItems.map(item => item.id).includes(id)) && (
+                             <Badge variant="secondary" className="text-xs">
+                               {selectedItems.filter(id => categoryItems.map(item => item.id).includes(id)).length} selecionados
+                             </Badge>
+                           )}
+                         </div>
+                         <Button 
+                           variant="ghost" 
+                           size="sm"
+                           onClick={() => {
+const [formData, setFormData] = useState({
+  name: '',
+  description: '', 
+  price: '',
+  categoryId: category.id,
+  image: ''
+});
+                             setShowAddItemModal(true);
+                           }}
+                           className="text-blue-600 hover:text-blue-800"
+                         >
+                           + Adicionar item nesta categoria
+                         </Button>
+                       </div>
+                      
+                      {categoryItems.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {categoryItems.map((item) => (
+                             <div key={item.id} className={`border rounded-lg p-3 hover:shadow-md transition-shadow relative bg-white ${
+                               selectedItems.includes(item.id) ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                             }`}>
+                               <div className="absolute top-2 left-2 z-10">
+                                 <input
+                                   type="checkbox"
+                                   checked={selectedItems.includes(item.id)}
+                                   onChange={() => handleSelectItem(item.id)}
+                                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                                   title="Selecionar item"
+                                 />
+                               </div>
+                               <button
+                                 onClick={() => handleDeleteItem(item.id)}
+                                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 z-10 transition-colors"
+                                 title="Remover item"
+                               >
+                                 ✕
+                               </button>
+                              <img 
+                                src={
+                                  item.image?.startsWith('/') 
+                                    ? item.image 
+                                    : item.image?.startsWith('http') 
+                                      ? item.image 
+                                      : item.image
+                                        ? `/api/image?key=${encodeURIComponent(item.image)}`
+                                        : 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'
+                                } 
+                                alt={item.name}
+                                className="w-full h-24 object-cover rounded-md mb-2"
+                              />
+                              <h4 className="font-medium text-sm mb-1">{item.name}</h4>
+                              <p className="text-xs text-gray-600 mb-2 line-clamp-2">{item.description}</p>
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-bold text-red-600">
+                                  R$ {Number(item.price).toFixed(2)}
+                                </span>
+                                {item.isPromo && (
+                                  <Badge variant="secondary" className="text-xs">Promoção</Badge>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">Nenhum item nesta categoria</p>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+const [formData, setFormData] = useState({ categoryId: category.id });
+                              setShowAddItemModal(true);
+                            }}
+                          >
+                            Adicionar primeiro item
+                          </Button>
+                        </div>
                       )}
                     </div>
+                  );
+                })}
+                
+                {/* Mensagem quando nenhum resultado é encontrado */}
+                {(searchTerm || selectedCategoryFilter !== 'all') && 
+                 restaurant.categories
+                   .filter(category => {
+                     if (selectedCategoryFilter !== 'all' && category.id !== selectedCategoryFilter) {
+                       return false;
+                     }
+                     if (searchTerm) {
+                       const categoryItems = restaurant.menuItems?.filter(item => 
+                         item.category.id === category.id &&
+                         (item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          item.description.toLowerCase().includes(searchTerm.toLowerCase()))
+                       ) || [];
+                       return categoryItems.length > 0 || category.name.toLowerCase().includes(searchTerm.toLowerCase());
+                     }
+                     return true;
+                   }).length === 0 && (
+                  <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <p className="text-gray-500 dark:text-gray-400 mb-2">🔍 Nenhum resultado encontrado</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mb-4">
+                      {searchTerm && `Nenhum item encontrado para "${searchTerm}"`}
+                      {searchTerm && selectedCategoryFilter !== 'all' && ' na categoria selecionada'}
+                      {!searchTerm && selectedCategoryFilter !== 'all' && 'A categoria selecionada não possui itens'}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setSelectedCategoryFilter('all');
+                      }}
+                    >
+                      🗑️ Limpar filtros
+                    </Button>
                   </div>
-                ))}
+                )}
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">Nenhum item cadastrado ainda</p>
+                <p className="text-gray-500 mb-4">Nenhuma categoria criada ainda</p>
+                <p className="text-sm text-gray-400 mb-4">Crie categorias primeiro para organizar seus itens</p>
                 <Button 
                   className="animated-button"
-                  onClick={() => setShowAddItemModal(true)}
+                  onClick={() => setShowAddCategoryModal(true)}
                   disabled={!restaurant}
                 >
-                  <span className="mr-2">➕</span>
-                  Adicionar Primeiro Item
+                  <span className="mr-2">📁</span>
+                  Criar Primeira Categoria
                 </Button>
               </div>
             )}
           </CardContent>
         </Card>
+          </div>
       </div>
 
       {/* Modals */}
@@ -416,7 +2391,7 @@ export default function AdminDashboard() {
         <EditRestaurantModal 
           isOpen={showEditRestaurantModal}
           onClose={() => setShowEditRestaurantModal(false)}
-          restaurant={restaurant}
+          restaurant={restaurant!}
           onSuccess={() => {
             setShowEditRestaurantModal(false);
             toast.success('✏️ Informações atualizadas com sucesso!');
@@ -429,7 +2404,7 @@ export default function AdminDashboard() {
         <PersonalizeModal 
           isOpen={showPersonalizeModal}
           onClose={() => setShowPersonalizeModal(false)}
-          restaurant={restaurant}
+          restaurant={restaurant!}
           onSuccess={() => {
             setShowPersonalizeModal(false);
             toast.success('🎨 Personalização salva com sucesso!');
@@ -442,719 +2417,22 @@ export default function AdminDashboard() {
         <ReportsModal 
           isOpen={showReportsModal}
           onClose={() => setShowReportsModal(false)}
-          restaurant={restaurant}
+          restaurant={restaurant!}
         />
       )}
-    </div>
-  );
-}
 
-// Modal components
-interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-interface CreateRestaurantModalProps extends ModalProps {
-  onSuccess: (restaurant: Restaurant) => void;
-}
-
-function CreateRestaurantModal({ isOpen, onClose, onSuccess }: CreateRestaurantModalProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    address: ''
-  });
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/restaurant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        const restaurant = await response.json();
-        onSuccess(restaurant);
-      } else {
-        toast.error('Erro ao criar restaurante');
-      }
-    } catch (error) {
-      toast.error('Erro ao criar restaurante');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Criar Restaurante</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Nome do Restaurante</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                required
-                placeholder="Nome do seu restaurante"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="phone">Telefone</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                placeholder="(11) 99999-9999"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="address">Endereço</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-                placeholder="Endereço do restaurante"
-              />
-            </div>
-
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading} className="flex-1">
-                {isLoading ? 'Criando...' : 'Criar'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-interface AddItemModalProps extends ModalProps {
-  restaurantId: string;
-  categories: Category[];
-  onSuccess: () => void;
-}
-
-function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: AddItemModalProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    categoryId: '',
-    isPromo: false,
-    oldPrice: ''
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onload = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeImage = () => {
-    setSelectedImage(null);
-    setImagePreview(null);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      let imageUrl = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'; // Imagem padrão
-
-      // Upload da imagem se selecionada
-      if (selectedImage) {
-        setIsUploading(true);
-        const uploadData = new FormData();
-        uploadData.append('file', selectedImage);
-
-        const uploadResponse = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadData
-        });
-
-        if (uploadResponse.ok) {
-          const uploadResult = await uploadResponse.json();
-          imageUrl = uploadResult.image_url;
-        } else {
-          toast.error('Erro no upload da imagem');
-          return;
-        }
-        setIsUploading(false);
-      }
-
-      const response = await fetch('/api/items', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          price: parseFloat(formData.price),
-          oldPrice: formData.oldPrice ? parseFloat(formData.oldPrice) : undefined,
-          restaurantId,
-          image: imageUrl
-        }),
-      });
-
-      if (response.ok) {
-        // Reset form
-        setFormData({
-          name: '',
-          description: '',
-          price: '',
-          categoryId: '',
-          isPromo: false,
-          oldPrice: ''
-        });
-        setSelectedImage(null);
-        setImagePreview(null);
-        onSuccess();
-      } else {
-        toast.error('Erro ao adicionar item');
-      }
-    } catch (error) {
-      toast.error('Erro ao adicionar item');
-    } finally {
-      setIsLoading(false);
-      setIsUploading(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <CardHeader>
-          <CardTitle>Adicionar Item</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Nome do Item</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                required
-                placeholder="Ex: Pizza Margherita"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="description">Descrição</Label>
-              <Input
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                required
-                placeholder="Descreva o item"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="categoryId">Categoria</Label>
-              <select
-                id="categoryId"
-                value={formData.categoryId}
-                onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
-                required
-                className="w-full p-2 border rounded-md"
-              >
-                <option value="">Selecione uma categoria</option>
-                {categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div>
-              <Label htmlFor="price">Preço</Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => setFormData({...formData, price: e.target.value})}
-                required
-                placeholder="29.90"
-              />
-            </div>
-            
-            <div>
-              <Label>Imagem do Item</Label>
-              <div className="space-y-3">
-                {imagePreview ? (
-                  <div className="relative">
-                    <img 
-                      src={imagePreview} 
-                      alt="Preview" 
-                      className="w-full h-32 object-cover rounded-md border"
-                    />
-                    <button
-                      type="button"
-                      onClick={removeImage}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center">
-                    <p className="text-gray-500 mb-2">Adicionar imagem do item</p>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <label
-                      htmlFor="image-upload"
-                      className="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md text-sm"
-                    >
-                      Escolher Arquivo
-                    </label>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="isPromo"
-                checked={formData.isPromo}
-                onChange={(e) => setFormData({...formData, isPromo: e.target.checked})}
-              />
-              <Label htmlFor="isPromo">Item em promoção</Label>
-            </div>
-            
-            {formData.isPromo && (
-              <div>
-                <Label htmlFor="oldPrice">Preço Anterior</Label>
-                <Input
-                  id="oldPrice"
-                  type="number"
-                  step="0.01"
-                  value={formData.oldPrice}
-                  onChange={(e) => setFormData({...formData, oldPrice: e.target.value})}
-                  placeholder="39.90"
-                />
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading || isUploading} className="flex-1">
-                {isUploading ? 'Enviando imagem...' : isLoading ? 'Adicionando...' : 'Adicionar'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-interface AddCategoryModalProps extends ModalProps {
-  restaurantId: string;
-  onSuccess: () => void;
-}
-
-function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCategoryModalProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    icon: '🍕'
-  });
-  const [isLoading, setIsLoading] = useState(false);
-
-  const icons = ['🍕', '🥗', '🍝', '🍰', '🥤', '🥘', '🍖', '🐟', '🌮', '🍜'];
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          restaurantId
-        }),
-      });
-
-      if (response.ok) {
-        onSuccess();
-      } else {
-        toast.error('Erro ao criar categoria');
-      }
-    } catch (error) {
-      toast.error('Erro ao criar categoria');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Nova Categoria</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Nome da Categoria</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                required
-                placeholder="Ex: Pizzas, Bebidas, Sobremesas"
-              />
-            </div>
-            
-            <div>
-              <Label>Ícone</Label>
-              <div className="grid grid-cols-5 gap-2 mt-2">
-                {icons.map(icon => (
-                  <button
-                    key={icon}
-                    type="button"
-                    onClick={() => setFormData({...formData, icon})}
-                    className={`p-2 text-2xl border rounded hover:bg-gray-100 ${
-                      formData.icon === icon ? 'bg-red-100 border-red-500' : ''
-                    }`}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading} className="flex-1">
-                {isLoading ? 'Criando...' : 'Criar'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-
-// Edit Restaurant Modal
-interface EditRestaurantModalProps extends ModalProps {
-  restaurant: Restaurant;
-  onSuccess: () => void;
-}
-
-function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRestaurantModalProps) {
-  const [formData, setFormData] = useState({
-    name: restaurant.name,
-    phone: restaurant.phone || '',
-    address: restaurant.address || ''
-  });
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/restaurant', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: restaurant.id,
-          ...formData
-        }),
-      });
-
-      if (response.ok) {
-        onSuccess();
-      } else {
-        toast.error('Erro ao atualizar informações');
-      }
-    } catch (error) {
-      toast.error('Erro ao atualizar informações');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Editar Informações do Restaurante</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Nome do Restaurante</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                required
-                placeholder="Nome do seu restaurante"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="phone">Telefone</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                placeholder="(11) 99999-9999"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="address">Endereço</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-                placeholder="Endereço do restaurante"
-              />
-            </div>
-
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading} className="flex-1">
-                {isLoading ? 'Salvando...' : 'Salvar'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// Personalize Modal
-interface PersonalizeModalProps extends ModalProps {
-  restaurant: Restaurant;
-  onSuccess: () => void;
-}
-
-function PersonalizeModal({ isOpen, onClose, restaurant, onSuccess }: PersonalizeModalProps) {
-  const [formData, setFormData] = useState({
-    primaryColor: '#d32f2f',
-    secondaryColor: '#ffc107'
-  });
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/restaurant', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: restaurant.id,
-          ...formData
-        }),
-      });
-
-      if (response.ok) {
-        onSuccess();
-      } else {
-        toast.error('Erro ao salvar personalização');
-      }
-    } catch (error) {
-      toast.error('Erro ao salvar personalização');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Personalizar Aparência</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="primaryColor">Cor Principal</Label>
-              <div className="flex items-center gap-2">
-                <input
-                  id="primaryColor"
-                  type="color"
-                  value={formData.primaryColor}
-                  onChange={(e) => setFormData({...formData, primaryColor: e.target.value})}
-                  className="w-12 h-10 border rounded cursor-pointer"
-                />
-                <Input
-                  value={formData.primaryColor}
-                  onChange={(e) => setFormData({...formData, primaryColor: e.target.value})}
-                  placeholder="#d32f2f"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="secondaryColor">Cor Secundária</Label>
-              <div className="flex items-center gap-2">
-                <input
-                  id="secondaryColor"
-                  type="color"
-                  value={formData.secondaryColor}
-                  onChange={(e) => setFormData({...formData, secondaryColor: e.target.value})}
-                  className="w-12 h-10 border rounded cursor-pointer"
-                />
-                <Input
-                  value={formData.secondaryColor}
-                  onChange={(e) => setFormData({...formData, secondaryColor: e.target.value})}
-                  placeholder="#ffc107"
-                />
-              </div>
-            </div>
-
-            <div className="p-4 border rounded-md">
-              <h4 className="font-medium mb-2">Preview:</h4>
-              <div className="flex gap-2">
-                <div 
-                  className="w-8 h-8 rounded"
-                  style={{ backgroundColor: formData.primaryColor }}
-                ></div>
-                <div 
-                  className="w-8 h-8 rounded"
-                  style={{ backgroundColor: formData.secondaryColor }}
-                ></div>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading} className="flex-1">
-                {isLoading ? 'Salvando...' : 'Salvar'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// Reports Modal
-interface ReportsModalProps extends ModalProps {
-  restaurant: Restaurant;
-}
-
-function ReportsModal({ isOpen, onClose, restaurant }: ReportsModalProps) {
-  if (!isOpen) return null;
-
-  const totalItems = restaurant.menuItems?.length || 0;
-  const totalCategories = restaurant.categories?.length || 0;
-  const promoItems = restaurant.menuItems?.filter(item => item.isPromo).length || 0;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle>📊 Relatórios e Estatísticas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{totalItems}</div>
-              <div className="text-sm text-gray-600">Total de Itens</div>
-            </div>
-            
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{totalCategories}</div>
-              <div className="text-sm text-gray-600">Categorias</div>
-            </div>
-            
-            <div className="text-center p-4 bg-yellow-50 rounded-lg">
-              <div className="text-2xl font-bold text-yellow-600">{promoItems}</div>
-              <div className="text-sm text-gray-600">Promoções Ativas</div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-medium mb-2">Itens por Categoria:</h4>
-              {restaurant.categories?.map(category => (
-                <div key={category.id} className="flex justify-between items-center p-2 border-b">
-                  <span>{category.icon} {category.name}</span>
-                  <span className="font-medium">{category.menuItems?.length || 0} itens</span>
-                </div>
-              ))}
-            </div>
-
-            <div>
-              <h4 className="font-medium mb-2">Informações do Cardápio:</h4>
-              <div className="text-sm text-gray-600 space-y-1">
-                <p>• Slug do restaurante: /{restaurant.slug}</p>
-                <p>• Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end mt-6">
-            <Button onClick={onClose}>
-              Fechar
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {showImportModal && restaurant && (
+        <ImportCatalogModal 
+          isOpen={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          restaurantId={restaurant.id}
+          onSuccess={() => {
+            setShowImportModal(false);
+            toast.success('📥 Catálogo importado com sucesso!');
+            fetchRestaurantData();
+          }}
+        />
+      )}
     </div>
   );
 }

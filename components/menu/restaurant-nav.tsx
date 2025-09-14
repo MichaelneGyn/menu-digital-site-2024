@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { ClientCategory } from '@/lib/restaurant';
 
 interface RestaurantNavProps {
@@ -15,12 +15,54 @@ export default function RestaurantNav({
   activeCategory, 
   onCategoryChange 
 }: RestaurantNavProps) {
+  const navContainerRef = useRef<HTMLDivElement>(null);
+  const activeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Auto-scroll to active category
+  useEffect(() => {
+    if (activeButtonRef.current && navContainerRef.current) {
+      const container = navContainerRef.current;
+      const activeButton = activeButtonRef.current;
+      
+      const containerWidth = container.clientWidth;
+      const buttonWidth = activeButton.offsetWidth;
+      const buttonLeft = activeButton.offsetLeft;
+      
+      // Position the active button at 1/4 from the left instead of center
+      // This allows more space to show the next categories
+      const scrollLeft = buttonLeft - (containerWidth / 4);
+      
+      // Ensure we don't scroll beyond boundaries
+      const maxScrollLeft = container.scrollWidth - containerWidth;
+      const finalScrollLeft = Math.max(0, Math.min(scrollLeft, maxScrollLeft));
+      
+      console.log('Nav Scroll Debug:', {
+        activeCategory,
+        containerWidth,
+        buttonWidth,
+        buttonLeft,
+        scrollLeft,
+        finalScrollLeft,
+        maxScrollLeft
+      });
+      
+      container.scrollTo({
+        left: finalScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  }, [activeCategory]);
+
   return (
     <nav className="restaurant-nav">
-      <div className="nav-container max-w-6xl mx-auto px-8 flex gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-red-600">
+      <div 
+        ref={navContainerRef}
+        className="nav-container max-w-6xl mx-auto px-8 flex gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-red-600"
+      >
         {categories?.map((category) => (
           <button
             key={category.id}
+            ref={activeCategory === category.id ? activeButtonRef : null}
             className={`nav-item ${activeCategory === category.id ? 'active' : ''}`}
             onClick={() => onCategoryChange(category.id)}
           >

@@ -1,17 +1,14 @@
 
 'use client';
 
-import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from './theme-provider';
 import { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 
 export default function Providers({ 
-  children, 
-  session 
+  children
 }: { 
   children: React.ReactNode;
-  session: any;
 }) {
   const [mounted, setMounted] = useState(false);
 
@@ -24,25 +21,30 @@ export default function Providers({
   }
 
   return (
-    <SessionProvider session={session}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="light"
-        enableSystem={false}
-        disableTransitionOnChange
-      >
-        {children}
-        <Toaster
-          position="top-right"
-          toastOptions={{
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem
+      disableTransitionOnChange
+    >
+      {children}
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
             duration: 3000,
-            style: {
-              background: '#363636',
-              color: '#fff',
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
             },
-          }}
-        />
-      </ThemeProvider>
-    </SessionProvider>
+          },
+        }}
+      />
+    </ThemeProvider>
   );
 }

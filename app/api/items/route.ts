@@ -1,25 +1,40 @@
 
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { supabase } from '@/lib/auth';
 import { z } from 'zod';
 
 const createItemSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
-  description: z.string().min(1, 'Descrição é obrigatória'),
-  price: z.number().positive('Preço deve ser maior que zero'),
+  description: z.string().optional().default(''),
+  price: z.union([z.number(), z.string()]).transform((val) => {
+    const num = typeof val === 'string' ? parseFloat(val.replace(/[^\d,]/g, '').replace(',', '.')) : val;
+    if (isNaN(num) || num <= 0) throw new Error('Preço deve ser maior que zero');
+    return num;
+  }),
   categoryId: z.string().min(1, 'Categoria é obrigatória'),
   restaurantId: z.string().min(1, 'Restaurante é obrigatório'),
-  image: z.string().url('URL da imagem inválida'),
+  image: z.string().optional().default(''),
   isPromo: z.boolean().optional(),
-  oldPrice: z.number().positive().optional(),
+  promoPrice: z.union([z.number(), z.string(), z.null()]).transform((val) => {
+    if (!val || val === null || val === '' || val === 0) return null;
+    const num = typeof val === 'string' ? parseFloat(val.replace(/[^\d,]/g, '').replace(',', '.')) : val;
+    if (isNaN(num) || num <= 0) return null;
+    return num;
+  }).optional(),
+  originalPrice: z.union([z.number(), z.string(), z.null()]).transform((val) => {
+    if (!val || val === null || val === '' || val === 0) return null;
+    const num = typeof val === 'string' ? parseFloat(val.replace(/[^\d,]/g, '').replace(',', '.')) : val;
+    if (isNaN(num) || num <= 0) return null;
+    return num;
+  }).optional(),
 });
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // Usando cliente Supabase global
+    const { data: { session } } = await supabase.auth.getSession();
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
@@ -43,7 +58,7 @@ export async function DELETE(request: NextRequest) {
       include: { restaurant: true }
     });
 
-    if (!item || !user?.restaurants?.find(r => r.id === item.restaurantId)) {
+    if (!item || !user?.restaurants?.find((r: any) => r.id === item.restaurantId)) {
       return NextResponse.json({ error: 'Item não encontrado ou sem permissão' }, { status: 404 });
     }
 
@@ -60,14 +75,14 @@ export async function DELETE(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { data: { session } } = await supabase.auth.getSession();
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
     const body = await request.json();
-    const { name, description, price, categoryId, restaurantId, image, isPromo, oldPrice } = createItemSchema.parse(body);
+    const { name, description, price, categoryId, restaurantId, image, isPromo, promoPrice, originalPrice } = createItemSchema.parse(body);
 
     // Verificar se o usuário é dono do restaurante
     const user = await prisma.user.findUnique({
@@ -75,7 +90,7 @@ export async function POST(request: NextRequest) {
       include: { restaurants: true }
     });
 
-    if (!user || !user.restaurants || !user.restaurants.find(r => r.id === restaurantId)) {
+    if (!user || !user.restaurants || !user.restaurants.find((r: any) => r.id === restaurantId)) {
       return NextResponse.json({ error: 'Não autorizado para este restaurante' }, { status: 403 });
     }
 
@@ -95,12 +110,12 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         description,
-        price,
+        price: isPromo && promoPrice ? promoPrice : price,
         categoryId,
         restaurantId,
         image,
         isPromo: isPromo || false,
-        originalPrice: oldPrice
+        originalPrice: isPromo ? originalPrice : null
       },
       include: {
         category: true

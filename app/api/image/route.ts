@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { downloadFile } from '@/lib/s3';
+import { getPublicUrl } from '@/lib/supabase-storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Key da imagem é obrigatória' }, { status: 400 });
     }
 
-    const signedUrl = await downloadFile(key);
-    return NextResponse.redirect(signedUrl);
+    const publicUrl = await getPublicUrl(key);
+    return NextResponse.redirect(publicUrl);
 
   } catch (error) {
     console.error('Erro ao buscar imagem:', error);

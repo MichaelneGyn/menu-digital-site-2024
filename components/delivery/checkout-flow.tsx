@@ -188,16 +188,16 @@ export default function CheckoutFlow({
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 space-y-4 sm:space-y-6">
       {/* Progress Steps */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex items-center justify-between overflow-x-auto pb-2">
             {(['cart', 'address', 'payment', 'confirmation'] as CheckoutStep[]).map((step, index) => (
-              <div key={step} className="flex items-center">
+              <div key={step} className="flex items-center flex-shrink-0">
                 <div className="flex flex-col items-center">
                   {getStepIcon(step)}
-                  <span className="text-xs mt-1 capitalize">
+                  <span className="text-xs mt-1 capitalize whitespace-nowrap">
                     {step === 'cart' ? 'Carrinho' :
                      step === 'address' ? 'Endereço' :
                      step === 'payment' ? 'Pagamento' :
@@ -205,7 +205,7 @@ export default function CheckoutFlow({
                   </span>
                 </div>
                 {index < 3 && (
-                  <div className={`w-16 h-0.5 mx-4 ${
+                  <div className={`w-8 sm:w-16 h-0.5 mx-2 sm:mx-4 ${
                     (step === 'cart') ||
                     (step === 'address' && selectedAddress) ||
                     (step === 'payment' && selectedPayment)
@@ -286,7 +286,7 @@ export default function CheckoutFlow({
             <Button
               onClick={() => setCurrentStep('address')}
               disabled={subtotal < deliveryConfig.minOrderValue}
-              className="w-full bg-red-600 hover:bg-red-700"
+              className="w-full bg-red-600 hover:bg-red-700 py-3 text-base"
             >
               Continuar para Endereço
             </Button>
@@ -298,6 +298,7 @@ export default function CheckoutFlow({
         <AddressForm
           onAddressSelect={handleAddressSelect}
           selectedAddress={selectedAddress || undefined}
+          onClose={() => setCurrentStep('cart')}
         />
       )}
 
@@ -306,6 +307,7 @@ export default function CheckoutFlow({
           onPaymentSelect={handlePaymentSelect}
           selectedPayment={selectedPayment || undefined}
           totalAmount={total}
+          onClose={() => setCurrentStep('address')}
         />
       )}
 
@@ -388,18 +390,18 @@ export default function CheckoutFlow({
               </p>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="outline"
                 onClick={() => setCurrentStep('payment')}
-                className="flex-1"
+                className="flex-1 py-3 text-base"
               >
                 Voltar
               </Button>
               <Button
                 onClick={handleFinishOrder}
                 disabled={isProcessing}
-                className="flex-1 bg-green-600 hover:bg-green-700"
+                className="flex-1 bg-green-600 hover:bg-green-700 py-3 text-base"
               >
                 {isProcessing ? 'Processando...' : 'Finalizar Pedido'}
               </Button>

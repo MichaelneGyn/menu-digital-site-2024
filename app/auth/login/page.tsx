@@ -2,12 +2,13 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { signIn } from '@/lib/auth';
+import { useAuth } from '@/components/auth-provider';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -22,20 +23,18 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const result = await signIn('credentials', {
+      const { user, session } = await signIn({
         email: formData.email,
         password: formData.password,
-        redirect: false,
       });
 
-      if (result?.error) {
-        toast.error('Email ou senha incorretos');
-      } else {
+      if (user && session) {
         toast.success('Login realizado com sucesso!');
         router.push('/admin/dashboard');
       }
-    } catch (error) {
-      toast.error('Erro ao fazer login');
+    } catch (error: any) {
+      console.error('Erro no login:', error);
+      toast.error(error.message || 'Email ou senha incorretos');
     } finally {
       setIsLoading(false);
     }

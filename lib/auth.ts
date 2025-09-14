@@ -1,71 +1,123 @@
 
-import NextAuth, { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import bcrypt from 'bcryptjs';
-import { prisma } from './db';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
-  providers: [
-    CredentialsProvider({
-      name: 'credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
+// Função para criar cliente Supabase
+export function createSupabaseClient() {
+  return createClientComponentClient();
+}
+
+// Cliente padrão para compatibilidade
+export const supabase = createSupabaseClient();
+
+// Tipos para autenticação
+export interface AuthUser {
+  id: string;
+  email: string;
+  name?: string;
+}
+
+export interface SignUpData {
+  email: string;
+  password: string;
+  name?: string;
+}
+
+export interface SignInData {
+  email: string;
+  password: string;
+}
+
+// Funções de autenticação
+export async function signUp({ email, password, name }: SignUpData) {
+  try {
+    const supabaseClient = createSupabaseClient();
+    console.log('Tentando criar usuário:', { email, name });
+    
+    // Registrar no Supabase Auth
+    const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name: name || '',
+          full_name: name || ''
         }
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-          include: { restaurants: true }
-        });
-
-        if (!user?.password) {
-          return null;
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-        };
       }
-    })
-  ],
-  session: {
-    strategy: 'jwt'
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user && token.id) {
-        (session.user as any).id = token.id as string;
-      }
-      return session;
+    });
+
+    console.log('Resultado do signup:', { user: authData.user?.id, error: authError });
+
+    if (authError) {
+      console.error('Erro no Supabase signup:', authError);
+      throw new Error(authError.message);
     }
-  },
-  pages: {
-    signIn: '/auth/login',
-  },
-};
 
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+    return { user: authData.user, session: authData.session };
+  } catch (error) {
+    console.error('Erro no signup:', error);
+    throw error;
+  }
+}
+
+export async function signIn({ email, password }: SignInData) {
+  try {
+    const supabaseClient = createSupabaseClient();
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      console.error('Erro de autenticação:', error);
+      throw new Error(error.message);
+    }
+
+    console.log('Login bem-sucedido:', data.user?.id);
+    return { user: data.user, session: data.session };
+  } catch (error) {
+    console.error('Erro no signin:', error);
+    throw error;
+  }
+}
+
+export async function signOut() {
+  try {
+    const supabaseClient = createSupabaseClient();
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) {
+      throw new Error(error.message);
+    }
+  } catch (error) {
+    console.error('Erro no signout:', error);
+    throw error;
+  }
+}
+
+export async function getCurrentUser(): Promise<AuthUser | null> {
+  try {
+    const supabaseClient = createSupabaseClient();
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    if (!user) return null;
+
+    return {
+      id: user.id,
+      email: user.email || '',
+      name: user.user_metadata?.name || user.user_metadata?.full_name || undefined
+    };
+  } catch (error) {
+    console.error('Erro ao buscar usuário atual:', error);
+    return null;
+  }
+}
+
+export async function getSession() {
+  try {
+    const supabaseClient = createSupabaseClient();
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    return session;
+  } catch (error) {
+    console.error('Erro ao buscar sessão:', error);
+    return null;
+  }
+}

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { signUp } from '@/lib/auth';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -30,26 +31,27 @@ export default function RegisterPage() {
       return;
     }
 
+    if (formData.password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      const { user, session } = await signUp({
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
       });
 
-      if (response.ok) {
-        toast.success('Conta criada com sucesso! Faça login para continuar.');
+      if (user) {
+        toast.success('Conta criada com sucesso! Verifique seu email para confirmar a conta.');
         router.push('/auth/login');
-      } else {
-        const error = await response.text();
-        toast.error(error || 'Erro ao criar conta');
       }
-    } catch (error) {
-      toast.error('Erro ao criar conta');
+    } catch (error: any) {
+      console.error('Erro no registro:', error);
+      toast.error(error.message || 'Erro ao criar conta');
     } finally {
       setIsLoading(false);
     }

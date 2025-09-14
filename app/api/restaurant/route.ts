@@ -1,9 +1,8 @@
 
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { supabase } from '@/lib/auth';
 import { z } from 'zod';
 
 const createRestaurantSchema = z.object({
@@ -14,7 +13,8 @@ const createRestaurantSchema = z.object({
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    // Usando cliente Supabase global
+    const { data: { session } } = await supabase.auth.getSession();
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
@@ -54,7 +54,7 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { data: { session } } = await supabase.auth.getSession();
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
@@ -72,7 +72,7 @@ export async function PUT(request: NextRequest) {
       include: { restaurants: true }
     });
 
-    if (!user || !user.restaurants?.find(r => r.id === id)) {
+    if (!user || !user.restaurants?.find((r: any) => r.id === id)) {
       return NextResponse.json({ error: 'Não autorizado para este restaurante' }, { status: 403 });
     }
 
@@ -105,7 +105,7 @@ export async function PUT(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { data: { session } } = await supabase.auth.getSession();
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });

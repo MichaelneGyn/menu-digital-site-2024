@@ -1,12 +1,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
-import { uploadFile } from '@/lib/s3';
+import { supabase } from '@/lib/auth';
+import { uploadFile, getPublicUrl } from '@/lib/supabase-storage';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // Usando cliente Supabase global
+    const { data: { session } } = await supabase.auth.getSession();
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const cloud_storage_path = await uploadFile(buffer, file.name);
     
-    // Create URL to serve the image
-    const imageUrl = `/api/image?key=${encodeURIComponent(cloud_storage_path)}`;
+    // Get public URL from Supabase Storage
+    const imageUrl = await getPublicUrl(cloud_storage_path);
 
     return NextResponse.json({ 
       success: true, 

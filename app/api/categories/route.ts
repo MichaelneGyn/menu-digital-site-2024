@@ -1,8 +1,7 @@
 
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { supabase } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
@@ -14,7 +13,7 @@ const createCategorySchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { data: { session } } = await supabase.auth.getSession();
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
@@ -29,7 +28,7 @@ export async function POST(request: NextRequest) {
       include: { restaurants: true }
     });
 
-    if (!user || !user.restaurants || !user.restaurants.find(r => r.id === restaurantId)) {
+    if (!user || !user.restaurants || !user.restaurants.find((r: any) => r.id === restaurantId)) {
       return NextResponse.json({ error: 'Não autorizado para este restaurante' }, { status: 403 });
     }
 

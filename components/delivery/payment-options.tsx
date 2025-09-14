@@ -26,9 +26,10 @@ interface PaymentOptionsProps {
   onPaymentSelect: (paymentData: PaymentData) => void;
   selectedPayment?: PaymentData;
   totalAmount: number;
+  onClose?: () => void;
 }
 
-export default function PaymentOptions({ onPaymentSelect, selectedPayment, totalAmount }: PaymentOptionsProps) {
+export default function PaymentOptions({ onPaymentSelect, selectedPayment, totalAmount, onClose }: PaymentOptionsProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(selectedPayment?.method || 'pix');
   const [cardData, setCardData] = useState({
     number: '',
@@ -119,50 +120,50 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-red-600">
+        <CardTitle className="flex items-center gap-2 text-red-600 text-lg">
           <CreditCard className="w-5 h-5" />
           Forma de Pagamento
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}>
+      <CardContent className="space-y-6 p-4 sm:p-6">
+        <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as PaymentMethod)} className="space-y-3">
           {/* PIX */}
-          <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50">
-            <RadioGroupItem value="pix" id="pix" />
-            <Label htmlFor="pix" className="flex items-center gap-3 cursor-pointer flex-1">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+          <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+            <RadioGroupItem value="pix" id="pix" className="mt-2 flex-shrink-0" />
+            <Label htmlFor="pix" className="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <QrCode className="w-5 h-5 text-green-600" />
               </div>
-              <div>
-                <div className="font-medium">PIX</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-base">PIX</div>
                 <div className="text-sm text-gray-500">Pagamento instantâneo</div>
               </div>
             </Label>
           </div>
 
           {/* Cartão de Crédito */}
-          <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50">
-            <RadioGroupItem value="credit_card" id="credit_card" />
-            <Label htmlFor="credit_card" className="flex items-center gap-3 cursor-pointer flex-1">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+          <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+            <RadioGroupItem value="credit_card" id="credit_card" className="mt-2 flex-shrink-0" />
+            <Label htmlFor="credit_card" className="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <CreditCard className="w-5 h-5 text-blue-600" />
               </div>
-              <div>
-                <div className="font-medium">Cartão de Crédito</div>
-                <div className="text-sm text-gray-500">Pagamento antecipado</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-base">Cartão de Crédito</div>
+                <div className="text-sm text-gray-500">Visa, Mastercard, Elo</div>
               </div>
             </Label>
           </div>
 
           {/* Dinheiro na Entrega */}
-          <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50">
-            <RadioGroupItem value="cash_on_delivery" id="cash_on_delivery" />
-            <Label htmlFor="cash_on_delivery" className="flex items-center gap-3 cursor-pointer flex-1">
-              <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                <Banknote className="w-5 h-5 text-yellow-600" />
+          <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+            <RadioGroupItem value="cash_on_delivery" id="cash_on_delivery" className="mt-2 flex-shrink-0" />
+            <Label htmlFor="cash_on_delivery" className="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Banknote className="w-5 h-5 text-green-600" />
               </div>
-              <div>
-                <div className="font-medium">Dinheiro na Entrega</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-base">Dinheiro na Entrega</div>
                 <div className="text-sm text-gray-500">Pagamento na hora da entrega</div>
               </div>
             </Label>
@@ -188,7 +189,7 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
             
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <Label htmlFor="card-number">Número do Cartão</Label>
+                <Label htmlFor="card-number" className="text-sm font-medium">Número do Cartão</Label>
                 <Input
                   id="card-number"
                   type="text"
@@ -196,23 +197,25 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                   value={cardData.number}
                   onChange={(e) => handleCardInputChange('number', e.target.value)}
                   maxLength={19}
+                  className="h-12 text-base mt-1"
                 />
               </div>
               
               <div>
-                <Label htmlFor="card-name">Nome do Portador</Label>
+                <Label htmlFor="card-name" className="text-sm font-medium">Nome do Portador</Label>
                 <Input
                   id="card-name"
                   type="text"
                   placeholder="Nome como está no cartão"
                   value={cardData.name}
                   onChange={(e) => handleCardInputChange('name', e.target.value.toUpperCase())}
+                  className="h-12 text-base mt-1"
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="card-expiry">Validade</Label>
+                  <Label htmlFor="card-expiry" className="text-sm font-medium">Validade</Label>
                   <Input
                     id="card-expiry"
                     type="text"
@@ -220,11 +223,12 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                     value={cardData.expiry}
                     onChange={(e) => handleCardInputChange('expiry', e.target.value)}
                     maxLength={5}
+                    className="h-12 text-base mt-1"
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="card-cvv">CVV</Label>
+                  <Label htmlFor="card-cvv" className="text-sm font-medium">CVV</Label>
                   <Input
                     id="card-cvv"
                     type="text"
@@ -232,6 +236,7 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                     value={cardData.cvv}
                     onChange={(e) => handleCardInputChange('cvv', e.target.value)}
                     maxLength={4}
+                    className="h-12 text-base mt-1"
                   />
                 </div>
               </div>
@@ -281,12 +286,22 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
           </div>
         )}
 
-        <Button
-          onClick={handleSubmit}
-          className="w-full bg-red-600 hover:bg-red-700 text-white"
-        >
-          Confirmar Forma de Pagamento
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 h-12 text-base font-medium"
+          >
+            Voltar
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white h-12 text-base font-medium"
+          >
+            Confirmar Pagamento
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
