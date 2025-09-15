@@ -37,6 +37,35 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(data);
 }
 
+export async function DELETE(req: NextRequest) {
+  const supabase = createRouteHandlerClient({ cookies });
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  
+  if (userError || !user) {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  // Pega o ID da query string
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json({ error: "ID do item é obrigatório" }, { status: 400 });
+  }
+
+  const { error } = await supabase
+    .from("items")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Erro ao deletar item:", error);
+    return NextResponse.json({ error: error.message, details: error }, { status: 400 });
+  }
+
+  return NextResponse.json({ success: true });
+}
+
 export async function POST(req: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies });
   

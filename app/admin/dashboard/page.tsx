@@ -2257,11 +2257,14 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         toast.success('🗑️ Item removido com sucesso!');
-        fetchRestaurantData(); // Recarregar dados
+        fetchRestaurantData(); // Recarregar dados do restaurante
+        fetchItems(); // Recarregar lista de itens
       } else {
-        toast.error('Erro ao remover item');
+        const errorData = await response.json();
+        toast.error(`Erro ao remover item: ${errorData.error || 'Erro desconhecido'}`);
       }
     } catch (error) {
+      console.error('Erro ao remover item:', error);
       toast.error('Erro ao remover item');
     }
   };
@@ -2282,6 +2285,7 @@ export default function AdminDashboard() {
       setSelectedItems([]);
       setShowBulkActions(false);
       fetchRestaurantData();
+      fetchItems(); // Recarregar lista de itens
     } catch (error) {
       console.error('Erro ao remover itens:', error);
       toast.error('Erro ao remover itens');
