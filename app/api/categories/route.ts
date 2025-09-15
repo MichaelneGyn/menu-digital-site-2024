@@ -23,14 +23,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, icon, restaurantId } = createCategorySchema.parse(body);
 
-    // Verificar se o usuário é dono do restaurante
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: { restaurants: true }
-    });
+    // Verificar se é admin (bypass de verificação)
+    const adminEmails = [
+      "michaeldouglasqueiroz@gmail.com",
+      "admin@onpedido.com"
+    ];
+    
+    const isAdmin = adminEmails.includes(session.user.email);
+    
+    if (!isAdmin) {
+      // Verificar se o usuário é dono do restaurante (apenas para não-admins)
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: { restaurants: true }
+      });
 
-    if (!user || !user.restaurants || !user.restaurants.find((r: any) => r.id === restaurantId)) {
-      return NextResponse.json({ error: 'Não autorizado para este restaurante' }, { status: 403 });
+      if (!user || !user.restaurants || !user.restaurants.find((r: any) => r.id === restaurantId)) {
+        return NextResponse.json({ error: 'Não autorizado para este restaurante' }, { status: 403 });
+      }
     }
 
     // Verificar se já existe uma categoria com o mesmo nome
