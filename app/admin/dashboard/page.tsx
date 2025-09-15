@@ -358,6 +358,26 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [dynamicCategories, setDynamicCategories] = useState<any[]>([]);
+
+  // Carregar categorias dinamicamente da API
+  useEffect(() => {
+    async function loadCategories() {
+      if (!isOpen) return;
+      
+      try {
+        const res = await fetch("/api/categories");
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setDynamicCategories(data);
+        }
+      } catch (err) {
+        console.error("Erro carregando categorias:", err);
+        toast.error("Erro ao carregar categorias");
+      }
+    }
+    loadCategories();
+  }, [isOpen]);
 
   // Função para aplicar máscara de preço brasileiro
   const formatPrice = (value: string) => {
@@ -608,9 +628,9 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
               required
             >
               <option value="">Selecione uma categoria</option>
-              {categories.map((category) => (
+              {dynamicCategories.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {category.name}
+                  {category.icon} {category.name}
                 </option>
               ))}
             </select>
