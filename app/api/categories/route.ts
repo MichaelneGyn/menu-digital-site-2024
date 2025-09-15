@@ -75,21 +75,28 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('🔍 [CATEGORIES API] Tentando criar categoria no banco...');
-    console.log('🔍 [CATEGORIES API] Dados para criação:', { name, icon, restaurantId });
+    console.log('🔍 [CATEGORIES API] Dados para criação:', { name, icon, restaurant_id: restaurantId });
     
-    const category = await prisma.category.create({
-      data: {
+    const { data, error } = await supabaseClient
+      .from("categories")
+      .insert([{
         name,
         icon,
-        restaurantId
-      },
-      include: {
-        menuItems: true
-      }
-    });
+        restaurant_id: restaurantId
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Erro Supabase:", error); // 👈 log no Vercel
+      return NextResponse.json(
+        { error: error.message, details: error },
+        { status: 400 }
+      );
+    }
     
-    console.log('✅ [CATEGORIES API] Categoria criada com sucesso:', category.id);
-    return NextResponse.json(category, { status: 201 });
+    console.log('✅ [CATEGORIES API] Categoria criada com sucesso:', data.id);
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
     console.error('Erro ao criar categoria:', error);
     

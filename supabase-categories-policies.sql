@@ -17,6 +17,8 @@ alter table public.categories enable row level security;
 drop policy if exists "Users can manage categories of own restaurants" on public.categories;
 drop policy if exists "Admins can manage all categories" on public.categories;
 drop policy if exists "Public can view categories" on public.categories;
+drop policy if exists "Admins and owners can manage categories" on public.categories;
+drop policy if exists "Users and Admin can manage categories" on public.categories;
 
 -- Política para visualização pública de categorias
 create policy "Public can view categories"
@@ -24,11 +26,12 @@ on public.categories for select
 to public
 using (true);
 
--- Política principal: Admins podem fazer tudo + usuários podem gerenciar categorias de seus restaurantes
-create policy "Admins and owners can manage categories"
-on public.categories for all
+-- Política atualizada: Permite admin (por email) usar qualquer restaurant_id + donos gerenciarem seus restaurantes
+create policy "Users and Admin can manage categories"
+on public.categories
+for all
 using (
-  -- Admin tem acesso total
+  -- Admin tem acesso total (baseado no email)
   auth.jwt() ->> 'email' in (
     'michaeldouglasqueiroz@gmail.com',
     'admin@onpedido.com'
@@ -36,8 +39,7 @@ using (
   or
   -- Ou é dono do restaurante
   exists (
-    select 1
-    from public.restaurants r
+    select 1 from public.restaurants r
     where r.id = categories.restaurant_id
     and r.owner_id = auth.uid()
   )
@@ -51,8 +53,7 @@ with check (
   or
   -- Ou é dono do restaurante
   exists (
-    select 1
-    from public.restaurants r
+    select 1 from public.restaurants r
     where r.id = categories.restaurant_id
     and r.owner_id = auth.uid()
   )
