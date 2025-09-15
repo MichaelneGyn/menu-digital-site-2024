@@ -1,97 +1,118 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-
-// Rotas que requerem autenticação
-const protectedRoutes = ['/admin'];
-
-// Rotas que redirecionam usuários autenticados
-const authRoutes = ['/auth/login', '/auth/register'];
-
-// Rotas públicas que não precisam de verificação
-const publicRoutes = ['/', '/api/debug'];
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
-  
-  const {
-    data: { session },
-    error
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
 
-  const { pathname } = req.nextUrl;
-  
-  // Log para debug
-  console.log(`[Middleware] ${req.method} ${pathname} - Session: ${session ? 'Yes' : 'No'}`);
-  
-  // Se houver erro na sessão, limpar cookies e redirecionar para login
-  if (error) {
-    console.error('[Middleware] Session error:', error);
-    const response = NextResponse.redirect(new URL('/auth/login', req.url));
-    response.cookies.delete('supabase-auth-token');
-    return response;
+  // Rotas que não precisam de autenticação
+  const publicRoutes = ["/", "/auth/login", "/auth/register", "/assinatura"];
+  const isPublicRoute = publicRoutes.some((path) => req.nextUrl.pathname === path || req.nextUrl.pathname.startsWith("/api/auth"));
+
+  if (!session?.user && !isPublicRoute) {
+    // Não logado → redireciona para login
+    return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  // Verificar se é uma rota protegida
-  const isProtectedRoute = protectedRoutes.some(route => 
-    pathname.startsWith(route)
-  );
-  
-  // Verificar se é uma rota de autenticação
-  const isAuthRoute = authRoutes.some(route => 
-    pathname.startsWith(route)
-  );
-  
-  // Verificar se é uma rota pública
-  const isPublicRoute = publicRoutes.some(route => 
-    pathname === route || pathname.startsWith('/api/') || pathname.startsWith('/_next/')
-  );
-
-  // Se usuário não está autenticado e tenta acessar rota protegida
-  if (!session && isProtectedRoute) {
-    console.log('[Middleware] Redirecting to login - no session for protected route');
-    return NextResponse.redirect(new URL('/auth/login', req.url));
-  }
-
-  // Permitir acesso à página de login mesmo para usuários autenticados
-  // (necessário para demonstrações e vendas do serviço)
-  // Se usuário está autenticado e tenta acessar registro, redirecionar para admin
-  if (session && pathname.startsWith('/auth/register')) {
-    console.log('[Middleware] Redirecting to admin - authenticated user on register route');
-    return NextResponse.redirect(new URL('/admin/dashboard', req.url));
-  }
-
-  // Para rotas dinâmicas de restaurante [slug], permitir acesso público
-  if (pathname.match(/^\/[^/]+$/)) {
+  // Se não está logado, permite acesso às rotas públicas
+  if (!session?.user) {
     return res;
   }
 
-  // Adicionar headers de segurança
-  const response = NextResponse.next();
+  // Rotas que exigem plano pago (recursos premium)
+  const paidRoutes = [
+    "/admin/dashboard/comandas",
+    "/admin/dashboard/relatorios", 
+    "/admin/personalizar",
+    "/admin/analytics"
+  ];
   
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-  
-  // Cache control para rotas de API
-  if (pathname.startsWith('/api/')) {
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  // Rotas que funcionam com plano free mas têm limitações de tempo
+  const freeRoutes = [
+    "/admin/dashboard",
+    "/admin/cardapio",
+    "/admin/categorias",
+    "/admin/itens"
+  ];
+
+  const isPaidRoute = paidRoutes.some((path) => req.nextUrl.pathname.startsWith(path));
+  const isFreeRoute = freeRoutes.some((path) => req.nextUrl.pathname.startsWith(path));
+  const isAdminRoute = req.nextUrl.pathname.startsWith("/admin");
+
+  // Se é uma rota admin, verificar assinatura
+  if (isAdminRoute) {
+    // Admin bypass - emails de administradores têm acesso completo
+    const adminEmails = [
+      "michaeldouglasqueiroz@gmail.com", // Email do dono do site
+      "admin@onpedido.com",     // Email admin alternativo
+    ];
+    
+    const isAdmin = adminEmails.includes(session.user.email || "");
+    
+    if (isAdmin) {
+      // Admin tem acesso completo a todas as rotas
+      return res;
+    }
+
+    try {
+      const { data: subscription } = await supabase
+        .from("subscriptions")
+        .select("plan, end_date, status")
+        .eq("user_id", session.user.id)
+        .eq("status", "active")
+        .order("end_date", { ascending: false })
+        .limit(1)
+        .single();
+
+      const now = new Date();
+      const isExpired = !subscription || new Date(subscription.end_date) < now;
+
+      // Se não tem assinatura ou está expirada
+      if (!subscription || isExpired) {
+        // Redirecionar para página de assinatura
+        const subscriptionUrl = new URL("/assinatura", req.url);
+        subscriptionUrl.searchParams.set("reason", "expired");
+        subscriptionUrl.searchParams.set("redirect", req.nextUrl.pathname);
+        return NextResponse.redirect(subscriptionUrl);
+      }
+
+      // Se é rota paga mas usuário tem plano free
+      if (isPaidRoute && subscription.plan === "free") {
+        const subscriptionUrl = new URL("/assinatura", req.url);
+        subscriptionUrl.searchParams.set("reason", "upgrade_required");
+        subscriptionUrl.searchParams.set("redirect", req.nextUrl.pathname);
+        return NextResponse.redirect(subscriptionUrl);
+      }
+
+      // Se é rota free, permitir acesso independente do plano
+      if (isFreeRoute) {
+        return res;
+      }
+
+    } catch (error) {
+      console.error("Erro ao verificar assinatura:", error);
+      // Em caso de erro, redirecionar para página de assinatura
+      const subscriptionUrl = new URL("/assinatura", req.url);
+      subscriptionUrl.searchParams.set("reason", "error");
+      return NextResponse.redirect(subscriptionUrl);
+    }
   }
 
-  return response;
+  return res;
 }
 
 export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
+     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!api|_next/static|_next/image|favicon.ico|public).*)",
   ],
 };

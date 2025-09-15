@@ -116,7 +116,9 @@ export default function ComandasPage() {
       const response = await fetch('/api/restaurant');
       if (response.ok) {
         const data = await response.json();
-        setRestaurant(data);
+        // A API retorna um array, então pegamos o primeiro restaurante
+        const restaurantData = Array.isArray(data) ? data[0] : data;
+        setRestaurant(restaurantData);
       }
     } catch (error) {
       console.error('Erro ao buscar dados do restaurante:', error);

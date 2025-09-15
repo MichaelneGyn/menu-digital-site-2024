@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseClient } from '@/lib/auth';
+import { createServerSupabaseClient } from '@/lib/auth-server';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
@@ -35,7 +35,7 @@ async function handleCustomization(
 ) {
   try {
     // Criar cliente Supabase com contexto da requisição
-    const supabaseClient = createSupabaseClient();
+    const supabaseClient = createServerSupabaseClient();
     const { data: { session } } = await supabaseClient.auth.getSession();
     
     if (!session?.user?.email) {

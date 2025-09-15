@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { createSupabaseClient } from '@/lib/auth';
+import { createServerSupabaseClient } from '@/lib/auth-server';
 import { z } from 'zod';
 
 const createItemSchema = z.object({
@@ -34,7 +34,7 @@ const createItemSchema = z.object({
 export async function DELETE(request: NextRequest) {
   try {
     // Criar cliente Supabase com contexto da requisição
-    const supabaseClient = createSupabaseClient();
+    const supabaseClient = createServerSupabaseClient();
     const { data: { session } } = await supabaseClient.auth.getSession();
     
     if (!session?.user?.email) {
@@ -76,7 +76,7 @@ export async function DELETE(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabaseClient = createSupabaseClient();
+    const supabaseClient = createServerSupabaseClient();
     const { data: { session } } = await supabaseClient.auth.getSession();
     
     if (!session?.user?.email) {

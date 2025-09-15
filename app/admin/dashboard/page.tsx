@@ -55,14 +55,42 @@ interface ImportCatalogModalProps extends ModalProps {
 
 // Placeholder Modal Components
 function CreateRestaurantModal({ isOpen, onClose, onSuccess }: CreateRestaurantModalProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    slug: '',
-    phone: '',
-    address: '',
-    whatsapp: ''
+  const [formData, setFormData] = useState(() => {
+    // Recuperar dados do localStorage se existirem
+    if (typeof window !== 'undefined') {
+      const savedData = localStorage.getItem('createRestaurantForm');
+      if (savedData) {
+        try {
+          return JSON.parse(savedData);
+        } catch (e) {
+          console.error('Erro ao recuperar dados salvos:', e);
+        }
+      }
+    }
+    return {
+      name: '',
+      slug: '',
+      phone: '',
+      address: '',
+      whatsapp: ''
+    };
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+
+  // Salvar dados no localStorage sempre que formData mudar
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('createRestaurantForm', JSON.stringify(formData));
+    }
+  }, [formData]);
+
+  // Limpar localStorage quando modal fechar com sucesso
+  const clearSavedData = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('createRestaurantForm');
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -149,22 +177,33 @@ function CreateRestaurantModal({ isOpen, onClose, onSuccess }: CreateRestaurantM
     console.log('formData atual:', formData);
     
     // Validação manual dos campos obrigatórios
+    const newErrors: {[key: string]: string} = {};
+    
     if (!formData.name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
+      newErrors.name = 'Nome é obrigatório';
+    }
+    if (!formData.slug.trim()) {
+      newErrors.slug = 'URL é obrigatória';
     }
     if (!formData.address.trim()) {
-      toast.error('Endereço é obrigatório');
-      return;
+      newErrors.address = 'Endereço é obrigatório';
     }
     if (!formData.phone.trim()) {
-      toast.error('Telefone é obrigatório');
+      newErrors.phone = 'Telefone é obrigatório';
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error('Por favor, preencha todos os campos obrigatórios');
       return;
     }
+    
+    setErrors({});
     
     setIsSubmitting(true);
 
     try {
+      console.log('Enviando requisição para /api/restaurant');
       const response = await fetch('/api/restaurant', {
         method: 'POST',
         headers: {
@@ -173,16 +212,32 @@ function CreateRestaurantModal({ isOpen, onClose, onSuccess }: CreateRestaurantM
         body: JSON.stringify(formData),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
       if (response.ok) {
         const restaurant = await response.json();
+        console.log('Restaurante criado:', restaurant);
         toast.success('Restaurante criado com sucesso!');
+        clearSavedData(); // Limpar dados salvos
         onSuccess(restaurant);
         onClose();
       } else {
-        toast.error('Erro ao criar restaurante');
+        // Tentar obter mensagem de erro específica da API
+        let errorMessage = 'Erro ao criar restaurante';
+        try {
+          const errorData = await response.json();
+          console.error('Erro da API:', errorData);
+          errorMessage = errorData.error || errorMessage;
+        } catch (parseError) {
+          console.error('Erro ao parsear resposta de erro:', parseError);
+          errorMessage = `Erro ${response.status}: ${response.statusText}`;
+        }
+        toast.error(errorMessage);
       }
     } catch (error) {
-      toast.error('Erro ao criar restaurante');
+      console.error('Erro na requisição:', error);
+      toast.error(`Erro de conexão: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -202,28 +257,54 @@ function CreateRestaurantModal({ isOpen, onClose, onSuccess }: CreateRestaurantM
               value={formData.name}
               onChange={(e) => {
                 const name = e.target.value;
-                const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+                const slug = name
+                  .toLowerCase()
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+                  .replace(/[^a-z0-9\s-]/g, '') // Remove caracteres especiais
+                  .trim()
+                  .replace(/\s+/g, '-') // Substitui espaços por hífens
+                  .replace(/-+/g, '-'); // Remove hífens duplicados
                 setFormData({ ...formData, name, slug });
+                if (errors.name) {
+                  setErrors({ ...errors, name: '' });
+                }
               }}
+              className={errors.name ? 'border-red-500' : ''}
               required
             />
+            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
           </div>
           <div>
             <Label htmlFor="slug">URL (Slug)</Label>
             <Input
               id="slug"
               value={formData.slug}
-              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, slug: e.target.value });
+                if (errors.slug) {
+                  setErrors({ ...errors, slug: '' });
+                }
+              }}
+              className={errors.slug ? 'border-red-500' : ''}
               required
             />
+            {errors.slug && <p className="text-red-500 text-sm mt-1">{errors.slug}</p>}
           </div>
           <div>
             <Label htmlFor="phone">Telefone</Label>
             <Input
               id="phone"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, phone: e.target.value });
+                if (errors.phone) {
+                  setErrors({ ...errors, phone: '' });
+                }
+              }}
+              className={errors.phone ? 'border-red-500' : ''}
             />
+            {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
           </div>
           <div>
             <Label htmlFor="whatsapp">WhatsApp</Label>
@@ -238,8 +319,15 @@ function CreateRestaurantModal({ isOpen, onClose, onSuccess }: CreateRestaurantM
             <Input
               id="address"
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, address: e.target.value });
+                if (errors.address) {
+                  setErrors({ ...errors, address: '' });
+                }
+              }}
+              className={errors.address ? 'border-red-500' : ''}
             />
+            {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
           </div>
           <div className="flex gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
@@ -603,7 +691,9 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
         onClose();
         setFormData({ name: '', icon: '🍽️' });
       } else {
-        toast.error('Erro ao adicionar categoria');
+        const errorData = await response.json();
+        const errorMessage = errorData.error || 'Erro ao adicionar categoria';
+        toast.error(errorMessage);
       }
     } catch (error) {
       toast.error('Erro ao adicionar categoria');
@@ -612,12 +702,25 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
     }
   };
 
-  const commonIcons = ['🍽️', '🍕', '🍔', '🍟', '🥗', '🍖', '🍗', '🥤', '🍰', '🍦', '☕', '🍺'];
+  const commonIcons = ['🍽️', '🍕', '🍔', '🍟', '🥗', '🍖', '🍗', '🥤', '🍰', '🍦', '☕', '🍺', '🏷️', '💥', '🔥', '⭐'];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
         <h2 className="text-xl font-bold mb-4 dark:text-white">Adicionar Nova Categoria</h2>
+        
+        {/* Categoria Promoção Pré-definida */}
+        <div className="mb-4 p-3 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg">
+          <h3 className="font-semibold text-red-800 mb-2">🏷️ Categoria Especial</h3>
+          <Button
+            type="button"
+            onClick={() => setFormData({ name: 'Promoções', icon: '🏷️' })}
+            className="w-full bg-red-600 hover:bg-red-700 text-white"
+          >
+            🏷️ Criar Categoria "Promoções"
+          </Button>
+        </div>
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="name">Nome da Categoria</Label>
@@ -666,13 +769,317 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
 }
 
 function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRestaurantModalProps) {
+  const [formData, setFormData] = useState(() => {
+    // Recuperar dados do localStorage se existirem
+    if (typeof window !== 'undefined' && restaurant?.id) {
+      const savedData = localStorage.getItem(`editRestaurantForm_${restaurant.id}`);
+      if (savedData) {
+        try {
+          return JSON.parse(savedData);
+        } catch (e) {
+          console.error('Erro ao recuperar dados salvos:', e);
+        }
+      }
+    }
+    return {
+      name: restaurant?.name || '',
+      slug: restaurant?.slug || '',
+      phone: restaurant?.phone || '',
+      whatsapp: restaurant?.whatsapp || '',
+      address: restaurant?.address || '',
+      description: restaurant?.description || '',
+      deliveryFee: restaurant?.deliveryFee || 0,
+      minOrderValue: restaurant?.minOrderValue || 0,
+      openTime: restaurant?.openTime || '',
+      closeTime: restaurant?.closeTime || '',
+      workingDays: restaurant?.workingDays || '',
+      facebook: restaurant?.facebook || '',
+      instagram: restaurant?.instagram || '',
+      twitter: restaurant?.twitter || ''
+    };
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Salvar dados no localStorage sempre que formData mudar
+  useEffect(() => {
+    if (typeof window !== 'undefined' && restaurant?.id && isOpen) {
+      localStorage.setItem(`editRestaurantForm_${restaurant.id}`, JSON.stringify(formData));
+    }
+  }, [formData, restaurant?.id, isOpen]);
+
+  useEffect(() => {
+    if (restaurant) {
+      // Verificar se há dados salvos no localStorage
+      if (typeof window !== 'undefined') {
+        const savedData = localStorage.getItem(`editRestaurantForm_${restaurant.id}`);
+        if (savedData) {
+          try {
+            const parsedData = JSON.parse(savedData);
+            setFormData(parsedData);
+            return;
+          } catch (e) {
+            console.error('Erro ao recuperar dados salvos:', e);
+          }
+        }
+      }
+      
+      // Se não há dados salvos, usar dados do restaurant
+      setFormData({
+        name: restaurant.name || '',
+        slug: restaurant.slug || '',
+        phone: restaurant.phone || '',
+        whatsapp: restaurant.whatsapp || '',
+        address: restaurant.address || '',
+        description: restaurant.description || '',
+        deliveryFee: restaurant.deliveryFee || 0,
+        minOrderValue: restaurant.minOrderValue || 0,
+        openTime: restaurant.openTime || '',
+        closeTime: restaurant.closeTime || '',
+        workingDays: restaurant.workingDays || '',
+        facebook: restaurant.facebook || '',
+        instagram: restaurant.instagram || '',
+        twitter: restaurant.twitter || ''
+      });
+    }
+  }, [restaurant]);
+
+  // Limpar localStorage quando modal fechar com sucesso
+  const clearSavedData = () => {
+    if (typeof window !== 'undefined' && restaurant?.id) {
+      localStorage.removeItem(`editRestaurantForm_${restaurant.id}`);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`/api/restaurant/${restaurant?.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar restaurante');
+      }
+
+      clearSavedData(); // Limpar dados salvos após sucesso
+      onSuccess();
+      onClose();
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Erro ao atualizar informações do restaurante');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg">
-        <h2>Editar Restaurante</h2>
-        <p>Modal em desenvolvimento...</p>
-        <Button onClick={onClose}>Fechar</Button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <h2 className="text-xl font-bold mb-4 dark:text-white">Editar Informações do Restaurante</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="edit-name">Nome do Restaurante *</Label>
+              <Input
+                id="edit-name"
+                value={formData.name}
+                onChange={(e) => {
+                  const name = e.target.value;
+                  const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+                  setFormData({ ...formData, name, slug });
+                }}
+                required
+                placeholder="Nome do seu restaurante"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-slug">URL (Slug) *</Label>
+              <Input
+                id="edit-slug"
+                value={formData.slug}
+                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                required
+                placeholder="url-do-restaurante"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="edit-description">Descrição</Label>
+            <textarea
+              id="edit-description"
+              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              rows={3}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Descreva seu restaurante..."
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="edit-address">Endereço Completo</Label>
+            <Input
+              id="edit-address"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              placeholder="Rua, número, bairro, cidade - CEP"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="edit-phone">Telefone</Label>
+              <Input
+                id="edit-phone"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="(11) 3333-4444"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-whatsapp">WhatsApp</Label>
+              <Input
+                id="edit-whatsapp"
+                value={formData.whatsapp}
+                onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                placeholder="(11) 99999-8888"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="edit-deliveryFee">Taxa de Entrega (R$)</Label>
+              <Input
+                id="edit-deliveryFee"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.deliveryFee}
+                onChange={(e) => setFormData({ ...formData, deliveryFee: parseFloat(e.target.value) || 0 })}
+                placeholder="5.00"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-minOrderValue">Pedido Mínimo (R$)</Label>
+              <Input
+                id="edit-minOrderValue"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.minOrderValue}
+                onChange={(e) => setFormData({ ...formData, minOrderValue: parseFloat(e.target.value) || 0 })}
+                placeholder="20.00"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-workingDays">Dias de Funcionamento</Label>
+              <Input
+                id="edit-workingDays"
+                value={formData.workingDays}
+                onChange={(e) => setFormData({ ...formData, workingDays: e.target.value })}
+                placeholder="Segunda a Domingo"
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-openTime">Horário de Abertura</Label>
+                <Input
+                  id="edit-openTime"
+                  type="time"
+                  value={formData.openTime}
+                  onChange={(e) => setFormData({ ...formData, openTime: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-closeTime">Horário de Fechamento</Label>
+                <Input
+                  id="edit-closeTime"
+                  type="time"
+                  value={formData.closeTime}
+                  onChange={(e) => setFormData({ ...formData, closeTime: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <h3 className="text-lg font-semibold mb-3 dark:text-white">Redes Sociais</h3>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="edit-facebook">Facebook</Label>
+                <Input
+                  id="edit-facebook"
+                  value={formData.facebook}
+                  onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
+                  placeholder="https://facebook.com/seurestaurante"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-instagram">Instagram</Label>
+                <Input
+                  id="edit-instagram"
+                  value={formData.instagram}
+                  onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                  placeholder="https://instagram.com/seurestaurante"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-twitter">Twitter</Label>
+                <Input
+                  id="edit-twitter"
+                  value={formData.twitter}
+                  onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
+                  placeholder="https://twitter.com/seurestaurante"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                // Opção: limpar dados salvos ao cancelar
+                // clearSavedData();
+                onClose();
+              }}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                // Salvar como rascunho (dados já são salvos automaticamente)
+                alert('Rascunho salvo! Você pode continuar editando depois.');
+              }}
+              className="flex-1"
+            >
+              Salvar Rascunho
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1"
+            >
+              {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -1609,7 +2016,17 @@ interface Restaurant {
   name: string;
   slug: string;
   phone?: string;
+  whatsapp?: string;
   address?: string;
+  description?: string;
+  deliveryFee?: number;
+  minOrderValue?: number;
+  openTime?: string;
+  closeTime?: string;
+  workingDays?: string;
+  facebook?: string;
+  instagram?: string;
+  twitter?: string;
   categories?: Category[];
   menuItems?: MenuItem[];
   primaryColor?: string;
@@ -1726,8 +2143,10 @@ export default function AdminDashboard() {
       const response = await fetch('/api/restaurant');
       if (response.ok) {
         const data = await response.json();
-        setRestaurant(data);
-        calculateStats(data);
+        // A API retorna um array, então pegamos o primeiro restaurante
+        const restaurantData = Array.isArray(data) ? data[0] : data;
+        setRestaurant(restaurantData);
+        calculateStats(restaurantData);
       }
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
@@ -1997,6 +2416,27 @@ export default function AdminDashboard() {
                   
                   <Button 
                     variant="outline" 
+                    className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float bg-gradient-to-r from-red-50 to-orange-50 border-red-200 hover:from-red-100 hover:to-orange-100"
+                    onClick={() => {
+                      // Filtrar para mostrar apenas itens em promoção
+                      setSelectedCategoryFilter('all');
+                      setSearchTerm('');
+                      // Scroll para a seção de gerenciamento
+                      setTimeout(() => {
+                        const element = document.querySelector('[data-section="category-management"]');
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }, 100);
+                    }}
+                    disabled={!restaurant}
+                  >
+                    <span className="text-2xl">🏷️</span>
+                    <span>Promoções</span>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
                     className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float"
                     onClick={() => setShowReportsModal(true)}
                     disabled={!restaurant}
@@ -2015,6 +2455,41 @@ export default function AdminDashboard() {
                       <span>Comandas</span>
                     </Button>
                   </Link>
+                  
+                  {/* Botões de administração - apenas para michaeldouglasqueiroz@gmail.com */}
+                  {user?.email === "michaeldouglasqueiroz@gmail.com" && (
+                    <>
+                      <Link href="/admin/dashboard/usuarios">
+                        <Button 
+                          variant="outline" 
+                          className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float w-full bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 hover:from-purple-100 hover:to-pink-100"
+                        >
+                          <span className="text-2xl">👥</span>
+                          <span>Usuários</span>
+                        </Button>
+                      </Link>
+                      
+                      <Link href="/admin/dashboard/assinaturas">
+                        <Button 
+                          variant="outline" 
+                          className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float w-full bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-200 hover:from-indigo-100 hover:to-blue-100"
+                        >
+                          <span className="text-2xl">💳</span>
+                          <span>Assinaturas</span>
+                        </Button>
+                      </Link>
+                      
+                      <Link href="/admin/dashboard/logs">
+                        <Button 
+                          variant="outline" 
+                          className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float w-full bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200 hover:from-gray-100 hover:to-slate-100"
+                        >
+                          <span className="text-2xl">📋</span>
+                          <span>Logs</span>
+                        </Button>
+                      </Link>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -2070,7 +2545,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Gerenciamento de Itens por Categoria */}
-        <Card className="mt-6">
+        <Card className="mt-6" data-section="category-management">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Gerenciar Cardápio por Categoria</CardTitle>
             <div className="flex gap-2">

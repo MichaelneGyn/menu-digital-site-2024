@@ -1,7 +1,7 @@
 
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseClient } from '@/lib/auth';
+import { createServerSupabaseClient } from '@/lib/auth-server';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
@@ -13,7 +13,7 @@ const createCategorySchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const supabaseClient = createSupabaseClient();
+    const supabaseClient = createServerSupabaseClient();
     const { data: { session } } = await supabaseClient.auth.getSession();
     
     if (!session?.user?.email) {
@@ -31,6 +31,21 @@ export async function POST(request: NextRequest) {
 
     if (!user || !user.restaurants || !user.restaurants.find((r: any) => r.id === restaurantId)) {
       return NextResponse.json({ error: 'Não autorizado para este restaurante' }, { status: 403 });
+    }
+
+    // Verificar se já existe uma categoria com o mesmo nome
+    const existingCategory = await prisma.category.findFirst({
+      where: {
+        name,
+        restaurantId
+      }
+    });
+
+    if (existingCategory) {
+      return NextResponse.json(
+        { error: `Já existe uma categoria com o nome "${name}" neste restaurante` },
+        { status: 409 }
+      );
     }
 
     const category = await prisma.category.create({
@@ -52,6 +67,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: error.errors[0]?.message || 'Dados inválidos' },
         { status: 400 }
+      );
+    }
+
+    // Verificar se é erro de constraint única do Prisma
+    if (error instanceof Error && error.message.includes('Unique constraint')) {
+      return NextResponse.json(
+        { error: 'Já existe uma categoria com este nome neste restaurante' },
+        { status: 409 }
       );
     }
 

@@ -1,179 +1,103 @@
 
 
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { createSupabaseClient } from '@/lib/auth';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 import { z } from 'zod';
 
 const createRestaurantSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
+  slug: z.string().min(1, 'Slug é obrigatório'),
   phone: z.string().optional(),
+  whatsapp: z.string().optional(),
   address: z.string().optional(),
+  description: z.string().optional(),
+  deliveryFee: z.number().optional(),
+  minOrderValue: z.number().optional(),
+  openTime: z.string().optional(),
+  closeTime: z.string().optional(),
+  workingDays: z.string().optional(),
+  facebook: z.string().optional(),
+  instagram: z.string().optional(),
+  twitter: z.string().optional(),
 });
 
+
+
+
 export async function GET() {
-  try {
-    // Criar cliente Supabase com contexto da requisição
-    const supabaseClient = createSupabaseClient();
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-    }
+  const supabase = createRouteHandlerClient({ cookies });
+  const { data: { user } } = await supabase.auth.getUser();
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: {
-        restaurants: {
-          include: {
-            categories: {
-              include: {
-                menuItems: true
-              }
-            },
-            menuItems: {
-              include: {
-                category: true
-              }
-            }
-          }
-        }
-      }
-    });
-
-    if (!user || !user.restaurants || user.restaurants.length === 0) {
-      return NextResponse.json(null);
-    }
-
-    // Return the first (should be only) restaurant
-    return NextResponse.json(user.restaurants[0]);
-  } catch (error) {
-    console.error('Erro ao buscar restaurante:', error);
-    return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
+  if (!user) {
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
+
+  const { data, error } = await supabase
+    .from('restaurants')
+    .select('*')
+    .eq('owner_id', user.id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json(data);
 }
 
-export async function PUT(request: NextRequest) {
-  try {
-    const supabaseClient = createSupabaseClient();
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-    }
 
-    const body = await request.json();
-    const { id, ...updateData } = body;
 
-    if (!id) {
-      return NextResponse.json({ error: 'ID do restaurante é obrigatório' }, { status: 400 });
-    }
+export async function POST(req: NextRequest) {
+  const supabase = createRouteHandlerClient({ cookies });
+  const { data: { user } } = await supabase.auth.getUser();
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: { restaurants: true }
-    });
-
-    if (!user || !user.restaurants?.find((r: any) => r.id === id)) {
-      return NextResponse.json({ error: 'Não autorizado para este restaurante' }, { status: 403 });
-    }
-
-    const updatedRestaurant = await prisma.restaurant.update({
-      where: { id },
-      data: updateData,
-      include: {
-        categories: {
-          include: {
-            menuItems: true
-          }
-        },
-        menuItems: {
-          include: {
-            category: true
-          }
-        }
-      }
-    });
-
-    return NextResponse.json(updatedRestaurant);
-  } catch (error) {
-    console.error('Erro ao atualizar restaurante:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+  if (!user) {
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
-}
 
-export async function POST(request: NextRequest) {
   try {
-    const supabaseClient = createSupabaseClient();
-    const { data: { session } } = await supabaseClient.auth.getSession();
+    const body = await req.json();
+    console.log('Dados recebidos para criação do restaurante:', body);
     
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const { name, phone, address } = createRestaurantSchema.parse(body);
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
-    }
-
-    // Verificar se já tem restaurante
-    const existingRestaurant = await prisma.restaurant.findFirst({
-      where: { userId: user.id }
-    });
-
+    // Validar dados com Zod
+    const validatedData = createRestaurantSchema.parse(body);
+    
+    // Verificar se o slug já existe
+    const { data: existingRestaurant } = await supabase
+      .from('restaurants')
+      .select('id')
+      .eq('slug', validatedData.slug)
+      .single();
+    
     if (existingRestaurant) {
-      return NextResponse.json({ error: 'Usuário já possui um restaurante' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Esta URL já está sendo usada por outro restaurante' },
+        { status: 400 }
+      );
     }
-
-    // Create slug from restaurant name
-    const slug = name
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove accents
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-      .trim()
-      .replace(/\s+/g, '-'); // Replace spaces with hyphens
-
-    // Ensure unique slug
-    let finalSlug = slug;
-    let counter = 1;
-    while (await prisma.restaurant.findUnique({ where: { slug: finalSlug } })) {
-      finalSlug = `${slug}-${counter}`;
-      counter++;
+    
+    // Criar o restaurante no banco de dados
+    const { data, error } = await supabase
+      .from('restaurants')
+      .insert([{
+        name: validatedData.name,
+        slug: validatedData.slug,
+        phone: validatedData.phone,
+        whatsapp: validatedData.whatsapp,
+        address: validatedData.address,
+        owner_id: user.id
+      }])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Erro do Supabase:', error);
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
-
-    const restaurant = await prisma.restaurant.create({
-      data: {
-        name,
-        slug: finalSlug,
-        phone,
-        address,
-        userId: user.id,
-      },
-      include: {
-        categories: {
-          include: {
-            menuItems: true
-          }
-        },
-        menuItems: {
-          include: {
-            category: true
-          }
-        }
-      }
-    });
-
-    return NextResponse.json(restaurant, { status: 201 });
+    
+    console.log('Restaurante criado com sucesso:', data);
+    return NextResponse.json(data, { status: 201 });
+    
   } catch (error) {
     console.error('Erro ao criar restaurante:', error);
     
@@ -183,7 +107,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
+    
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }

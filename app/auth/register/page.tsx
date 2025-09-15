@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { signUp } from '@/lib/auth';
+import { getDeviceFingerprintForSignup } from '@/lib/fingerprint';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -39,19 +39,43 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const { user, session } = await signUp({
-        email: formData.email,
-        password: formData.password,
-        name: formData.name,
+      // Gerar fingerprint do dispositivo para controle anti-burla
+      const deviceFingerprint = await getDeviceFingerprintForSignup();
+      
+      // Usar a nova API de signup que cria assinatura automaticamente
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          restaurantName: formData.restaurantName,
+          phone: formData.phone,
+          fingerprint: deviceFingerprint.fingerprint,
+          userAgent: deviceFingerprint.userAgent,
+          ipAddress: deviceFingerprint.ipAddress,
+        }),
       });
 
-      if (user) {
-        toast.success('Conta criada com sucesso! Verifique seu email para confirmar a conta.');
-        router.push('/auth/login');
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success(result.message || 'Conta criada com sucesso!');
+        // Redirecionar para login ou dashboard dependendo se precisa confirmar email
+        if (result.session) {
+          router.push('/admin/dashboard');
+        } else {
+          router.push('/auth/login');
+        }
+      } else {
+        toast.error(result.error || 'Erro ao criar conta');
       }
     } catch (error: any) {
       console.error('Erro no registro:', error);
-      toast.error(error.message || 'Erro ao criar conta');
+      toast.error('Erro ao criar conta. Tente novamente.');
     } finally {
       setIsLoading(false);
     }

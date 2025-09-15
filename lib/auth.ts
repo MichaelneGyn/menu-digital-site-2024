@@ -1,7 +1,7 @@
 
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
-// Função para criar cliente Supabase
+// Função para criar cliente Supabase no cliente
 export function createSupabaseClient() {
   return createClientComponentClient();
 }
