@@ -678,7 +678,7 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
     
     const requestData = {
       ...formData,
-      restaurantId
+      restaurant_id: restaurantId
     };
     
     console.log('🔍 [FRONTEND] Dados que serão enviados:', requestData);
