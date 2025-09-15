@@ -2135,6 +2135,7 @@ export default function AdminDashboard() {
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
 
   const [orders, setOrders] = useState<Order[]>([]);
+  const [items, setItems] = useState<any[]>([]);
 
   useEffect(() => {
     // Aguarda o carregamento completo da autenticação
@@ -2155,6 +2156,7 @@ export default function AdminDashboard() {
     console.log('Usuário autenticado, carregando dados do dashboard...');
     fetchRestaurantData();
     fetchOrders();
+    fetchItems();
   }, [session, loading, user, router]);
 
   // Apply theme when restaurant theme changes
@@ -2204,6 +2206,18 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Erro ao buscar pedidos:', error);
+    }
+  };
+
+  const fetchItems = async () => {
+    try {
+      const response = await fetch('/api/items');
+      if (response.ok) {
+        const data = await response.json();
+        setItems(data);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar itens:', error);
     }
   };
 
@@ -2651,183 +2665,79 @@ export default function AdminDashboard() {
               </div>
             )}
             
-            {restaurant?.categories && restaurant.categories.length > 0 ? (
+            {/* Mostrar itens cadastrados */}
+            {items.length > 0 ? (
               <div className="space-y-6">
-                 {restaurant.categories
-                   .filter(category => {
-                     // Filtrar por categoria selecionada
-                     if (selectedCategoryFilter !== 'all' && category.id !== selectedCategoryFilter) {
-                       return false;
-                     }
-                     
-                     // Se há busca por texto, verificar se a categoria tem itens que correspondem
-                     if (searchTerm) {
-                       const categoryItems = restaurant.menuItems?.filter(item => 
-                         item.category.id === category.id &&
-                         (item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          item.description.toLowerCase().includes(searchTerm.toLowerCase()))
-                       ) || [];
-                       return categoryItems.length > 0 || category.name.toLowerCase().includes(searchTerm.toLowerCase());
-                     }
-                     
-                     return true;
-                   })
-                   .map((category) => {
-const allCategoryItems = restaurant.menuItems?.filter(item => item.category.id === category.id) || [];
-                   
-                   // Filtrar itens por termo de busca
-                   const categoryItems = searchTerm 
-                     ? allCategoryItems.filter(item => 
-                         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase())
-                       )
-                     : allCategoryItems;
-                  
-                  return (
-                    <div key={category.id} className="border rounded-lg p-4">
-                       <div className="flex items-center justify-between mb-4">
-                         <div className="flex items-center gap-3">
-                           {categoryItems.length > 0 && (
-                             <input
-                               type="checkbox"
-                               checked={categoryItems.every(item => selectedItems.includes(item.id))}
-                               onChange={() => handleSelectAllInCategory(categoryItems)}
-                               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                               title="Selecionar todos os itens desta categoria"
-                             />
-                           )}
-                           <h3 className="text-lg font-semibold text-gray-800">{category.name}</h3>
-                           <Badge variant="outline" className="text-xs">
-                             {categoryItems.length} {categoryItems.length === 1 ? 'item' : 'itens'}
-                           </Badge>
-                           {categoryItems.length > 0 && selectedItems.some(id => categoryItems.map(item => item.id).includes(id)) && (
-                             <Badge variant="secondary" className="text-xs">
-                               {selectedItems.filter(id => categoryItems.map(item => item.id).includes(id)).length} selecionados
-                             </Badge>
-                           )}
-                         </div>
-                         <Button 
-                           variant="ghost" 
-                           size="sm"
-                           onClick={() => {
-const [formData, setFormData] = useState({
-  name: '',
-  description: '', 
-  price: '',
-  categoryId: category.id,
-  image: ''
-});
-                             setShowAddItemModal(true);
-                           }}
-                           className="text-blue-600 hover:text-blue-800"
-                         >
-                           + Adicionar item nesta categoria
-                         </Button>
-                       </div>
-                      
-                      {categoryItems.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {categoryItems.map((item) => (
-                             <div key={item.id} className={`border rounded-lg p-3 hover:shadow-md transition-shadow relative bg-white ${
-                               selectedItems.includes(item.id) ? 'ring-2 ring-blue-500 bg-blue-50' : ''
-                             }`}>
-                               <div className="absolute top-2 left-2 z-10">
-                                 <input
-                                   type="checkbox"
-                                   checked={selectedItems.includes(item.id)}
-                                   onChange={() => handleSelectItem(item.id)}
-                                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                                   title="Selecionar item"
-                                 />
-                               </div>
-                               <button
-                                 onClick={() => handleDeleteItem(item.id)}
-                                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 z-10 transition-colors"
-                                 title="Remover item"
-                               >
-                                 ✕
-                               </button>
-                              <img 
-                                src={
-                                  item.image?.startsWith('/') 
-                                    ? item.image 
-                                    : item.image?.startsWith('http') 
-                                      ? item.image 
-                                      : item.image
-                                        ? `/api/image?key=${encodeURIComponent(item.image)}`
-                                        : 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'
-                                } 
-                                alt={item.name}
-                                className="w-full h-24 object-cover rounded-md mb-2"
-                              />
-                              <h4 className="font-medium text-sm mb-1">{item.name}</h4>
-                              <p className="text-xs text-gray-600 mb-2 line-clamp-2">{item.description}</p>
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm font-bold text-red-600">
-                                  R$ {Number(item.price).toFixed(2)}
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Itens Cadastrados</h3>
+                {items
+                  .filter(item => {
+                    // Filtrar por categoria selecionada
+                    if (selectedCategoryFilter !== 'all' && item.category?.id !== selectedCategoryFilter) {
+                      return false;
+                    }
+                    
+                    // Filtrar por termo de busca
+                    if (searchTerm) {
+                      return item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             item.description?.toLowerCase().includes(searchTerm.toLowerCase());
+                    }
+                    
+                    return true;
+                  })
+                  .map((item) => (
+                    <div key={item.id} className="border rounded-lg p-4 bg-white shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.includes(item.id)}
+                            onChange={() => handleSelectItem(item.id)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{item.name}</h4>
+                            <p className="text-sm text-gray-600">{item.description}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="text-xs">
+                                {item.category?.icon} {item.category?.name}
+                              </Badge>
+                              <span className="text-sm font-medium text-green-600">
+                                R$ {item.price?.toFixed(2)}
+                              </span>
+                              {item.is_promo && item.promo_price && (
+                                <span className="text-sm font-medium text-red-600">
+                                  Promoção: R$ {item.promo_price?.toFixed(2)}
                                 </span>
-                                {item.isPromo && (
-                                  <Badge variant="secondary" className="text-xs">Promoção</Badge>
-                                )}
-                              </div>
+                              )}
                             </div>
-                          ))}
+                          </div>
                         </div>
-                      ) : (
-                        <div className="text-center py-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                          <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">Nenhum item nesta categoria</p>
-                          <Button 
-                            variant="outline" 
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
                             size="sm"
-                            onClick={() => {
-const [formData, setFormData] = useState({ categoryId: category.id });
-                              setShowAddItemModal(true);
-                            }}
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="text-red-600 hover:text-red-700"
                           >
-                            Adicionar primeiro item
+                            🗑️
                           </Button>
                         </div>
-                      )}
+                      </div>
                     </div>
-                  );
-                })}
-                
-                {/* Mensagem quando nenhum resultado é encontrado */}
-                {(searchTerm || selectedCategoryFilter !== 'all') && 
-                 restaurant.categories
-                   .filter(category => {
-                     if (selectedCategoryFilter !== 'all' && category.id !== selectedCategoryFilter) {
-                       return false;
-                     }
-                     if (searchTerm) {
-                       const categoryItems = restaurant.menuItems?.filter(item => 
-                         item.category.id === category.id &&
-                         (item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          item.description.toLowerCase().includes(searchTerm.toLowerCase()))
-                       ) || [];
-                       return categoryItems.length > 0 || category.name.toLowerCase().includes(searchTerm.toLowerCase());
-                     }
-                     return true;
-                   }).length === 0 && (
-                  <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <p className="text-gray-500 dark:text-gray-400 mb-2">🔍 Nenhum resultado encontrado</p>
-                    <p className="text-sm text-gray-400 dark:text-gray-500 mb-4">
-                      {searchTerm && `Nenhum item encontrado para "${searchTerm}"`}
-                      {searchTerm && selectedCategoryFilter !== 'all' && ' na categoria selecionada'}
-                      {!searchTerm && selectedCategoryFilter !== 'all' && 'A categoria selecionada não possui itens'}
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSearchTerm('');
-                        setSelectedCategoryFilter('all');
-                      }}
-                    >
-                      🗑️ Limpar filtros
-                    </Button>
-                  </div>
-                )}
+                  ))}
+              </div>
+            ) : restaurant?.categories && restaurant.categories.length > 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">Nenhum item cadastrado ainda</p>
+                <p className="text-sm text-gray-400 mb-4">Adicione itens ao seu cardápio para começar</p>
+                <Button 
+                  className="animated-button"
+                  onClick={() => setShowAddItemModal(true)}
+                  disabled={!restaurant}
+                >
+                  <span className="mr-2">➕</span>
+                  Adicionar Primeiro Item
+                </Button>
               </div>
             ) : (
               <div className="text-center py-8">
@@ -2872,6 +2782,7 @@ const [formData, setFormData] = useState({ categoryId: category.id });
             setShowAddItemModal(false);
             toast.success('🍕 Item adicionado com sucesso!');
             fetchRestaurantData();
+            fetchItems();
           }}
         />
       )}
