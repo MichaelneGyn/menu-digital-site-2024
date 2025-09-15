@@ -23,54 +23,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Acesso negado - Admin apenas' }, { status: 403 });
     }
     
-    // Buscar todos os usuários com suas assinaturas
+    // Buscar dados da VIEW administrativa simplificada
     const { data: users, error: usersError } = await supabase
-      .from('profiles')
-      .select(`
-        id,
-        email,
-        full_name,
-        created_at,
-        subscriptions (
-          id,
-          plan,
-          status,
-          start_date,
-          end_date,
-          created_at
-        )
-      `)
-      .order('created_at', { ascending: false });
+      .from('vw_admin_users')
+      .select('*')
+      .order('signup_date', { ascending: false });
     
     if (usersError) {
       console.error('Erro ao buscar usuários:', usersError);
       return NextResponse.json({ error: 'Erro ao buscar usuários' }, { status: 500 });
     }
     
-    // Processar dados para incluir informações de assinatura atual
-    const processedUsers = users?.map(user => {
-      const activeSubscription = user.subscriptions?.find((sub: any) => sub.status === 'active');
-      const now = new Date();
-      const isExpired = activeSubscription ? new Date(activeSubscription.end_date) < now : true;
-      
-      return {
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name,
-        created_at: user.created_at,
-        subscription: activeSubscription ? {
-          id: activeSubscription.id,
-          plan: activeSubscription.plan,
-          status: isExpired ? 'expired' : activeSubscription.status,
-          start_date: activeSubscription.start_date,
-          end_date: activeSubscription.end_date,
-          days_remaining: isExpired ? 0 : Math.ceil((new Date(activeSubscription.end_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-        } : null,
-        total_subscriptions: user.subscriptions?.length || 0
-      };
-    }) || [];
+    // Calcular estatísticas
+    const stats = {
+      total_users: users?.length || 0,
+      users_with_subscription: users?.filter(u => u.status_assinatura !== 'sem_assinatura').length || 0,
+      active_subscriptions: users?.filter(u => u.status_assinatura === 'ativa').length || 0,
+      trial_subscriptions: users?.filter(u => u.status_assinatura === 'trial').length || 0,
+      expired_subscriptions: users?.filter(u => u.status_assinatura === 'expirada').length || 0
+    };
     
-    return NextResponse.json({ users: processedUsers });
+    return NextResponse.json({ 
+      users: users || [],
+      stats
+    });
     
   } catch (error) {
     console.error('Erro na API admin/users:', error);
