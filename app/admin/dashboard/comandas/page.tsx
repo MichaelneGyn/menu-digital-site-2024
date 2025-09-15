@@ -230,7 +230,7 @@ export default function ComandasPage() {
             </div>
             <div className="flex gap-3">
               {restaurant && (
-                <Link href={`/${restaurant.slug}`}>
+                <Link href={`/cardapio/${restaurant.slug}`}>
                   <Button variant="outline" className="animated-button">
                     <span className="mr-2">👁️</span>
                     Ver Cardápio
