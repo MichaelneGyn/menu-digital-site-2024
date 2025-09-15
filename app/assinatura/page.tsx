@@ -223,10 +223,15 @@ export default function AssinaturaPage() {
               </ul>
               <div className="mt-6">
                 <button 
-                  disabled
-                  className="w-full bg-gray-300 text-gray-500 py-3 px-4 rounded-lg font-semibold cursor-not-allowed"
+                  disabled={!(subscription?.plan === 'free' && !isExpired)}
+                  onClick={() => subscription?.plan === 'free' && !isExpired && router.push('/admin/dashboard')}
+                  className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors ${
+                    subscription?.plan === 'free' && !isExpired
+                      ? 'bg-blue-500 hover:bg-blue-600 text-white cursor-pointer'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
-                  {subscription?.plan === 'free' && !isExpired ? 'Plano Atual' : 'Plano Atual'}
+                  {subscription?.plan === 'free' && !isExpired ? 'Acessar Dashboard' : 'Plano Atual'}
                 </button>
               </div>
             </div>

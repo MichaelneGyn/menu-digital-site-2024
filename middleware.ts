@@ -59,19 +59,25 @@ export async function middleware(req: NextRequest) {
     try {
       const { data: subscription } = await supabase
         .from("subscriptions")
-        .select("plan, end_date, status")
+        .select("plan, end_date")
         .eq("user_id", session.user.id)
-        .eq("status", "active")
-        .order("end_date", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(1)
         .single();
 
-      const now = new Date();
-      const isExpired = !subscription || new Date(subscription.end_date) < now;
+      // Se não tem assinatura, redirecionar para página de assinatura
+      if (!subscription) {
+        const subscriptionUrl = new URL("/assinatura", req.url);
+        subscriptionUrl.searchParams.set("reason", "no_subscription");
+        subscriptionUrl.searchParams.set("redirect", req.nextUrl.pathname);
+        return NextResponse.redirect(subscriptionUrl);
+      }
 
-      // Se não tem assinatura ou está expirada
-      if (!subscription || isExpired) {
-        // Redirecionar para página de assinatura
+      const now = new Date();
+      const isExpired = subscription.end_date && new Date(subscription.end_date) < now;
+
+      // Se a assinatura expirou
+      if (isExpired) {
         const subscriptionUrl = new URL("/assinatura", req.url);
         subscriptionUrl.searchParams.set("reason", "expired");
         subscriptionUrl.searchParams.set("redirect", req.nextUrl.pathname);
@@ -86,7 +92,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(subscriptionUrl);
       }
 
-      // Se é rota free, permitir acesso independente do plano
+      // Se é rota free, permitir acesso (incluindo trial de 3 dias)
       if (isFreeRoute) {
         return res;
       }
