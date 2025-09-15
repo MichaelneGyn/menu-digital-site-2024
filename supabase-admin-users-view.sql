@@ -12,7 +12,7 @@ select
   s.start_date,
   s.end_date,
   case 
-    when s.end_date is null then 'sem_assinatura'
+    when s.plan is null then 'sem assinatura'
     when now() > s.end_date then 'expirada'
     when s.plan = 'free' then 'trial'
     when s.plan = 'paid' then 'ativa'
@@ -26,6 +26,7 @@ select
 from auth.users u
 left join public.profiles p on p.id = u.id
 left join public.subscriptions s on s.user_id = u.id
+  and s.status = 'active'  -- Apenas assinaturas ativas
 order by u.created_at desc;
 
 -- 2. Configurar segurança da VIEW
