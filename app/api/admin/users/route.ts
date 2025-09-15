@@ -13,17 +13,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
     
-    // Verificar se é admin
-    const adminEmails = [
-      "michaeldouglasqueiroz@gmail.com",
-      "admin@onpedido.com"
-    ];
+    // Verificar se é admin através da tabela profiles
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
     
-    if (!adminEmails.includes(user.email || "")) {
+    if (profile?.role !== 'admin') {
       return NextResponse.json({ error: 'Acesso negado - Admin apenas' }, { status: 403 });
     }
     
-    // Buscar dados da VIEW administrativa simplificada
+    // Buscar dados da VIEW administrativa unificada
     const { data: users, error: usersError } = await supabase
       .from('vw_admin_users')
       .select('*')
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
     // Calcular estatísticas
     const stats = {
       total_users: users?.length || 0,
-      users_with_subscription: users?.filter(u => u.status_assinatura !== 'sem_assinatura').length || 0,
+      users_with_subscription: users?.filter(u => u.status_assinatura !== 'sem assinatura').length || 0,
       active_subscriptions: users?.filter(u => u.status_assinatura === 'ativa').length || 0,
       trial_subscriptions: users?.filter(u => u.status_assinatura === 'trial').length || 0,
       expired_subscriptions: users?.filter(u => u.status_assinatura === 'expirada').length || 0
@@ -68,13 +69,14 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
     
-    // Verificar se é admin
-    const adminEmails = [
-      "michaeldouglasqueiroz@gmail.com",
-      "admin@onpedido.com"
-    ];
+    // Verificar se é admin através da tabela profiles
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
     
-    if (!adminEmails.includes(user.email || "")) {
+    if (profile?.role !== 'admin') {
       return NextResponse.json({ error: 'Acesso negado - Admin apenas' }, { status: 403 });
     }
     
@@ -83,44 +85,55 @@ export async function PATCH(request: NextRequest) {
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + (days || 30));
       
-      // Desativar assinaturas existentes
-      await supabase
+      // Verificar se já existe uma assinatura ativa
+      const { data: existingSubscription } = await supabase
         .from('subscriptions')
-        .update({ status: 'cancelled' })
+        .select('*')
         .eq('user_id', userId)
-        .eq('status', 'active');
-      
-      // Criar nova assinatura
-      const { data: newSubscription, error: subscriptionError } = await supabase
-        .from('subscriptions')
-        .insert({
-          user_id: userId,
-          plan: plan || 'paid',
-          status: 'active',
-          start_date: new Date().toISOString(),
-          end_date: endDate.toISOString(),
-          payment_method: 'admin_grant'
-        })
-        .select()
         .single();
       
-      if (subscriptionError) {
-        console.error('Erro ao criar assinatura:', subscriptionError);
-        return NextResponse.json({ error: 'Erro ao conceder acesso' }, { status: 500 });
+      if (existingSubscription) {
+        // Atualizar assinatura existente
+        const { error: updateError } = await supabase
+          .from('subscriptions')
+          .update({
+            plan: plan || 'paid',
+            start_date: new Date().toISOString(),
+            end_date: endDate.toISOString()
+          })
+          .eq('user_id', userId);
+        
+        if (updateError) {
+          console.error('Erro ao atualizar assinatura:', updateError);
+          return NextResponse.json({ error: 'Erro ao conceder acesso' }, { status: 500 });
+        }
+      } else {
+        // Criar nova assinatura
+        const { error: insertError } = await supabase
+          .from('subscriptions')
+          .insert({
+            user_id: userId,
+            plan: plan || 'paid',
+            start_date: new Date().toISOString(),
+            end_date: endDate.toISOString()
+          });
+        
+        if (insertError) {
+          console.error('Erro ao criar assinatura:', insertError);
+          return NextResponse.json({ error: 'Erro ao conceder acesso' }, { status: 500 });
+        }
       }
       
       return NextResponse.json({ 
-        message: 'Acesso concedido com sucesso',
-        subscription: newSubscription
+        message: 'Acesso concedido com sucesso'
       });
       
     } else if (action === 'revoke_access') {
-      // Revogar acesso
+      // Revogar acesso - definir data de fim como agora
       const { error: revokeError } = await supabase
         .from('subscriptions')
-        .update({ status: 'cancelled' })
-        .eq('user_id', userId)
-        .eq('status', 'active');
+        .update({ end_date: new Date().toISOString() })
+        .eq('user_id', userId);
       
       if (revokeError) {
         console.error('Erro ao revogar acesso:', revokeError);

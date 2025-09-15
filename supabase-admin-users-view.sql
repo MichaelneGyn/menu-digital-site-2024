@@ -1,12 +1,17 @@
--- VIEW administrativa simplificada para usuários e assinaturas
+-- VIEW administrativa completa para usuários e assinaturas
 -- Execute este script no Supabase SQL Editor
 
--- 1. Criar VIEW administrativa simplificada
-create or replace view vw_admin_users as
+-- 1. Remover VIEW existente se houver
+drop view if exists public.vw_admin_users;
+
+-- 2. Criar VIEW administrativa completa
+create or replace view public.vw_admin_users as
 select 
   u.id as user_id,
   u.email,
   u.created_at as signup_date,
+  u.email_confirmed_at,
+  u.last_sign_in_at,
   coalesce(p.role, 'user') as role,
   s.plan,
   s.start_date,
@@ -18,15 +23,20 @@ select
     when s.plan = 'paid' then 'ativa'
     else 'desconhecido'
   end as status_assinatura,
+  -- Calcula dias restantes para assinaturas ativas
   case 
-    when s.end_date is null then 0
-    when now() > s.end_date then 0
-    else extract(days from (s.end_date - now()))::integer
-  end as dias_restantes
+    when s.end_date is not null and now() <= s.end_date then 
+      extract(days from (s.end_date - now()))::integer
+    else 0
+  end as dias_restantes,
+  -- Informações do restaurante se existir
+  r.name as restaurant_name,
+  r.slug as restaurant_slug,
+  r.active as restaurant_active
 from auth.users u
 left join public.profiles p on p.id = u.id
 left join public.subscriptions s on s.user_id = u.id
-  and s.status = 'active'  -- Apenas assinaturas ativas
+left join public.restaurants r on r.user_id = u.id
 order by u.created_at desc;
 
 -- 2. Configurar segurança da VIEW
