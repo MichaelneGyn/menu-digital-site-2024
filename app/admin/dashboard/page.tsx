@@ -673,16 +673,23 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
     e.preventDefault();
     setIsSubmitting(true);
 
+    console.log('🔍 [FRONTEND] Dados do formulário:', formData);
+    console.log('🔍 [FRONTEND] RestaurantId recebido:', restaurantId);
+    
+    const requestData = {
+      ...formData,
+      restaurantId
+    };
+    
+    console.log('🔍 [FRONTEND] Dados que serão enviados:', requestData);
+
     try {
       const response = await fetch('/api/categories', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          restaurantId
-        }),
+        body: JSON.stringify(requestData),
       });
 
       if (response.ok) {
