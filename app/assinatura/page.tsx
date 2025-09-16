@@ -36,16 +36,20 @@ export default function AssinaturaPage() {
       setUser(user);
       
       // Verificar se é admin
-         const adminEmails = [
-           "michaeldouglasqueiroz@gmail.com",
-           "admin@onpedido.com"
-         ];
+      const adminEmails = [
+        "michaeldouglasqueiroz@gmail.com",
+        "admin@onpedido.com"
+      ];
       const userIsAdmin = adminEmails.includes(user.email || "");
       setIsAdmin(userIsAdmin);
       
-      await fetchSubscription();
+      // Só buscar assinatura se o usuário estiver autenticado
+      if (user) {
+        await fetchSubscription();
+      }
     } catch (error) {
       console.error("Erro ao verificar usuário:", error);
+      router.push("/auth/login");
     } finally {
       setLoading(false);
     }
@@ -57,9 +61,16 @@ export default function AssinaturaPage() {
       if (response.ok) {
         const data = await response.json();
         setSubscription(data);
+      } else if (response.status === 401) {
+        // Usuário não autenticado - não é um erro, apenas não tem assinatura
+        console.log("Usuário não autenticado - sem assinatura");
+        setSubscription(null);
+      } else {
+        console.error("Erro ao buscar assinatura:", response.status, response.statusText);
       }
     } catch (error) {
       console.error("Erro ao buscar assinatura:", error);
+      setSubscription(null);
     }
   };
 

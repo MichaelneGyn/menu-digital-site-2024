@@ -5,35 +5,42 @@ import { cookies } from "next/headers";
 // GET - visualizar assinatura do usuário atual
 export async function GET() {
   const supabase = createRouteHandlerClient({ cookies });
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-  const { data, error } = await supabase
-    .from("subscriptions")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("end_date", { ascending: false })
-    .limit(1)
-    .single();
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("end_date", { ascending: false })
+      .limit(1)
+      .single();
 
-  if (error) {
-    // Se não encontrar assinatura, retorna null ao invés de erro
-    if (error.code === 'PGRST116') {
-      return NextResponse.json(null);
+    if (error) {
+      // Se não encontrar assinatura, retorna null ao invés de erro
+      if (error.code === 'PGRST116') {
+        return NextResponse.json(null);
+      }
+      console.error('Erro ao buscar assinatura:', error);
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    
+    // Verificar se a assinatura está expirada
+    const now = new Date();
+    const endDate = new Date(data.end_date);
+    const isExpired = endDate < now;
+    
+    return NextResponse.json({
+      ...data,
+      is_expired: isExpired,
+      days_remaining: isExpired ? 0 : Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    });
+  } catch (error) {
+    console.error('Erro interno ao buscar assinatura:', error);
+    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
   }
-  
-  // Verificar se a assinatura está expirada
-  const now = new Date();
-  const endDate = new Date(data.end_date);
-  const isExpired = endDate < now;
-  
-  return NextResponse.json({
-    ...data,
-    is_expired: isExpired,
-    days_remaining: isExpired ? 0 : Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-  });
 }
 
 // POST - criar assinatura free trial ao cadastrar usuário
