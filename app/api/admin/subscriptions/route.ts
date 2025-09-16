@@ -34,5 +34,10 @@ export async function GET(req: NextRequest) {
 
   console.log("Dados retornados da vw_admin_subscriptions:", data?.length || 0, "registros");
   
-  return NextResponse.json({ subscriptions: data || [] });
+  // 🚀 Remove registros sem email para não quebrar frontend
+  const safeData = (data ?? []).filter(d => d.email && d.email !== 'sem-email');
+  
+  console.log("Dados filtrados (com email válido):", safeData.length, "registros");
+  
+  return NextResponse.json({ subscriptions: safeData });
 }
