@@ -1,7 +1,7 @@
 // app/api/admin/users/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 
 export async function GET(req: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies });
@@ -28,11 +28,8 @@ export async function GET(req: NextRequest) {
     .select("*");
 
   if (error) {
-    console.error("Erro ao buscar vw_admin_users:", error);
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  console.log("Dados retornados da vw_admin_users:", data?.length || 0, "registros");
-  
-  return NextResponse.json({ users: data || [] });
+  return NextResponse.json(data ?? []);
 }

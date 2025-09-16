@@ -13,21 +13,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import toast from 'react-hot-toast';
-import { Users, UserCheck, UserX, Calendar, Mail, Crown } from 'lucide-react';
+import { Users, UserCheck, UserX, Calendar, Mail, Crown, Loader2 } from 'lucide-react';
 
 interface User {
   id: string;
   email: string;
   full_name: string;
   created_at: string;
-  subscription: {
-    id: string;
-    plan: string;
-    status: string;
-    start_date: string;
-    end_date: string;
-    days_remaining: number;
-  } | null;
+  status: string;
+  plano: string;
+  vencimento: string | null;
   total_subscriptions: number;
 }
 
@@ -71,7 +66,7 @@ export default function UsersManagement() {
       const data = await response.json();
       
       if (response.ok) {
-        setUsers(data.users);
+        setUsers(data);
       } else {
         toast.error(data.error || 'Erro ao carregar usuários');
       }
@@ -153,24 +148,36 @@ export default function UsersManagement() {
     }
   };
 
-  const getStatusBadge = (user: User) => {
-    if (!user.subscription) {
-      return <Badge variant="secondary">Sem Assinatura</Badge>;
+  const getStatusBadge = (usuario: User) => {
+    const status = usuario.status?.toLowerCase();
+    
+    switch (status) {
+      case 'ativo':
+        return <Badge className="bg-green-100 text-green-800 border-green-200">Ativo</Badge>;
+      case 'trial':
+        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Trial</Badge>;
+      case 'expirado':
+        return <Badge className="bg-red-100 text-red-800 border-red-200">Expirado</Badge>;
+      case 'pago':
+        return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">Pago</Badge>;
+      default:
+        return <Badge variant="secondary">Sem Assinatura</Badge>;
     }
+  };
+
+  const getPlanBadge = (plano: string) => {
+    const planLower = plano?.toLowerCase();
     
-    const { status, plan, days_remaining } = user.subscription;
-    
-    if (status === 'expired') {
-      return <Badge variant="destructive">Expirado</Badge>;
+    switch (planLower) {
+      case 'free':
+        return <Badge variant="outline" className="text-gray-600">Gratuito</Badge>;
+      case 'paid':
+        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Pago</Badge>;
+      case 'trial':
+        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Trial</Badge>;
+      default:
+        return <Badge variant="secondary">---</Badge>;
     }
-    
-    if (status === 'active') {
-      const variant = plan === 'free' ? 'outline' : 'default';
-      const label = plan === 'free' ? `Gratuito (${days_remaining}d)` : `Pago (${days_remaining}d)`;
-      return <Badge variant={variant}>{label}</Badge>;
-    }
-    
-    return <Badge variant="secondary">{status}</Badge>;
   };
 
   const filteredUsers = users.filter(user => 
@@ -180,9 +187,9 @@ export default function UsersManagement() {
 
   const stats = {
     total: users.length,
-    active: users.filter(u => u.subscription?.status === 'active').length,
-    paid: users.filter(u => u.subscription?.plan === 'paid' && u.subscription?.status === 'active').length,
-    free: users.filter(u => u.subscription?.plan === 'free' && u.subscription?.status === 'active').length
+    active: users.filter(u => u.status?.toLowerCase() === 'ativo' || u.status?.toLowerCase() === 'pago').length,
+    paid: users.filter(u => u.plano?.toLowerCase() === 'paid').length,
+    trial: users.filter(u => u.status?.toLowerCase() === 'trial').length
   };
 
   if (loading) {
@@ -190,7 +197,7 @@ export default function UsersManagement() {
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
             <p className="text-gray-600">Carregando usuários...</p>
           </div>
         </div>
@@ -199,7 +206,7 @@ export default function UsersManagement() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 space-y-6">
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <Crown className="h-6 w-6 text-yellow-600" />
@@ -209,50 +216,58 @@ export default function UsersManagement() {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="border-l-4 border-l-blue-500">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-600" />
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Users className="h-5 w-5 text-blue-600" />
+              </div>
               <div>
-                <p className="text-sm text-gray-600">Total de Usuários</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
+                <p className="text-sm text-gray-600 font-medium">Total de Usuários</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="border-l-4 border-l-green-500">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-green-600" />
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <UserCheck className="h-5 w-5 text-green-600" />
+              </div>
               <div>
-                <p className="text-sm text-gray-600">Usuários Ativos</p>
-                <p className="text-2xl font-bold">{stats.active}</p>
+                <p className="text-sm text-gray-600 font-medium">Usuários Ativos</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="border-l-4 border-l-yellow-500">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-yellow-600" />
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <Crown className="h-5 w-5 text-yellow-600" />
+              </div>
               <div>
-                <p className="text-sm text-gray-600">Planos Pagos</p>
-                <p className="text-2xl font-bold">{stats.paid}</p>
+                <p className="text-sm text-gray-600 font-medium">Planos Pagos</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.paid}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="border-l-4 border-l-purple-500">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <UserX className="h-5 w-5 text-gray-600" />
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <UserX className="h-5 w-5 text-purple-600" />
+              </div>
               <div>
-                <p className="text-sm text-gray-600">Planos Gratuitos</p>
-                <p className="text-2xl font-bold">{stats.free}</p>
+                <p className="text-sm text-gray-600 font-medium">Em Trial</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.trial}</p>
               </div>
             </div>
           </CardContent>
@@ -260,20 +275,22 @@ export default function UsersManagement() {
       </div>
 
       {/* Filtros */}
-      <Card className="mb-6">
+      <Card>
         <CardContent className="p-4">
           <div className="flex gap-4">
             <div className="flex-1">
-              <Label htmlFor="search">Buscar usuários</Label>
+              <Label htmlFor="search" className="text-sm font-medium">Buscar usuários</Label>
               <Input
                 id="search"
                 placeholder="Digite o email ou nome..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                className="mt-1"
               />
             </div>
             <div className="flex items-end">
-              <Button onClick={fetchUsers} variant="outline">
+              <Button onClick={fetchUsers} variant="outline" className="gap-2">
+                <Loader2 className="h-4 w-4" />
                 Atualizar
               </Button>
             </div>
@@ -284,79 +301,69 @@ export default function UsersManagement() {
       {/* Tabela de usuários */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Usuários ({filteredUsers.length})</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Lista de Usuários ({filteredUsers.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Usuário</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Plano</TableHead>
-                  <TableHead>Vencimento</TableHead>
-                  <TableHead>Cadastro</TableHead>
-                  <TableHead>Ações</TableHead>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="font-semibold">Usuário</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold">Plano</TableHead>
+                  <TableHead className="font-semibold">Vencimento</TableHead>
+                  <TableHead className="font-semibold">Cadastro</TableHead>
+                  <TableHead className="font-semibold">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
+                {filteredUsers.map((usuario) => (
+                  <TableRow key={usuario.id} className="hover:bg-gray-50">
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{user.full_name || 'Nome não informado'}</div>
+                      <div className="space-y-1">
+                        <div className="font-medium text-gray-900">{usuario.full_name || 'Nome não informado'}</div>
                         <div className="text-sm text-gray-600 flex items-center gap-1">
                           <Mail className="h-3 w-3" />
-                          {user.email}
+                          {usuario.email}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      {getStatusBadge(user)}
+                      {getStatusBadge(usuario)}
                     </TableCell>
                     <TableCell>
-                      {user.subscription ? (
-                        <div className="text-sm">
-                          <div className="font-medium capitalize">{user.subscription.plan}</div>
-                          <div className="text-gray-600">{user.total_subscriptions} assinatura(s)</div>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
+                      {getPlanBadge(usuario.plano)}
                     </TableCell>
                     <TableCell>
-                      {user.subscription ? (
-                        <div className="text-sm">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(user.subscription.end_date).toLocaleDateString('pt-BR')}
+                      <div className="text-sm">
+                        {usuario.vencimento ? (
+                          <div className="flex items-center gap-1 text-gray-900">
+                            <Calendar className="h-3 w-3 text-gray-500" />
+                            {new Date(usuario.vencimento).toLocaleDateString("pt-BR")}
                           </div>
-                          <div className="text-gray-600">
-                            {user.subscription.days_remaining > 0 
-                              ? `${user.subscription.days_remaining} dias restantes`
-                              : 'Expirado'
-                            }
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
+                        ) : (
+                          <span className="text-gray-400">---</span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm text-gray-600">
-                        {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(usuario.created_at).toLocaleDateString('pt-BR')}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Dialog open={isGrantModalOpen && selectedUser?.id === user.id} onOpenChange={(open) => {
+                        <Dialog open={isGrantModalOpen && selectedUser?.id === usuario.id} onOpenChange={(open) => {
                           setIsGrantModalOpen(open);
-                          if (open) setSelectedUser(user);
+                          if (open) setSelectedUser(usuario);
                           else setSelectedUser(null);
                         }}>
                           <DialogTrigger asChild>
-                            <Button size="sm" variant="outline">
-                              <UserCheck className="h-4 w-4 mr-1" />
+                            <Button size="sm" variant="outline" className="gap-1">
+                              <UserCheck className="h-4 w-4" />
                               Conceder
                             </Button>
                           </DialogTrigger>
@@ -367,7 +374,7 @@ export default function UsersManagement() {
                             <div className="space-y-4">
                               <div>
                                 <Label>Usuário</Label>
-                                <p className="text-sm text-gray-600">{user.email}</p>
+                                <p className="text-sm text-gray-600">{usuario.email}</p>
                               </div>
                               
                               <div>
@@ -406,7 +413,14 @@ export default function UsersManagement() {
                                   disabled={actionLoading}
                                   className="flex-1"
                                 >
-                                  {actionLoading ? 'Processando...' : 'Conceder Acesso'}
+                                  {actionLoading ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                      Processando...
+                                    </>
+                                  ) : (
+                                    'Conceder Acesso'
+                                  )}
                                 </Button>
                                 <Button 
                                   variant="outline" 
@@ -420,14 +434,15 @@ export default function UsersManagement() {
                           </DialogContent>
                         </Dialog>
                         
-                        {user.subscription?.status === 'active' && (
+                        {(usuario.status?.toLowerCase() === 'ativo' || usuario.status?.toLowerCase() === 'pago') && (
                           <Button 
                             size="sm" 
                             variant="destructive"
-                            onClick={() => handleRevokeAccess(user.id)}
+                            onClick={() => handleRevokeAccess(usuario.id)}
                             disabled={actionLoading}
+                            className="gap-1"
                           >
-                            <UserX className="h-4 w-4 mr-1" />
+                            <UserX className="h-4 w-4" />
                             Revogar
                           </Button>
                         )}
@@ -439,8 +454,11 @@ export default function UsersManagement() {
             </Table>
             
             {filteredUsers.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                {searchTerm ? 'Nenhum usuário encontrado com os filtros aplicados.' : 'Nenhum usuário cadastrado.'}
+              <div className="text-center py-12">
+                <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg">
+                  {searchTerm ? 'Nenhum usuário encontrado com os filtros aplicados.' : 'Nenhum usuário cadastrado.'}
+                </p>
               </div>
             )}
           </div>
