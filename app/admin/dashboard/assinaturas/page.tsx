@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 export default function AssinaturasPage() {
+  // 🔒 1. Inicie o state sempre como Array
   const [assinaturas, setAssinaturas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -15,20 +16,22 @@ export default function AssinaturasPage() {
         const data = await res.json();
 
         if (res.ok) {
-          // 🔒 Normaliza para garantir email sempre presente
-          const safeData = (data ?? []).map((a: any) => ({
+          // 🔒 2. Na hora de carregar API, normalize para Array
+          // Sempre retorna array
+          const safeData = Array.isArray(data) ? data : [];
+          setAssinaturas(safeData.map((a: any) => ({
             ...a,
             email: a.email ?? "sem-email",
             plan: a.plan ?? "-",
             status_assinatura: a.status_assinatura ?? "indefinido",
             start_date: a.start_date ?? null,
             end_date: a.end_date ?? null,
-          }));
-          setAssinaturas(safeData);
+          })));
         } else {
           throw new Error(data.error || "Erro ao carregar assinaturas");
         }
       } catch (err: any) {
+        console.error(err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -42,7 +45,7 @@ export default function AssinaturasPage() {
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   // 🔒 Filtro seguro (nunca quebra se email for null)
-  const filtradas = assinaturas.filter((a) =>
+  const filtradas = (assinaturas ?? []).filter((a) =>
     (a.email ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
@@ -72,14 +75,16 @@ export default function AssinaturasPage() {
           </tr>
         </thead>
         <tbody>
-          {filtradas.length === 0 && (
+          {/* 🔒 3. No render, proteja antes do .map */}
+          {(filtradas ?? []).length === 0 && (
             <tr>
               <td colSpan={6} style={{ textAlign: "center", padding: "20px" }}>
                 Nenhuma assinatura encontrada.
               </td>
             </tr>
           )}
-          {filtradas.map((assinatura, idx) => (
+
+          {(filtradas ?? []).map((assinatura, idx) => (
             <tr key={idx}>
               <td>{assinatura.email ?? "---"}</td>
               <td>{assinatura.plan}</td>
