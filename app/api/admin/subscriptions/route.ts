@@ -28,8 +28,11 @@ export async function GET(req: NextRequest) {
     .select("*");
 
   if (error) {
+    console.error("Erro ao buscar vw_admin_subscriptions:", error);
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  return NextResponse.json(data);
+  console.log("Dados retornados da vw_admin_subscriptions:", data?.length || 0, "registros");
+  
+  return NextResponse.json({ subscriptions: data || [] });
 }

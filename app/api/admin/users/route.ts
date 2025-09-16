@@ -28,7 +28,11 @@ export async function GET(req: NextRequest) {
     .select("*");
 
   if (error) {
+    console.error("Erro ao buscar vw_admin_users:", error);
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
+  console.log("Dados retornados da vw_admin_users:", data?.length || 0, "registros");
+  
+  return NextResponse.json({ users: data || [] });
 }
