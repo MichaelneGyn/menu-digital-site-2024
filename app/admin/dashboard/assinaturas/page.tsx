@@ -17,8 +17,10 @@ export default function AssinaturasPage() {
 
         if (res.ok) {
           // 🔒 2. Na hora de carregar API, normalize para Array
-          // Sempre retorna array
-          const safeData = Array.isArray(data) ? data : [];
+          // A API retorna { subscriptions: [...] }, então extraímos o array
+          const subscriptionsArray = data.subscriptions || data || [];
+          const safeData = Array.isArray(subscriptionsArray) ? subscriptionsArray : [];
+          
           setAssinaturas(safeData.map((a: any) => ({
             ...a,
             email: a.email ?? "sem-email",
