@@ -12,7 +12,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  // Buscar todos os itens do usuário (via restaurantes que ele possui)
+  // Buscar o restaurante do usuário logado
+  const { data: restaurant, error: restaurantError } = await supabase
+    .from("restaurants")
+    .select("id")
+    .eq("owner_id", user.id)
+    .single();
+
+  if (restaurantError || !restaurant) {
+    return NextResponse.json([]);
+  }
+
+  // Buscar todos os itens do restaurante do usuário
   const { data, error } = await supabase
     .from("items")
     .select(`
@@ -27,6 +38,7 @@ export async function GET(req: NextRequest) {
       category:categories(id, name, icon),
       restaurant:restaurants(id, name)
     `)
+    .eq("restaurant_id", restaurant.id)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -34,7 +46,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message, details: error }, { status: 400 });
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json(data || []);
 }
 
 export async function DELETE(req: NextRequest) {

@@ -16,14 +16,15 @@ import toast from 'react-hot-toast';
 import { Users, UserCheck, UserX, Calendar, Mail, Crown, Loader2 } from 'lucide-react';
 
 interface User {
-  id: string;
+  user_id: string;
   email: string;
-  full_name: string;
-  created_at: string;
-  status: string;
-  plano: string;
-  vencimento: string | null;
-  total_subscriptions: number;
+  signup_date: string;
+  status_assinatura: string;
+  plan: string;
+  end_date: string | null;
+  dias_restantes: number;
+  restaurant_name?: string;
+  role: string;
 }
 
 export default function UsersManagement() {
@@ -89,7 +90,7 @@ export default function UsersManagement() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: selectedUser.id,
+          userId: selectedUser.user_id,
           action: 'grant_access',
           plan: grantPlan,
           days: parseInt(grantDays)
@@ -149,19 +150,19 @@ export default function UsersManagement() {
   };
 
   const getStatusBadge = (usuario: User) => {
-    const status = usuario.status?.toLowerCase();
+    const status = usuario.status_assinatura?.toLowerCase();
     
     switch (status) {
-      case 'ativo':
-        return <Badge className="bg-green-100 text-green-800 border-green-200">Ativo</Badge>;
+      case 'ativa':
+        return <Badge className="bg-green-100 text-green-800 border-green-200">Ativa</Badge>;
       case 'trial':
         return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Trial</Badge>;
-      case 'expirado':
-        return <Badge className="bg-red-100 text-red-800 border-red-200">Expirado</Badge>;
-      case 'pago':
-        return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">Pago</Badge>;
-      default:
+      case 'expirada':
+        return <Badge className="bg-red-100 text-red-800 border-red-200">Expirada</Badge>;
+      case 'sem assinatura':
         return <Badge variant="secondary">Sem Assinatura</Badge>;
+      default:
+        return <Badge variant="secondary">Desconhecido</Badge>;
     }
   };
 
@@ -173,8 +174,6 @@ export default function UsersManagement() {
         return <Badge variant="outline" className="text-gray-600">Gratuito</Badge>;
       case 'paid':
         return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Pago</Badge>;
-      case 'trial':
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Trial</Badge>;
       default:
         return <Badge variant="secondary">---</Badge>;
     }
@@ -182,14 +181,14 @@ export default function UsersManagement() {
 
   const filteredUsers = users.filter(user => 
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    user.restaurant_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const stats = {
     total: users.length,
-    active: users.filter(u => u.status?.toLowerCase() === 'ativo' || u.status?.toLowerCase() === 'pago').length,
-    paid: users.filter(u => u.plano?.toLowerCase() === 'paid').length,
-    trial: users.filter(u => u.status?.toLowerCase() === 'trial').length
+    active: users.filter(u => u.status_assinatura?.toLowerCase() === 'ativa' || u.status_assinatura?.toLowerCase() === 'trial').length,
+    paid: users.filter(u => u.plan?.toLowerCase() === 'paid').length,
+    trial: users.filter(u => u.status_assinatura?.toLowerCase() === 'trial').length
   };
 
   if (loading) {
@@ -321,10 +320,10 @@ export default function UsersManagement() {
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((usuario) => (
-                  <TableRow key={usuario.id} className="hover:bg-gray-50">
+                  <TableRow key={usuario.user_id} className="hover:bg-gray-50">
                     <TableCell>
                       <div className="space-y-1">
-                        <div className="font-medium text-gray-900">{usuario.full_name || 'Nome não informado'}</div>
+                        <div className="font-medium text-gray-900">{usuario.restaurant_name || 'Restaurante não informado'}</div>
                         <div className="text-sm text-gray-600 flex items-center gap-1">
                           <Mail className="h-3 w-3" />
                           {usuario.email}
@@ -335,14 +334,14 @@ export default function UsersManagement() {
                       {getStatusBadge(usuario)}
                     </TableCell>
                     <TableCell>
-                      {getPlanBadge(usuario.plano)}
+                      {getPlanBadge(usuario.plan)}
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {usuario.vencimento ? (
+                        {usuario.end_date ? (
                           <div className="flex items-center gap-1 text-gray-900">
                             <Calendar className="h-3 w-3 text-gray-500" />
-                            {new Date(usuario.vencimento).toLocaleDateString("pt-BR")}
+                            {new Date(usuario.end_date).toLocaleDateString("pt-BR")}
                           </div>
                         ) : (
                           <span className="text-gray-400">---</span>
@@ -351,12 +350,12 @@ export default function UsersManagement() {
                     </TableCell>
                     <TableCell>
                       <div className="text-sm text-gray-600">
-                        {new Date(usuario.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(usuario.signup_date).toLocaleDateString('pt-BR')}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Dialog open={isGrantModalOpen && selectedUser?.id === usuario.id} onOpenChange={(open) => {
+                        <Dialog open={isGrantModalOpen && selectedUser?.user_id === usuario.user_id} onOpenChange={(open) => {
                           setIsGrantModalOpen(open);
                           if (open) setSelectedUser(usuario);
                           else setSelectedUser(null);
@@ -434,11 +433,11 @@ export default function UsersManagement() {
                           </DialogContent>
                         </Dialog>
                         
-                        {(usuario.status?.toLowerCase() === 'ativo' || usuario.status?.toLowerCase() === 'pago') && (
+                        {(usuario.status_assinatura?.toLowerCase() === 'ativa' || usuario.status_assinatura?.toLowerCase() === 'trial') && (
                           <Button 
                             size="sm" 
                             variant="destructive"
-                            onClick={() => handleRevokeAccess(usuario.id)}
+                            onClick={() => handleRevokeAccess(usuario.user_id)}
                             disabled={actionLoading}
                             className="gap-1"
                           >

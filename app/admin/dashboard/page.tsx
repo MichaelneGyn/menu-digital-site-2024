@@ -2175,7 +2175,8 @@ export default function AdminDashboard() {
         // A API retorna um array, então pegamos o primeiro restaurante
         const restaurantData = Array.isArray(data) ? data[0] : data;
         setRestaurant(restaurantData);
-        calculateStats(restaurantData);
+        // Calcular estatísticas usando dados reais das APIs
+        await calculateStats();
       }
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
@@ -2185,16 +2186,43 @@ export default function AdminDashboard() {
     }
   };
 
-  const calculateStats = (data: Restaurant) => {
-    const totalItems = data.menuItems?.length || 0;
-    const totalCategories = data.categories?.length || 0;
-    const promoItems = data.menuItems?.filter(item => item.isPromo).length || 0;
+  const calculateStats = async () => {
+    try {
+      // Buscar dados reais das APIs
+      const [itemsResponse, categoriesResponse] = await Promise.all([
+        fetch('/api/items'),
+        fetch('/api/categories')
+      ]);
 
-    setStats({
-      totalItems,
-      totalCategories,
-      promoItems
-    });
+      let totalItems = 0;
+      let totalCategories = 0;
+      let promoItems = 0;
+
+      if (itemsResponse.ok) {
+        const itemsData = await itemsResponse.json();
+        totalItems = itemsData.length || 0;
+        promoItems = itemsData.filter((item: any) => item.is_promo).length || 0;
+      }
+
+      if (categoriesResponse.ok) {
+        const categoriesData = await categoriesResponse.json();
+        totalCategories = categoriesData.length || 0;
+      }
+
+      setStats({
+        totalItems,
+        totalCategories,
+        promoItems
+      });
+    } catch (error) {
+      console.error('Erro ao calcular estatísticas:', error);
+      // Fallback para valores zerados em caso de erro
+      setStats({
+        totalItems: 0,
+        totalCategories: 0,
+        promoItems: 0
+      });
+    }
   };
 
   const fetchOrders = async () => {
@@ -2259,6 +2287,7 @@ export default function AdminDashboard() {
         toast.success('🗑️ Item removido com sucesso!');
         fetchRestaurantData(); // Recarregar dados do restaurante
         fetchItems(); // Recarregar lista de itens
+        await calculateStats(); // Atualizar contadores
       } else {
         const errorData = await response.json();
         toast.error(`Erro ao remover item: ${errorData.error || 'Erro desconhecido'}`);
@@ -2286,6 +2315,7 @@ export default function AdminDashboard() {
       setShowBulkActions(false);
       fetchRestaurantData();
       fetchItems(); // Recarregar lista de itens
+      await calculateStats(); // Atualizar contadores
     } catch (error) {
       console.error('Erro ao remover itens:', error);
       toast.error('Erro ao remover itens');
@@ -2782,11 +2812,12 @@ export default function AdminDashboard() {
           onClose={() => setShowAddItemModal(false)}
           restaurantId={restaurant?.id || ''}
           categories={restaurant?.categories || []}
-          onSuccess={() => {
+          onSuccess={async () => {
             setShowAddItemModal(false);
             toast.success('🍕 Item adicionado com sucesso!');
             fetchRestaurantData();
             fetchItems();
+            await calculateStats(); // Atualizar contadores
           }}
         />
       )}
@@ -2796,10 +2827,11 @@ export default function AdminDashboard() {
           isOpen={showAddCategoryModal}
           onClose={() => setShowAddCategoryModal(false)}
           restaurantId={restaurant?.id || ''}
-          onSuccess={() => {
+          onSuccess={async () => {
             setShowAddCategoryModal(false);
             toast.success('📁 Categoria criada com sucesso!');
             fetchRestaurantData();
+            await calculateStats(); // Atualizar contadores
           }}
         />
       )}
