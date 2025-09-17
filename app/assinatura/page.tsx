@@ -61,6 +61,13 @@ export default function AssinaturaPage() {
       if (response.ok) {
         const data = await response.json();
         setSubscription(data);
+        
+        // Verificar se a assinatura ainda é válida (end_date no futuro)
+        if (data && new Date(data.end_date) > new Date()) {
+          // Assinatura válida (trial ou ativa paga) - redirecionar para comandas
+          router.push("/admin/comandas");
+          return;
+        }
       } else if (response.status === 401) {
         // Usuário não autenticado - não é um erro, apenas não tem assinatura
         console.log("Usuário não autenticado - sem assinatura");

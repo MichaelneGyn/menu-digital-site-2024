@@ -83,3 +83,53 @@ export async function GET() {
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
+
+// PUT - atualizar status do pedido
+export async function PUT(req: Request) {
+  try {
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { id, status } = body;
+
+    if (!id || !status) {
+      return NextResponse.json({ error: 'ID e status são obrigatórios' }, { status: 400 });
+    }
+
+    // Buscar o restaurante do usuário logado
+    const { data: restaurant, error: restaurantError } = await supabase
+      .from('restaurants')
+      .select('id')
+      .eq('owner_id', user.id)
+      .single();
+
+    if (restaurantError || !restaurant) {
+      return NextResponse.json({ error: 'Restaurante não encontrado' }, { status: 404 });
+    }
+
+    // Atualizar o status do pedido
+    const { error: updateError } = await supabase
+      .from('orders')
+      .update({ 
+        status: status,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .eq('restaurant_id', restaurant.id);
+
+    if (updateError) {
+      console.error('Erro ao atualizar pedido:', updateError);
+      return NextResponse.json({ error: 'Erro ao atualizar pedido' }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Pedido atualizado com sucesso!' });
+  } catch (error) {
+    console.error('Erro na API de atualização de pedidos:', error);
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+  }
+}

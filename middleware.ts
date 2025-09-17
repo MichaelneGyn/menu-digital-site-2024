@@ -59,27 +59,19 @@ export async function middleware(req: NextRequest) {
     try {
       const { data: subscription } = await supabase
         .from("subscriptions")
-        .select("plan, end_date")
+        .select("plan, end_date, status")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false })
         .limit(1)
         .single();
 
-      // Se não tem assinatura, redirecionar para página de assinatura
-      if (!subscription) {
-        const subscriptionUrl = new URL("/assinatura", req.url);
-        subscriptionUrl.searchParams.set("reason", "no_subscription");
-        subscriptionUrl.searchParams.set("redirect", req.nextUrl.pathname);
-        return NextResponse.redirect(subscriptionUrl);
-      }
+      // Verificar se a assinatura é válida baseada no end_date
+      const isValid = subscription && new Date(subscription.end_date) > new Date();
 
-      const now = new Date();
-      const isExpired = subscription.end_date && new Date(subscription.end_date) < now;
-
-      // Se a assinatura expirou
-      if (isExpired) {
+      // Se não tem assinatura válida (sem assinatura ou expirada)
+      if (!isValid) {
         const subscriptionUrl = new URL("/assinatura", req.url);
-        subscriptionUrl.searchParams.set("reason", "expired");
+        subscriptionUrl.searchParams.set("reason", "upgrade_required");
         subscriptionUrl.searchParams.set("redirect", req.nextUrl.pathname);
         return NextResponse.redirect(subscriptionUrl);
       }
