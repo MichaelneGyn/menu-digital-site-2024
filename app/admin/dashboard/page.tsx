@@ -2379,7 +2379,7 @@ export default function AdminDashboard() {
             </div>
             <div className="flex gap-3">
               {restaurant && (
-                <Link href={`/cardapio/${restaurant.slug}`}>
+                <Link href={`/${restaurant.slug}`}>
                   <Button variant="outline" className="animated-button">
                     <span className="mr-2">👁️</span>
                     Ver Cardápio

@@ -4,10 +4,8 @@ import { notFound } from 'next/navigation';
 import MenuPage from '@/components/menu/menu-page';
 
 export async function generateStaticParams() {
-  // Retorna slugs conhecidos para pré-gerar páginas estáticas
-  return [
-    { slug: 'di-sarda-pizzaria' },
-  ];
+  // Retorna uma lista vazia para permitir geração dinâmica
+  return [];
 }
 
 export const dynamicParams = true; // Permite gerar páginas para slugs não listados
