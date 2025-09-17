@@ -57,16 +57,17 @@ export default function RestaurantNav({
     <nav className="restaurant-nav">
       <div 
         ref={navContainerRef}
-        className="nav-container max-w-6xl mx-auto px-8 flex gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-red-600"
+        className="nav-container max-w-6xl mx-auto px-2 sm:px-4 lg:px-8 flex gap-2 sm:gap-3 lg:gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-red-600"
       >
         {categories?.map((category) => (
           <button
             key={category.id}
             ref={activeCategory === category.id ? activeButtonRef : null}
-            className={`nav-item ${activeCategory === category.id ? 'active' : ''}`}
+            className={`nav-item ${activeCategory === category.id ? 'active' : ''} px-3 py-2 sm:px-4 sm:py-3 lg:px-6 lg:py-4 text-sm sm:text-base lg:text-lg whitespace-nowrap min-w-fit flex-shrink-0`}
             onClick={() => onCategoryChange(category.id)}
           >
-            {category.icon} {category.name}
+            <span className="text-base sm:text-lg lg:text-xl mr-1 sm:mr-2">{category.icon}</span>
+            <span className="font-medium">{category.name}</span>
           </button>
         ))}
       </div>

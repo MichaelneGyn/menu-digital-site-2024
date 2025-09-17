@@ -2368,26 +2368,26 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <div className="flex flex-col gap-4 py-6 sm:flex-row sm:justify-between sm:items-center">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white truncate">
                 Painel Administrativo
               </h1>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 truncate">
                 Bem-vindo, {user?.name || user?.email}!
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:gap-3 w-full sm:w-auto">
               {restaurant && (
-                <Link href={`/${restaurant.slug}`}>
-                  <Button variant="outline" className="animated-button">
+                <Link href={`/${restaurant.slug}`} className="w-full sm:w-auto">
+                  <Button variant="outline" className="animated-button w-full sm:w-auto">
                     <span className="mr-2">👁️</span>
                     Ver Cardápio
                   </Button>
                 </Link>
               )}
-              <Link href="/auth/logout">
-                <Button variant="destructive" className="animated-button">
+              <Link href="/auth/logout" className="w-full sm:w-auto">
+                <Button variant="destructive" className="animated-button w-full sm:w-auto">
                   Sair
                 </Button>
               </Link>
@@ -2396,16 +2396,16 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         {/* Cards de Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
           <Card className="stat-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Itens</CardTitle>
-              <span className="text-2xl">🍕</span>
+              <CardTitle className="text-xs sm:text-sm font-medium">Total de Itens</CardTitle>
+              <span className="text-xl sm:text-2xl">🍕</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.totalItems}</div>
+              <div className="text-xl sm:text-2xl font-bold text-red-600">{stats.totalItems}</div>
               <p className="text-xs text-muted-foreground">
                 Itens no cardápio
               </p>
@@ -2414,11 +2414,11 @@ export default function AdminDashboard() {
 
           <Card className="stat-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Categorias</CardTitle>
-              <span className="text-2xl">📁</span>
+              <CardTitle className="text-xs sm:text-sm font-medium">Categorias</CardTitle>
+              <span className="text-xl sm:text-2xl">📁</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.totalCategories}</div>
+              <div className="text-xl sm:text-2xl font-bold text-blue-600">{stats.totalCategories}</div>
               <p className="text-xs text-muted-foreground">
                 Categorias ativas
               </p>
@@ -2427,11 +2427,11 @@ export default function AdminDashboard() {
 
           <Card className="stat-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Promoções</CardTitle>
-              <span className="text-2xl">🎉</span>
+              <CardTitle className="text-xs sm:text-sm font-medium">Promoções</CardTitle>
+              <span className="text-xl sm:text-2xl">🎉</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{stats.promoItems}</div>
+              <div className="text-xl sm:text-2xl font-bold text-yellow-600">{stats.promoItems}</div>
               <p className="text-xs text-muted-foreground">
                 Itens em promoção
               </p>
@@ -2440,58 +2440,58 @@ export default function AdminDashboard() {
         </div>
 
         {/* Conteúdo Principal */}
-        <div className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="mt-4 sm:mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
           {/* Ações Rápidas */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 xl:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Ações Rápidas</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Ações Rápidas</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <CardContent className="space-y-3 sm:space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
                   <Button 
-                    className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float"
+                    className="h-14 sm:h-16 lg:h-20 flex flex-col items-center justify-center space-y-1 sm:space-y-2 animated-button hover-float text-xs sm:text-sm"
                     onClick={() => { console.log('Botão Adicionar Item clicado'); setShowAddItemModal(true); }}
                     disabled={!restaurant}
                   >
-                    <span className="text-2xl">➕</span>
-                    <span>Adicionar Item</span>
+                    <span className="text-base sm:text-lg lg:text-2xl">➕</span>
+                    <span className="text-center leading-tight">Adicionar Item</span>
                   </Button>
                   
                   <Button 
                     variant="outline" 
-                    className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float"
+                    className="h-14 sm:h-16 lg:h-20 flex flex-col items-center justify-center space-y-1 sm:space-y-2 animated-button hover-float text-xs sm:text-sm"
                     onClick={() => setShowAddCategoryModal(true)}
                     disabled={!restaurant}
                   >
-                    <span className="text-2xl">📁</span>
-                    <span>Nova Categoria</span>
+                    <span className="text-base sm:text-lg lg:text-2xl">📁</span>
+                    <span className="text-center leading-tight">Nova Categoria</span>
                   </Button>
                   
                   <Button 
                     variant="outline" 
-                    className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float bg-gradient-to-r from-green-50 to-blue-50 border-green-200 hover:from-green-100 hover:to-blue-100"
+                    className="h-14 sm:h-16 lg:h-20 flex flex-col items-center justify-center space-y-1 sm:space-y-2 animated-button hover-float bg-gradient-to-r from-green-50 to-blue-50 border-green-200 hover:from-green-100 hover:to-blue-100 text-xs sm:text-sm"
                     onClick={() => setShowImportModal(true)}
                     disabled={!restaurant}
                   >
-                    <span className="text-2xl">📥</span>
-                    <span className="text-center">Importar do<br/>iFood</span>
+                    <span className="text-base sm:text-lg lg:text-2xl">📥</span>
+                    <span className="text-center leading-tight">Importar do<br className="hidden sm:block"/>iFood</span>
                   </Button>
                   
                   <Button 
                     variant="outline" 
-                    className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float"
+                    className="h-14 sm:h-16 lg:h-20 flex flex-col items-center justify-center space-y-1 sm:space-y-2 animated-button hover-float text-xs sm:text-sm"
                     onClick={() => setShowPersonalizeModal(true)}
                     disabled={!restaurant}
                   >
-                    <span className="text-2xl">🎨</span>
-                    <span>Personalizar</span>
+                    <span className="text-base sm:text-lg lg:text-2xl">🎨</span>
+                    <span className="text-center leading-tight">Personalizar</span>
                   </Button>
                   
                   <Button 
                     variant="outline" 
-                    className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float bg-gradient-to-r from-red-50 to-orange-50 border-red-200 hover:from-red-100 hover:to-orange-100"
+                    className="h-14 sm:h-16 lg:h-20 flex flex-col items-center justify-center space-y-1 sm:space-y-2 animated-button hover-float bg-gradient-to-r from-red-50 to-orange-50 border-red-200 hover:from-red-100 hover:to-orange-100 text-xs sm:text-sm"
                     onClick={() => {
                       // Filtrar para mostrar apenas itens em promoção
                       setSelectedCategoryFilter('all');
@@ -2578,24 +2578,24 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 {restaurant ? (
-                  <div className="space-y-3">
+                  <div className="space-y-3 sm:space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Nome</label>
-                      <p className="text-lg font-semibold dark:text-white">{restaurant.name}</p>
+                      <label className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300">Nome</label>
+                      <p className="text-base sm:text-lg font-semibold dark:text-white break-words">{restaurant.name}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300">URL</label>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">/{restaurant.slug}</p>
+                      <label className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300">URL</label>
+                      <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 break-all">/{restaurant.slug}</p>
                     </div>
                     {restaurant.phone && (
                       <div>
-                        <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Telefone</label>
-                        <p className="dark:text-white">{restaurant.phone}</p>
+                        <label className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300">Telefone</label>
+                        <p className="text-sm sm:text-base dark:text-white">{restaurant.phone}</p>
                       </div>
                     )}
-                    <div className="pt-3">
+                    <div className="pt-2 sm:pt-3">
                       <Button 
-                        className="w-full animated-button" 
+                        className="w-full animated-button text-xs sm:text-sm h-8 sm:h-10" 
                         variant="outline"
                         onClick={() => setShowEditRestaurantModal(true)}
                       >
@@ -2620,25 +2620,27 @@ export default function AdminDashboard() {
         </div>
 
         {/* Gerenciamento de Itens por Categoria */}
-        <Card className="mt-6" data-section="category-management">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Gerenciar Cardápio por Categoria</CardTitle>
-            <div className="flex gap-2">
+        <Card className="mt-4 sm:mt-6" data-section="category-management">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 px-3 sm:px-6">
+            <CardTitle className="text-base sm:text-lg lg:text-xl">Gerenciar Cardápio por Categoria</CardTitle>
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
               {showBulkActions && (
-                <div className="flex items-center gap-2 mr-4">
-                  <Badge variant="secondary">
+                <div className="flex items-center gap-2 mr-0 sm:mr-4 w-full sm:w-auto">
+                  <Badge variant="secondary" className="text-xs">
                     {selectedItems.length} {selectedItems.length === 1 ? 'item selecionado' : 'itens selecionados'}
                   </Badge>
                   <Button 
                     variant="destructive" 
                     size="sm"
+                    className="text-xs h-8"
                     onClick={handleBulkDelete}
                   >
-                    🗑️ Remover Selecionados
+                    🗑️ <span className="hidden sm:inline">Remover Selecionados</span><span className="sm:hidden">Remover</span>
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
+                    className="text-xs h-8"
                     onClick={clearSelection}
                   >
                     Cancelar
@@ -2648,32 +2650,33 @@ export default function AdminDashboard() {
               <Button 
                 variant="outline" 
                 size="sm"
+                className="text-xs h-8 sm:h-9"
                 onClick={() => setShowAddItemModal(true)}
                 disabled={!restaurant}
               >
-                <span className="mr-2">➕</span>
-                Novo Item
+                <span className="mr-1 sm:mr-2">➕</span>
+                <span className="hidden sm:inline">Novo Item</span><span className="sm:hidden">Novo</span>
               </Button>
             </div>
           </CardHeader>
           <CardContent>
             {/* Filtros e Busca */}
             {restaurant?.categories && restaurant.categories.length > 0 && (
-              <div className="mb-6 space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4">
+              <div className="mb-4 sm:mb-6 space-y-3 sm:space-y-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <div className="flex-1">
                     <Input
                       placeholder="🔍 Buscar itens do cardápio..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full"
+                      className="w-full text-sm h-9 sm:h-10"
                     />
                   </div>
-                  <div className="sm:w-48">
+                  <div className="w-full sm:w-48">
                     <select
                       value={selectedCategoryFilter}
                       onChange={(e) => setSelectedCategoryFilter(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-9 sm:h-10"
                     >
                       <option value="all">📁 Todas as categorias</option>
                       {restaurant.categories.map((category) => (
@@ -2687,6 +2690,7 @@ export default function AdminDashboard() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="text-xs h-9 sm:h-10 w-full sm:w-auto"
                       onClick={() => {
                         setSearchTerm('');
                         setSelectedCategoryFilter('all');
