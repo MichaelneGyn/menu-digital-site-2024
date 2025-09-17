@@ -732,17 +732,17 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
   const commonIcons = ['🍽️', '🍕', '🍔', '🍟', '🥗', '🍖', '🍗', '🥤', '🍰', '🍦', '☕', '🍺', '🏷️', '💥', '🔥', '⭐'];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
-        <h2 className="text-xl font-bold mb-4 dark:text-white">Adicionar Nova Categoria</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg max-w-sm sm:max-w-md lg:max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <h2 className="text-lg sm:text-xl font-bold mb-4 dark:text-white">Adicionar Nova Categoria</h2>
         
         {/* Categoria Promoção Pré-definida */}
         <div className="mb-4 p-3 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg">
-          <h3 className="font-semibold text-red-800 mb-2">🏷️ Categoria Especial</h3>
+          <h3 className="font-semibold text-red-800 mb-2 text-sm sm:text-base">🏷️ Categoria Especial</h3>
           <Button
             type="button"
             onClick={() => setFormData({ name: 'Promoções', icon: '🏷️' })}
-            className="w-full bg-red-600 hover:bg-red-700 text-white"
+            className="w-full bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base h-10 sm:h-11"
           >
             🏷️ Criar Categoria "Promoções"
           </Button>
@@ -750,24 +750,25 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">Nome da Categoria</Label>
+            <Label htmlFor="name" className="text-sm sm:text-base">Nome da Categoria</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
+              className="mt-1 h-10 sm:h-11 text-sm sm:text-base"
             />
           </div>
           <div>
-            <Label>Ícone</Label>
-            <div className="grid grid-cols-6 gap-2 mt-2">
+            <Label className="text-sm sm:text-base">Ícone</Label>
+            <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3 mt-2">
               {commonIcons.map((icon) => (
                 <button
                   key={icon}
                   type="button"
                   onClick={() => setFormData({ ...formData, icon })}
-                  className={`p-2 text-2xl border rounded hover:bg-gray-100 ${
-                    formData.icon === icon ? 'bg-blue-100 border-blue-500' : ''
+                  className={`p-2 sm:p-3 text-xl sm:text-2xl border rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] sm:min-h-[48px] flex items-center justify-center ${
+                    formData.icon === icon ? 'bg-blue-100 border-blue-500 dark:bg-blue-900 dark:border-blue-400' : 'dark:border-gray-600'
                   }`}
                 >
                   {icon}
@@ -775,17 +776,26 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
               ))}
             </div>
             <Input
-              className="mt-2"
+              className="mt-3 h-10 sm:h-11 text-sm sm:text-base"
               value={formData.icon}
               onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
               placeholder="Ou digite um emoji personalizado"
             />
           </div>
-          <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose} 
+              className="flex-1 h-10 sm:h-11 text-sm sm:text-base order-2 sm:order-1"
+            >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="flex-1">
+            <Button 
+              type="submit" 
+              disabled={isSubmitting} 
+              className="flex-1 h-10 sm:h-11 text-sm sm:text-base order-1 sm:order-2"
+            >
               {isSubmitting ? 'Adicionando...' : 'Adicionar Categoria'}
             </Button>
           </div>
@@ -2367,7 +2377,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto px-4 w-full">
           <div className="flex flex-col gap-4 py-6 sm:flex-row sm:justify-between sm:items-center">
             <div className="min-w-0 flex-1">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white truncate">
@@ -2396,7 +2406,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
+      <div className="container mx-auto px-4 w-full py-4 sm:py-6 lg:py-8">
         {/* Cards de Estatísticas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
           <Card className="stat-card">

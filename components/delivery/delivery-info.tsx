@@ -21,7 +21,7 @@ export default function DeliveryInfo({
   return (
     <Card className={`bg-red-50 border-red-200 ${className}`}>
       <CardContent className="p-4">
-        <div className="flex items-center justify-between space-x-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-center">
           {/* Tempo de Entrega */}
           <div className="flex items-center space-x-2 flex-1">
             <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">

@@ -28,7 +28,9 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <AuthProvider>
           <Providers>
-            {children}
+            <div className="w-full">
+              {children}
+            </div>
           </Providers>
         </AuthProvider>
       </body>

@@ -20,7 +20,7 @@ export default function CategorySection({ category, onAddToCart }: CategorySecti
         <h2 className="category-title">{category?.name}</h2>
       </div>
       
-      <div className="products-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 w-full px-4">
         {category?.menuItems?.map((item) => (
           <ProductCard
             key={item.id}

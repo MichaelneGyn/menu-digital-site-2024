@@ -57,17 +57,17 @@ export default function RestaurantNav({
     <nav className="restaurant-nav">
       <div 
         ref={navContainerRef}
-        className="nav-container max-w-6xl mx-auto px-2 sm:px-4 lg:px-8 flex gap-2 sm:gap-3 lg:gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-red-600"
+        className="container mx-auto px-2 sm:px-4 w-full flex gap-1 sm:gap-2 lg:gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-red-600"
       >
         {categories?.map((category) => (
           <button
             key={category.id}
             ref={activeCategory === category.id ? activeButtonRef : null}
-            className={`nav-item ${activeCategory === category.id ? 'active' : ''} px-3 py-2 sm:px-4 sm:py-3 lg:px-6 lg:py-4 text-sm sm:text-base lg:text-lg whitespace-nowrap min-w-fit flex-shrink-0`}
+            className={`nav-item ${activeCategory === category.id ? 'active' : ''} px-2 py-2 sm:px-3 sm:py-2 lg:px-4 lg:py-3 text-xs sm:text-sm lg:text-base whitespace-nowrap min-w-fit flex-shrink-0`}
             onClick={() => onCategoryChange(category.id)}
           >
-            <span className="text-base sm:text-lg lg:text-xl mr-1 sm:mr-2">{category.icon}</span>
-            <span className="font-medium">{category.name}</span>
+            <span className="text-sm sm:text-base lg:text-lg mr-1">{category.icon}</span>
+            <span className="font-medium text-xs sm:text-sm lg:text-base">{category.name}</span>
           </button>
         ))}
       </div>

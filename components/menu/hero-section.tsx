@@ -9,7 +9,7 @@ interface HeroSectionProps {
 
 export default function HeroSection({ restaurant }: HeroSectionProps) {
   return (
-    <div className="hero-section w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="container mx-auto px-4 w-full">
       <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 sm:mb-4 lg:mb-6 relative z-10 text-center leading-tight">
         Bem-vindo à {restaurant?.name}
       </h2>
