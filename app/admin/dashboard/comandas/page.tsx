@@ -22,16 +22,16 @@ export default function ComandasPage() {
     const res = await fetch("/api/orders");
     const data = await res.json();
     
-    // Mapear os dados da API para o formato esperado pelo componente
+    // Mapear os campos da API para o formato esperado pelo componente
     const mappedOrders = data.map((order: any) => ({
       id: order.id,
-      customername: order.customerName,
-      customerphone: order.customerPhone,
-      customeraddress: order.address,
-      totalprice: order.total,
+      customername: order.customerName || order.customername,
+      customerphone: order.customerPhone || order.customerphone,
+      customeraddress: order.address || order.customeraddress,
+      totalprice: order.totalPrice || order.totalprice,
       status: order.status,
-      created_at: order.createdAt,
-      paymentmethod: order.paymentMethod,
+      created_at: order.createdAt || order.created_at,
+      paymentmethod: order.paymentMethod || order.paymentmethod,
       items: order.items || []
     }));
     
