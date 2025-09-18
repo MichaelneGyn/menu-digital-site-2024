@@ -85,7 +85,6 @@ export async function getRestaurantBySlug(slug: string): Promise<ClientRestauran
         )
       `)
       .eq('slug', slug)
-      .eq('is_active', true)
       .single();
 
     if (error || !restaurant) {
