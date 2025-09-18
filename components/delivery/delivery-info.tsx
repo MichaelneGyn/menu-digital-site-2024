@@ -1,7 +1,6 @@
 'use client';
 
 import { Clock, Truck, MapPin } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 
 interface DeliveryInfoProps {
   deliveryTime: string;
@@ -74,31 +73,6 @@ export default function DeliveryInfo({
         )}
       </div>
     </div>
-  );
-}
-            <div className="flex items-center space-x-2 flex-1">
-              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold text-red-600">R$</span>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-red-800">Mínimo</div>
-                <div className="text-xs text-red-600">R$ {minOrderValue.toFixed(2)}</div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Endereço de Entrega */}
-        {address && (
-          <div className="mt-3 pt-3 border-t border-red-200">
-            <div className="flex items-center space-x-2">
-              <MapPin className="w-4 h-4 text-red-600" />
-              <span className="text-xs text-red-700 truncate">{address}</span>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }
 
