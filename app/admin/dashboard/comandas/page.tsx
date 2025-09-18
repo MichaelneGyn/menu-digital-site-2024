@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 type Order = {
   id: string;
@@ -8,7 +9,7 @@ type Order = {
   customerphone: string;
   customeraddress: string;
   totalprice: number;
-  status: "pending" | "preparing" | "completed";
+  status: "pending" | "preparing" | "completed" | "delivered";
   created_at: string;
   paymentmethod: string;
   items: { name: string; quantity: number; price: number }[];
@@ -16,50 +17,78 @@ type Order = {
 
 export default function ComandasPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const supabase = createClientComponentClient();
 
-  // Carregar pedidos da API
+  // 🚀 Buscar pedidos via API
   const fetchOrders = async () => {
     const res = await fetch("/api/orders");
     const data = await res.json();
-    
-    // Mapear os campos da API para o formato esperado pelo componente
-    const mappedOrders = data.map((order: any) => ({
-      id: order.id,
-      customername: order.customerName || order.customername,
-      customerphone: order.customerPhone || order.customerphone,
-      customeraddress: order.address || order.customeraddress,
-      totalprice: order.totalPrice || order.totalprice,
-      status: order.status,
-      created_at: order.createdAt || order.created_at,
-      paymentmethod: order.paymentMethod || order.paymentmethod,
-      items: order.items || []
-    }));
-    
-    setOrders(mappedOrders);
+    setOrders(data);
   };
 
+  // 🚀 Atualizar status do pedido
   const updateStatus = async (id: string, status: string) => {
     await fetch("/api/orders", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status }),
     });
-    fetchOrders(); // recarregar lista
   };
 
   useEffect(() => {
     fetchOrders();
+
+    // 🔥 Realtime Supabase
+    const channel = supabase
+      .channel("orders-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "Order" },
+        (payload) => {
+          console.log("Evento Realtime:", payload);
+
+          if (payload.eventType === "INSERT") {
+            setOrders((prev) => [payload.new as Order, ...prev]);
+          }
+
+          if (payload.eventType === "UPDATE") {
+            setOrders((prev) =>
+              prev.map((o) =>
+                o.id === payload.new.id ? (payload.new as Order) : o
+              )
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleString("pt-BR");
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleString("pt-BR");
+
+  const badge = (status: string) => {
+    if (status === "pending")
+      return <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm">⏳ Pendente</span>;
+    if (status === "preparing")
+      return <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm">👨‍🍳 Preparando</span>;
+    if (status === "completed")
+      return <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">✅ Pronto</span>;
+    if (status === "delivered")
+      return <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-sm">📦 Entregue</span>;
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">
+      <h1 className="text-xl font-bold mb-4">
         📋 Comandas - Pedidos em Tempo Real
       </h1>
+      <p className="mb-6 text-gray-600">
+        Gerencie todos os pedidos ordenados por data e hora de chegada.
+      </p>
 
       {orders.length === 0 ? (
         <p>Sem pedidos no momento.</p>
@@ -68,34 +97,19 @@ export default function ComandasPage() {
           {orders.map((order) => (
             <div
               key={order.id}
-              className="p-4 border rounded-lg shadow-md bg-white flex flex-col"
+              className="p-4 border rounded-lg shadow-sm bg-white"
             >
-              {/* Cabeçalho do pedido */}
               <div className="flex justify-between items-center mb-2">
                 <h2 className="font-semibold">
                   Pedido #{order.id} • {formatDate(order.created_at)}
                 </h2>
-                <span
-                  className={`px-3 py-1 rounded text-sm font-medium flex items-center gap-1 ${
-                    order.status === "pending"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : order.status === "preparing"
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
-                >
-                  {order.status === "pending" && "⏳ Pendente"}
-                  {order.status === "preparing" && "👨‍🍳 Preparando"}
-                  {order.status === "completed" && "✅ Pronto"}
-                </span>
+                {badge(order.status)}
               </div>
 
-              {/* Dados do cliente */}
               <p>👤 {order.customername}</p>
               <p>📍 {order.customeraddress}</p>
               <p>📞 {order.customerphone}</p>
 
-              {/* Itens do pedido */}
               <div className="mt-3">
                 <h3 className="font-semibold">Itens do Pedido:</h3>
                 <ul className="ml-6 list-disc">
@@ -107,13 +121,11 @@ export default function ComandasPage() {
                 </ul>
               </div>
 
-              {/* Pagamento e total */}
               <p className="mt-2">💳 Pagamento: {order.paymentmethod}</p>
               <p className="mt-1 font-bold text-green-600 text-lg">
                 R$ {order.totalprice.toFixed(2)}
               </p>
 
-              {/* Botões por status */}
               <div className="mt-3">
                 {order.status === "pending" && (
                   <button
