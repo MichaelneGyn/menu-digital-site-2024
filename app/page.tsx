@@ -16,7 +16,7 @@ export default function HomePage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-6 sm:mb-8 animate-slide-in-up animate-stagger-2">
-              <Link href="/cardapio/di-sarda-pizzaria" className="w-full sm:w-auto">
+              <Link href="/di-sarda-pizzaria" className="w-full sm:w-auto">
                 <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white px-6 sm:px-8 py-3 rounded-full transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl animate-pulse-slow btn-gradient w-full sm:w-auto text-sm sm:text-base">
                   Cardápio Di Sarda Pizzaria
                 </Button>
