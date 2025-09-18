@@ -9,15 +9,17 @@ interface HeroSectionProps {
 
 export default function HeroSection({ restaurant }: HeroSectionProps) {
   return (
-    <div className="container mx-auto px-4 w-full">
-      <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 sm:mb-4 lg:mb-6 relative z-10 text-center leading-tight">
-        Bem-vindo à {restaurant?.name}
-      </h2>
-      <p className="text-base sm:text-lg lg:text-xl xl:text-2xl relative z-10 mb-4 sm:mb-6 lg:mb-8 text-center leading-relaxed max-w-4xl mx-auto">
-        {restaurant?.description || 'A melhor experiência gastronômica da cidade'}
-      </p>
-      <div className="promo-banner text-sm sm:text-base lg:text-lg mx-auto">
-        🔥 Confira nossas promoções especiais! 🔥
+    <div className="w-full bg-red-600 text-white py-8 px-4">
+      <div className="max-w-4xl mx-auto text-center">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+          Bem-vindo à {restaurant?.name}
+        </h2>
+        <p className="text-lg md:text-xl lg:text-2xl mb-6 opacity-90">
+          {restaurant?.description || 'A melhor experiência gastronômica da cidade'}
+        </p>
+        <div className="bg-yellow-400 text-red-800 px-6 py-3 rounded-full inline-block font-semibold text-lg">
+          🔥 Confira nossas promoções especiais! 🔥
+        </div>
       </div>
     </div>
   );

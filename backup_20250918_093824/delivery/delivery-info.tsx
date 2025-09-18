@@ -19,63 +19,35 @@ export default function DeliveryInfo({
   className = '' 
 }: DeliveryInfoProps) {
   return (
-    <div className="w-full bg-red-50 border border-red-200 rounded-lg p-4 my-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+    <Card className={`bg-red-50 border-red-200 ${className}`}>
+      <CardContent className="p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-center">
           {/* Tempo de Entrega */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-              <Clock className="w-5 h-5 text-red-600" />
+          <div className="flex items-center space-x-2 flex-1">
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+              <Clock className="w-4 h-4 text-red-600" />
             </div>
             <div>
               <div className="text-sm font-medium text-red-800">Entrega</div>
-              <div className="text-sm text-red-600 font-semibold">{deliveryTime}</div>
+              <div className="text-xs text-red-600">{deliveryTime}</div>
             </div>
           </div>
 
           {/* Taxa de Entrega */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-              <Truck className="w-5 h-5 text-red-600" />
+          <div className="flex items-center space-x-2 flex-1">
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+              <Truck className="w-4 h-4 text-red-600" />
             </div>
             <div>
               <div className="text-sm font-medium text-red-800">Taxa</div>
-              <div className="text-sm text-red-600 font-semibold">
+              <div className="text-xs text-red-600">
                 {deliveryFee === 0 ? 'Grátis' : `R$ ${deliveryFee.toFixed(2)}`}
               </div>
             </div>
           </div>
 
           {/* Pedido Mínimo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-              <span className="text-red-600 font-bold text-sm">R$</span>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-red-800">Mínimo</div>
-              <div className="text-sm text-red-600 font-semibold">
-                R$ {minOrderValue.toFixed(2)}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Endereço */}
-        {address && (
-          <div className="flex items-center space-x-3 mt-4 pt-4 border-t border-red-200">
-            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-red-600" />
-            </div>
-            <div>
-              <div className="text-sm font-medium text-red-800">Endereço</div>
-              <div className="text-sm text-red-600">{address}</div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+          {minOrderValue > 0 && (
             <div className="flex items-center space-x-2 flex-1">
               <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
                 <span className="text-xs font-bold text-red-600">R$</span>

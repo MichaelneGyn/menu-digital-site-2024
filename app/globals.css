@@ -5,27 +5,16 @@
 /* Global CSS para prevenir cortes horizontais */
 html, body {
   overflow-x: hidden;
-  max-width: 100%;
-  width: 100%;
 }
 
 * {
   box-sizing: border-box;
-  max-width: 100%;
 }
 
 /* Prevenir elementos que ultrapassam a tela */
 img, video, iframe, embed, object {
-  max-width: 100% !important;
-  height: auto !important;
-}
-
-/* Garantir que containers não ultrapassem a viewport */
-.container, .max-w-4xl, .max-w-6xl, .max-w-2xl, .max-w-md {
-  max-width: 100% !important;
-  width: 100% !important;
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
+  max-width: 100%;
+  height: auto;
 }
 
 /* Responsividade para tabelas */
@@ -141,62 +130,13 @@ table {
     max-width: 100vw;
   }
   
-  * {
-    max-width: 100%;
-  }
-  
-  .container {
-    width: 100%;
-    max-width: 1200px;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    margin-left: auto;
-    margin-right: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  /* Ensure container children are properly centered */
-  .container > * {
-    width: 100%;
-    max-width: 1200px;
-  }
-  
   /* Responsive Images */
   img {
     max-width: 100%;
     height: auto;
     display: block;
   }
-  
-  /* Prevent horizontal overflow */
-  * {
-    box-sizing: border-box;
-  }
-  
-  /* Flexible containers with enhanced centering */
-  .flex-container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  /* Center all content sections */
-  .hero-section,
-  .category-section,
-  .delivery-info {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+}
   
   @media (min-width: 640px) {
     .container {
