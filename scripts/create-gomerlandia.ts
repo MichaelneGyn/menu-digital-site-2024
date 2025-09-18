@@ -153,15 +153,8 @@ async function main() {
   ];
 
   for (const [index, item] of allItems.entries()) {
-    await prisma.item.upsert({
-      where: {
-        categoryId_name: {
-          categoryId: item.categoryId,
-          name: item.name,
-        },
-      },
-      update: {},
-      create: {
+    await prisma.menuItem.create({
+      data: {
         ...item,
         sortOrder: index,
         restaurantId: restaurant.id,
