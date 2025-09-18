@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { createClient } from "@supabase/supabase-js";
 
 export async function GET(
   req: NextRequest, 
   { params }: { params: { slug: string } }
 ) {
-  const supabase = createRouteHandlerClient({ cookies });
+  // Usar cliente do Supabase com chave de serviço para acesso público
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
   const { slug } = params;
 
+  console.log("API Cardapio: Buscando restaurante com slug:", slug);
+
   try {
-    // Buscar restaurante pelo slug
+    // Primeiro buscar apenas o restaurante
     const { data: restaurant, error: restaurantError } = await supabase
       .from("restaurants")
       .select(`
@@ -19,60 +24,63 @@ export async function GET(
         slug,
         phone,
         whatsapp,
-        address,
-        description,
-        delivery_fee,
-        min_order_value,
-        open_time,
-        close_time,
-        working_days,
-        primary_color,
-        secondary_color,
-        logo_url,
-        banner_url,
-        theme,
-        show_delivery_time,
-        show_ratings,
-        categories (
-          id,
-          name,
-          icon,
-          items (
-            id,
-            name,
-            description,
-            price,
-            original_price,
-            image,
-            is_promo,
-            promo_tag,
-            is_active
-          )
-        )
+        address
       `)
       .eq("slug", slug)
-      .eq("is_active", true)
       .single();
 
+    console.log("API Cardapio: Resultado da busca do restaurante:", { restaurant, error: restaurantError });
+
     if (restaurantError || !restaurant) {
+      console.log("API Cardapio: Restaurante não encontrado");
       return NextResponse.json(
-        { error: "Restaurante não encontrado" }, 
+        { error: "Restaurante não encontrado" },
         { status: 404 }
       );
     }
 
-    // Filtrar apenas categorias e itens ativos
-    const filteredRestaurant = {
-      ...restaurant,
-      categories: restaurant.categories
-        .filter((category: any) => category.items && category.items.length > 0)
-        .map((category: any) => ({
+    // Buscar categorias do restaurante
+    const { data: categories, error: categoriesError } = await supabase
+      .from("categories")
+      .select(`
+        id,
+        name,
+        icon
+      `)
+      .eq("restaurant_id", restaurant.id);
+
+    console.log("API Cardapio: Categorias encontradas:", { categories, error: categoriesError });
+
+    // Buscar items de cada categoria
+    let categoriesWithItems = [];
+    if (categories && categories.length > 0) {
+      for (const category of categories) {
+        const { data: items, error: itemsError } = await supabase
+          .from("items")
+          .select(`
+            id,
+            name,
+            description,
+            price,
+            image,
+            is_promo
+          `)
+          .eq("category_id", category.id);
+
+        categoriesWithItems.push({
           ...category,
-          items: category.items.filter((item: any) => item.is_active !== false)
-        }))
+          items: items || []
+        });
+      }
+    }
+
+    const result = {
+      ...restaurant,
+      categories: categoriesWithItems
     };
 
-    return NextResponse.json(filteredRestaurant);
+    console.log("API Cardapio: Retornando resultado:", result);
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Erro ao buscar cardápio:", error);
     return NextResponse.json(

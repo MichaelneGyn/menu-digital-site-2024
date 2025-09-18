@@ -75,7 +75,13 @@ export type ClientRestaurant = {
 
 export async function getRestaurantBySlug(slug: string): Promise<ClientRestaurant | null> {
   try {
-    const { data: restaurant, error } = await supabase
+    // Use service role client for server-side operations
+    const serviceSupabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const { data: restaurant, error } = await serviceSupabase
       .from('restaurants')
       .select(`
         *,
