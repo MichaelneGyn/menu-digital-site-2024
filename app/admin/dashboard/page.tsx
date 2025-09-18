@@ -2530,7 +2530,7 @@ export default function AdminDashboard() {
                     <span>Relatórios</span>
                   </Button>
                   
-                  <Link href="/admin/dashboard/comandas">
+                  <Link href="/admin/comandas">
                     <Button 
                       variant="outline" 
                       className="h-20 flex flex-col items-center justify-center space-y-2 animated-button hover-float w-full"
