@@ -2,6 +2,9 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
+// Force dynamic rendering to avoid static generation issues
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   return (
     <div className="min-h-screen flex items-center justify-center page-transition">
