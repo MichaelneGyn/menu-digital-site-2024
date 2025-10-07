@@ -9,44 +9,44 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex items-center justify-center page-transition">
       <div className="max-w-4xl mx-auto text-center p-8">
-        <div className="hero-section">
-          <h1 className="text-5xl font-bold mb-6 relative z-10 animate-slide-in-up">
+        <div className="hero-section-landing">
+          <h1 className="landing-main-title">
             Cardápio Online Editável
           </h1>
-          <p className="text-xl mb-8 relative z-10 animate-slide-in-up animate-stagger-1">
+          <p className="landing-main-subtitle">
             Sistema SaaS completo para restaurantes gerenciarem seus cardápios online
           </p>
           
-          <div className="flex gap-4 justify-center mb-8 animate-slide-in-up animate-stagger-2">
+          <div className="flex gap-4 justify-center mb-12 flex-wrap">
             <Link href="/di-sarda-pizzaria">
-              <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl animate-pulse-slow btn-gradient">
+              <Button size="lg" className="cta-button-primary">
                 Cardápio Di Sarda Pizzaria
               </Button>
             </Link>
             <Link href="/auth/login">
-              <Button size="lg" className="bg-white text-red-600 hover:bg-red-600 hover:text-white px-8 py-3 rounded-full cursor-pointer transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-white font-semibold">
+              <Button size="lg" className="cta-button-secondary">
                 Área do Restaurante
               </Button>
             </Link>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 mt-12">
-            <div className="bg-red-600 bg-opacity-90 backdrop-blur p-6 rounded-lg hover-scale transition-all duration-500 hover:bg-red-700 cursor-pointer animate-slide-in-up animate-stagger-3 shadow-lg">
-              <div className="text-3xl mb-3 rotate-on-hover animate-float">📱</div>
-              <h3 className="text-xl font-semibold mb-2 text-white">Totalmente Responsivo</h3>
-              <p className="text-red-100">Funciona perfeitamente em celulares, tablets e desktops</p>
+            <div className="feature-card-old">
+              <div className="feature-icon-old">📱</div>
+              <h3 className="feature-title-old">Totalmente Responsivo</h3>
+              <p className="feature-description-old">Funciona perfeitamente em celulares, tablets e desktops</p>
             </div>
             
-            <div className="bg-red-600 bg-opacity-90 backdrop-blur p-6 rounded-lg hover-scale transition-all duration-500 hover:bg-red-700 cursor-pointer animate-slide-in-up animate-stagger-4 shadow-lg">
-              <div className="text-3xl mb-3 rotate-on-hover animate-float-reverse">⚡</div>
-              <h3 className="text-xl font-semibold mb-2 text-white">Fácil de Gerenciar</h3>
-              <p className="text-red-100">Interface intuitiva para adicionar, editar e remover itens do cardápio</p>
+            <div className="feature-card-old">
+              <div className="feature-icon-old">⚡</div>
+              <h3 className="feature-title-old">Fácil de Gerenciar</h3>
+              <p className="feature-description-old">Interface intuitiva para adicionar, editar e remover itens do cardápio</p>
             </div>
             
-            <div className="bg-red-600 bg-opacity-90 backdrop-blur p-6 rounded-lg hover-scale transition-all duration-500 hover:bg-red-700 cursor-pointer animate-slide-in-up animate-stagger-5 shadow-lg">
-              <div className="text-3xl mb-3 rotate-on-hover animate-float">🛒</div>
-              <h3 className="text-xl font-semibold mb-2 text-white">Carrinho Integrado</h3>
-              <p className="text-red-100">Sistema de carrinho funcional para facilitar os pedidos</p>
+            <div className="feature-card-old">
+              <div className="feature-icon-old">🛒</div>
+              <h3 className="feature-title-old">Carrinho Integrado</h3>
+              <p className="feature-description-old">Sistema de carrinho funcional para facilitar os pedidos</p>
             </div>
           </div>
         </div>

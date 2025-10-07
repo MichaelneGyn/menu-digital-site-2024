@@ -8,17 +8,24 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ restaurant }: HeroSectionProps) {
+  const handleScrollToPromos = () => {
+    const promosSection = document.querySelector('[data-category="Promoções"]');
+    if (promosSection) {
+      promosSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="hero-section">
-      <h2 className="text-4xl font-bold mb-4 relative z-10">
-        Bem-vindo à {restaurant?.name}
+      <h2>
+        {restaurant?.name}
       </h2>
-      <p className="text-xl relative z-10 mb-6">
-        {restaurant?.description || 'A melhor experiência gastronômica da cidade'}
+      <p>
+        {restaurant?.description || 'Faça seu pedido online'}
       </p>
-      <div className="promo-banner">
-        🔥 Confira nossas promoções especiais! 🔥
-      </div>
+      <button className="promo-banner" onClick={handleScrollToPromos}>
+        🔥 Ver Promoções
+      </button>
     </div>
   );
 }

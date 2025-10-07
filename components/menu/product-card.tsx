@@ -55,7 +55,7 @@ export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
         )}
         
         {item?.image && (
-          <div className="product-image-container">
+          <div style={{ position: 'relative', width: '100%', height: '180px' }}>
             <Image
               src={
                 item.image?.startsWith('/') 
@@ -68,7 +68,7 @@ export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
               }
               alt={item?.name || 'Produto'}
               fill
-              className="product-image object-cover"
+              className="product-image"
             />
           </div>
         )}
@@ -78,9 +78,9 @@ export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
           <p className="product-description">{item?.description}</p>
           
           <div className="product-footer">
-            <div className="price-container">
+            <div className="product-price-container">
               {item?.originalPrice && item.originalPrice > item.price && (
-                <span className="old-price">
+                <span className="product-old-price">
                   {formatPrice(Number(item.originalPrice))}
                 </span>
               )}
@@ -90,10 +90,10 @@ export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
             </div>
             
             <button
-              className="add-to-cart"
+              className="add-to-cart-btn"
               onClick={handleAddToCart}
             >
-              <span>+</span> Adicionar
+              + Adicionar
             </button>
           </div>
         </div>

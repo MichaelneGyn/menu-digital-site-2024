@@ -6,7 +6,6 @@ import { ClientRestaurant, ClientMenuItem } from '@/lib/restaurant';
 import { ProductCustomization } from './product-card';
 import RestaurantHeader from './restaurant-header';
 import RestaurantNav from './restaurant-nav';
-import HeroSection from './hero-section';
 import CategorySection from './category-section';
 import CartFloat from './cart-float';
 import CartModal from './cart-modal';
@@ -219,8 +218,6 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
       />
 
       <main className="main-content">
-        <HeroSection restaurant={restaurant} />
-        
         {/* Status de horário de funcionamento */}
         <div className="max-w-6xl mx-auto px-4 mb-6">
           <BusinessHoursAlert 

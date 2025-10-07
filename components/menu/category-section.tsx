@@ -12,7 +12,7 @@ interface CategorySectionProps {
 
 export default function CategorySection({ category, onAddToCart }: CategorySectionProps) {
   return (
-    <div className="category-section">
+    <div className="category-section" data-category={category?.name}>
       <div className="category-header">
         <div className="category-icon">
           {category?.icon || '🍽️'}

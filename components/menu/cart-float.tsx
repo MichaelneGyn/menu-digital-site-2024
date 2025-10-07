@@ -41,23 +41,19 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
 
   return (
     <div 
-      className={`cart-float hover-glow ${isAnimating ? 'cart-animate' : ''}`}
+      className={`cart-float ${isAnimating ? 'cart-animate' : ''}`}
       onClick={handleCartClick}
     >
       <div className="cart-float-content">
-        <div className="cart-icon">
-          <ShoppingCart size={24} />
-          {totalItems > 0 && (
-            <span className="cart-count">{totalItems}</span>
-          )}
+        <div className="cart-icon-wrapper">
+          <ShoppingCart size={22} strokeWidth={2.5} />
+          <span>Carrinho</span>
+          <span className="cart-badge">{totalItems}</span>
         </div>
         
-        {totalItems > 0 && (
-          <div className="cart-info">
-            <span className="cart-items">{totalItems} item{totalItems !== 1 ? 's' : ''}</span>
-            <span className="cart-total">{formatPrice(totalPrice)}</span>
-          </div>
-        )}
+        <div className="cart-total">
+          {formatPrice(totalPrice)}
+        </div>
       </div>
     </div>
   );
