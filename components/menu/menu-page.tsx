@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ClientRestaurant, ClientMenuItem } from '@/lib/restaurant';
 import { ProductCustomization } from './product-card';
 import RestaurantHeader from './restaurant-header';
@@ -13,6 +13,9 @@ import CartModal from './cart-modal';
 import Notification from './notification';
 import RestaurantFooter from './restaurant-footer';
 import DeliveryInfo from '@/components/delivery/delivery-info';
+import BusinessHoursAlert from '@/components/business-hours-alert';
+import AdminBypassToggle from '@/components/admin-bypass-toggle';
+import { isRestaurantOpen } from '@/lib/business-hours';
 
 interface MenuPageProps {
   restaurant: ClientRestaurant;
@@ -31,6 +34,8 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
   const [notificationMessage, setNotificationMessage] = useState('');
   const [showCartModal, setShowCartModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [adminEmail, setAdminEmail] = useState<string | undefined>(undefined);
+  const categoryRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
   // Set first category as active on load
   useEffect(() => {
@@ -42,7 +47,113 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
     return () => clearTimeout(timer);
   }, [restaurant?.categories]);
 
+  // Scroll Spy - Detecta qual categoria está visível
+  useEffect(() => {
+    let observer: IntersectionObserver | null = null;
+
+    // Delay para garantir que os refs foram setados
+    const timer = setTimeout(() => {
+      const observerOptions = {
+        root: null,
+        rootMargin: '-20% 0px -50% 0px', // Detecta seções no topo da viewport
+        threshold: [0, 0.25, 0.5, 0.75, 1]
+      };
+
+      // Armazena as seções visíveis
+      const visibleSections = new Map<string, number>();
+
+      const observerCallback = (entries: IntersectionObserverEntry[]) => {
+        entries.forEach((entry) => {
+          const categoryId = entry.target.getAttribute('data-category-id');
+          if (!categoryId) return;
+
+          if (entry.isIntersecting) {
+            // Armazena a seção e sua visibilidade
+            visibleSections.set(categoryId, entry.intersectionRatio);
+          } else {
+            // Remove se não está mais visível
+            visibleSections.delete(categoryId);
+          }
+        });
+
+        // Encontra a seção mais visível
+        if (visibleSections.size > 0) {
+          let maxRatio = 0;
+          let mostVisible = '';
+
+          visibleSections.forEach((ratio, id) => {
+            if (ratio > maxRatio) {
+              maxRatio = ratio;
+              mostVisible = id;
+            }
+          });
+
+          if (mostVisible) {
+            console.log('🎯 Categoria ativa:', mostVisible, '(ratio:', maxRatio.toFixed(2), ')');
+            setActiveCategory(mostVisible);
+          }
+        }
+      };
+
+      observer = new IntersectionObserver(observerCallback, observerOptions);
+
+      // Observar todas as seções de categoria
+      const refs = Object.values(categoryRefs.current).filter(ref => ref !== null);
+      console.log('👀 Iniciando observação de', refs.length, 'categorias');
+      
+      refs.forEach((ref) => {
+        if (ref) {
+          const catId = ref.getAttribute('data-category-id');
+          console.log('  ✓ Observando:', catId);
+          observer?.observe(ref);
+        }
+      });
+    }, 500); // Aumentei o delay para garantir que tudo está renderizado
+
+    return () => {
+      clearTimeout(timer);
+      observer?.disconnect();
+    };
+  }, [restaurant?.categories]);
+
+  // Função para fazer scroll suave ao clicar na categoria
+  const handleCategoryChange = (categoryId: string) => {
+    console.log('🖱️ Clique na categoria:', categoryId);
+    const element = categoryRefs.current[categoryId];
+    if (element) {
+      const offset = 120; // Offset para compensar o header fixo + nav
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - offset;
+
+      console.log('📍 Fazendo scroll para:', offsetPosition);
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+    setActiveCategory(categoryId);
+  };
+
   const handleAddToCart = (item: ClientMenuItem, customization?: ProductCustomization) => {
+    // Verificar se está aberto antes de adicionar
+    const status = isRestaurantOpen({
+      openTime: restaurant.openTime || null,
+      closeTime: restaurant.closeTime || null,
+      workingDays: restaurant.workingDays || null
+    }, adminEmail);
+
+    if (!status.isOpen) {
+      setNotificationMessage('⚠️ Não é possível fazer pedidos fora do horário de funcionamento');
+      setShowNotification(true);
+      return;
+    }
+
+    // Se é bypass de admin, mostrar notificação especial
+    if (status.isBypass) {
+      console.log('🔓 Modo Admin: Bypass de horário ativado');
+    }
+
     const cartId = `${item.id}-${Date.now()}`;
     const price = customization?.totalPrice || Number(item.price);
     
@@ -90,10 +201,6 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
     return cartItems.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
   };
 
-  const activeCategories = restaurant?.categories?.filter(cat => 
-    activeCategory ? cat.id === activeCategory : true
-  ) || [];
-
   if (isLoading) {
     return (
       <div className="loader">
@@ -108,11 +215,39 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
       <RestaurantNav
         categories={restaurant?.categories || []}
         activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
+        onCategoryChange={handleCategoryChange}
       />
 
       <main className="main-content">
         <HeroSection restaurant={restaurant} />
+        
+        {/* Status de horário de funcionamento */}
+        <div className="max-w-6xl mx-auto px-4 mb-6">
+          <BusinessHoursAlert 
+            restaurant={{ 
+              name: restaurant.name,
+              openTime: restaurant.openTime || null,
+              closeTime: restaurant.closeTime || null,
+              workingDays: restaurant.workingDays || null
+            }}
+            adminEmail={adminEmail}
+          />
+          
+          {/* Mostrar toggle de admin apenas quando fechado e não há bypass ativo */}
+          {!isRestaurantOpen({
+            openTime: restaurant.openTime || null,
+            closeTime: restaurant.closeTime || null,
+            workingDays: restaurant.workingDays || null
+          }, adminEmail).isOpen && !adminEmail && (
+            <AdminBypassToggle 
+              onBypassActivated={(email) => {
+                setAdminEmail(email);
+                setNotificationMessage('🔓 Modo Admin ativado! Você pode fazer pedidos agora.');
+                setShowNotification(true);
+              }} 
+            />
+          )}
+        </div>
         
         <DeliveryInfo 
           deliveryTime="40 - 50min"
@@ -121,12 +256,19 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
           address="Rua das Flores, 123 - Centro"
         />
 
-        {activeCategories?.map((category) => (
-          <CategorySection
+        {restaurant?.categories?.map((category) => (
+          <section 
             key={category.id}
-            category={category}
-            onAddToCart={handleAddToCart}
-          />
+            ref={(el) => { categoryRefs.current[category.id] = el; }}
+            data-category-id={category.id}
+            id={`category-${category.id}`}
+            style={{ scrollMarginTop: '120px' }}
+          >
+            <CategorySection
+              category={category}
+              onAddToCart={handleAddToCart}
+            />
+          </section>
         ))}
       </main>
 

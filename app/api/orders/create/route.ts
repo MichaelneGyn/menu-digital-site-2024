@@ -24,6 +24,11 @@ const createFullOrderSchema = z.object({
   restaurantId: z.string().min(1),
   items: z.array(createOrderItemSchema).min(1),
   total: z.number().positive(),
+  customerName: z.string().optional(),
+  customerPhone: z.string().optional(),
+  deliveryAddress: z.string().optional(),
+  paymentMethod: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -31,7 +36,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     console.log('Dados recebidos:', body);
     
-    const { restaurantId, items, total } = createFullOrderSchema.parse(body);
+    const { restaurantId, items, total, customerName, customerPhone, deliveryAddress, paymentMethod, notes } = createFullOrderSchema.parse(body);
 
     // Verificar se o restaurante existe
     const restaurant = await prisma.restaurant.findUnique({
@@ -43,13 +48,38 @@ export async function POST(req: NextRequest) {
     }
 
     // Gerar código incremental por restaurante
-    const lastOrder = await prisma.order.findFirst({
-      where: { restaurantId },
-      orderBy: { createdAt: 'desc' },
-    });
+    let code = '';
+    let attempts = 0;
+    const maxAttempts = 10;
     
-    const nextNum = lastOrder ? Number((lastOrder.code.match(/\d+/)?.[0] ?? '0')) + 1 : 1;
-    const code = `#${String(nextNum).padStart(5, '0')}`;
+    while (attempts < maxAttempts) {
+      const lastOrder = await prisma.order.findFirst({
+        where: { restaurantId },
+        orderBy: { createdAt: 'desc' },
+      });
+      
+      const nextNum = lastOrder ? Number((lastOrder.code.match(/\d+/)?.[0] ?? '0')) + 1 : 1;
+      const proposedCode = `#${String(nextNum).padStart(5, '0')}`;
+      
+      // Verificar se o código já existe
+      const existingOrder = await prisma.order.findUnique({
+        where: { code: proposedCode }
+      });
+      
+      if (!existingOrder) {
+        code = proposedCode;
+        break;
+      }
+      
+      // Se existir, adicionar timestamp para garantir unicidade
+      code = `#${String(nextNum).padStart(5, '0')}-${Date.now().toString().slice(-4)}`;
+      attempts++;
+    }
+    
+    if (!code) {
+      // Fallback: usar timestamp completo
+      code = `#${Date.now().toString().slice(-8)}`;
+    }
 
     // Validar que todos os menuItems existem
     for (const item of items) {
@@ -77,6 +107,11 @@ export async function POST(req: NextRequest) {
           status: 'PENDING',
           total,
           code,
+          customerName: customerName || null,
+          customerPhone: customerPhone || null,
+          deliveryAddress: deliveryAddress || null,
+          paymentMethod: paymentMethod || 'Dinheiro',
+          notes: notes || null,
         },
       });
       

@@ -12,15 +12,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import toast from 'react-hot-toast';
 import { onlyDigits, isValidWhatsapp, formatBRMask } from '@/lib/phone';
+import { toast } from 'sonner';
 
 interface Restaurant {
   id: string;
   name: string;
-  slug: string;
-  whatsapp?: string;
-  address?: string;
+  whatsapp?: string | null;
+  address?: string | null;
+  openTime?: string | null;
+  closeTime?: string | null;
+  workingDays?: string | null;
+  slug?: string;
   categories?: Category[];
   menuItems?: MenuItem[];
 }
@@ -97,6 +100,12 @@ export default function AdminDashboard() {
     const totalItems = data.menuItems?.length || 0;
     const totalCategories = data.categories?.length || 0;
     const promoItems = data.menuItems?.filter(item => item.isPromo).length || 0;
+
+    console.log('📊 Calculando estatísticas:');
+    console.log('  Total de itens:', totalItems);
+    console.log('  Itens completos:', data.menuItems);
+    console.log('  Itens com isPromo=true:', data.menuItems?.filter(item => item.isPromo));
+    console.log('  Total de promoções:', promoItems);
 
     setStats({
       totalItems,
@@ -640,7 +649,8 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
     price: '',
     categoryId: '',
     isPromo: false,
-    oldPrice: ''
+    oldPrice: '',
+    promoTag: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -722,19 +732,27 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
         setIsUploading(false);
       }
 
+      const itemData = {
+        ...formData,
+        price: parseFloat(formData.price),
+        oldPrice: formData.oldPrice ? parseFloat(formData.oldPrice) : undefined,
+        restaurantId,
+        image: imageUrl
+      };
+
+      console.log('📤 Enviando item para API:', itemData);
+
       const response = await fetch('/api/items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          price: parseFloat(formData.price),
-          oldPrice: formData.oldPrice ? parseFloat(formData.oldPrice) : undefined,
-          restaurantId,
-          image: imageUrl
-        }),
+        body: JSON.stringify(itemData),
       });
 
       if (response.ok) {
+        const createdItem = await response.json();
+        console.log('✅ Item criado:', createdItem);
+        toast.success(`✅ Item "${createdItem.name}" criado com sucesso!`);
+        
         // Reset form
         setFormData({
           name: '',
@@ -742,7 +760,8 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
           price: '',
           categoryId: '',
           isPromo: false,
-          oldPrice: ''
+          oldPrice: '',
+          promoTag: ''
         });
         setSelectedImage(null);
         setImagePreview(null);
@@ -871,17 +890,65 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
             </div>
             
             {formData.isPromo && (
-              <div>
-                <Label htmlFor="oldPrice">Preço Anterior</Label>
-                <Input
-                  id="oldPrice"
-                  type="text"
-                  inputMode="decimal"
-                  value={formData.oldPrice}
-                  onChange={(e) => setFormData({...formData, oldPrice: formatCents(e.target.value)})}
-                  placeholder="39.90"
-                />
-              </div>
+              <>
+                <div>
+                  <Label htmlFor="oldPrice">Preço Anterior</Label>
+                  <Input
+                    id="oldPrice"
+                    type="text"
+                    inputMode="decimal"
+                    value={formData.oldPrice}
+                    onChange={(e) => setFormData({...formData, oldPrice: formatCents(e.target.value)})}
+                    placeholder="39.90"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="promoTag">Etiqueta da Promoção</Label>
+                  <Input
+                    id="promoTag"
+                    type="text"
+                    value={formData.promoTag}
+                    onChange={(e) => setFormData({...formData, promoTag: e.target.value})}
+                    placeholder="Ex: COMBO, 2 POR 1, OFERTA, etc."
+                    maxLength={20}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Texto que aparecerá na tag acima do card (máx. 20 caracteres)
+                  </p>
+                  {/* Sugestões rápidas */}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, promoTag: 'COMBO'})}
+                      className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
+                    >
+                      COMBO
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, promoTag: '2 POR 1'})}
+                      className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
+                    >
+                      2 POR 1
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, promoTag: 'OFERTA'})}
+                      className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
+                    >
+                      OFERTA
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, promoTag: 'PROMOÇÃO'})}
+                      className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
+                    >
+                      PROMOÇÃO
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
 
             <div className="flex gap-3">
@@ -1004,9 +1071,31 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
   const [formData, setFormData] = useState({
     name: restaurant.name,
     whatsapp: restaurant.whatsapp || '',
-    address: restaurant.address || ''
+    address: restaurant.address || '',
+    openTime: restaurant.openTime || '08:00',
+    closeTime: restaurant.closeTime || '22:00',
+    workingDays: restaurant.workingDays || '0,1,2,3,4,5,6' // Todos os dias
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  const daysOfWeek = [
+    { value: '0', label: 'Domingo' },
+    { value: '1', label: 'Segunda' },
+    { value: '2', label: 'Terça' },
+    { value: '3', label: 'Quarta' },
+    { value: '4', label: 'Quinta' },
+    { value: '5', label: 'Sexta' },
+    { value: '6', label: 'Sábado' }
+  ];
+
+  const toggleDay = (day: string) => {
+    const days = formData.workingDays.split(',').filter((d: string) => d);
+    if (days.includes(day)) {
+      setFormData({ ...formData, workingDays: days.filter((d: string) => d !== day).join(',') });
+    } else {
+      setFormData({ ...formData, workingDays: [...days, day].sort().join(',') });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1028,6 +1117,9 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
           name: formData.name,
           whatsapp: formData.whatsapp ? digits : null,
           address: formData.address,
+          openTime: formData.openTime,
+          closeTime: formData.closeTime,
+          workingDays: formData.workingDays,
         }),
       });
 
@@ -1083,6 +1175,56 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                 onChange={(e) => setFormData({...formData, address: e.target.value})}
                 placeholder="Endereço do restaurante"
               />
+            </div>
+
+            <div className="border-t pt-4">
+              <h3 className="font-semibold mb-3 text-lg">⏰ Horário de Funcionamento</h3>
+              
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                  <Label htmlFor="openTime">Abertura</Label>
+                  <Input
+                    id="openTime"
+                    type="time"
+                    value={formData.openTime}
+                    onChange={(e) => setFormData({...formData, openTime: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="closeTime">Fechamento</Label>
+                  <Input
+                    id="closeTime"
+                    type="time"
+                    value={formData.closeTime}
+                    onChange={(e) => setFormData({...formData, closeTime: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="mb-2 block">Dias de Funcionamento</Label>
+                <div className="flex flex-wrap gap-2">
+                  {daysOfWeek.map((day) => {
+                    const isSelected = formData.workingDays.split(',').includes(day.value);
+                    return (
+                      <button
+                        key={day.value}
+                        type="button"
+                        onClick={() => toggleDay(day.value)}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          isSelected
+                            ? 'bg-red-600 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        {day.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-3">

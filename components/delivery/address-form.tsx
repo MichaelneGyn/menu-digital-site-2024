@@ -9,6 +9,8 @@ import { MapPin, Navigation, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Address {
+  customerName?: string;
+  customerPhone?: string;
   street: string;
   number: string;
   complement?: string;
@@ -28,6 +30,8 @@ interface AddressFormProps {
 
 export default function AddressForm({ onAddressSelect, selectedAddress }: AddressFormProps) {
   const [address, setAddress] = useState<Address>({
+    customerName: '',
+    customerPhone: '',
     street: '',
     number: '',
     complement: '',
@@ -55,24 +59,38 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
       return;
     }
 
+    // Solicitar permissão explícita
+    toast.loading('Obtendo sua localização...', { id: 'geolocation' });
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
         
+        console.log('📍 Coordenadas obtidas:', { latitude, longitude });
+        
         try {
-          // Usando a API de geocoding reverso do OpenStreetMap (gratuita)
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
+          // Usando múltiplas APIs para melhor precisão
+          // 1. Tentar Nominatim (OpenStreetMap)
+          const nominatimResponse = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`,
+            {
+              headers: {
+                'Accept-Language': 'pt-BR,pt;q=0.9'
+              }
+            }
           );
-          const data = await response.json();
+          const nominatimData = await nominatimResponse.json();
           
-          if (data && data.address) {
+          console.log('🗺️ Dados do Nominatim:', nominatimData);
+          
+          if (nominatimData && nominatimData.address) {
+            const addr = nominatimData.address;
             const newAddress: Address = {
-              street: data.address.road || '',
-              number: data.address.house_number || '',
-              neighborhood: data.address.suburb || data.address.neighbourhood || '',
-              city: data.address.city || data.address.town || data.address.village || '',
-              zipCode: data.address.postcode || '',
+              street: addr.road || addr.street || addr.pedestrian || addr.highway || '',
+              number: addr.house_number || '',
+              neighborhood: addr.suburb || addr.neighbourhood || addr.quarter || addr.district || '',
+              city: addr.city || addr.town || addr.municipality || addr.village || '',
+              zipCode: addr.postcode || '',
               coordinates: {
                 lat: latitude,
                 lng: longitude
@@ -80,24 +98,96 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
             };
             
             setAddress(newAddress);
-            toast.success('Localização obtida com sucesso!');
+            toast.success('✅ Localização obtida com sucesso!', { id: 'geolocation' });
+            
+            // Se encontrou CEP, tentar enriquecer com ViaCEP
+            if (newAddress.zipCode) {
+              enrichAddressWithViaCEP(newAddress.zipCode, newAddress);
+            }
+          } else {
+            toast.error('Não foi possível obter o endereço desta localização', { id: 'geolocation' });
           }
         } catch (error) {
-          toast.error('Erro ao obter endereço da localização');
+          console.error('Erro ao obter endereço:', error);
+          toast.error('Erro ao obter endereço da localização', { id: 'geolocation' });
         }
         
         setIsLoadingLocation(false);
       },
       (error) => {
-        toast.error('Erro ao obter localização. Verifique as permissões.');
+        console.error('Erro de geolocalização:', error);
+        let errorMessage = 'Erro ao obter localização.';
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Permissão de localização negada. Habilite nas configurações do navegador.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Localização indisponível no momento.';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Tempo esgotado ao obter localização. Tente novamente.';
+            break;
+        }
+        
+        toast.error(errorMessage, { id: 'geolocation' });
         setIsLoadingLocation(false);
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
+        timeout: 15000,
         maximumAge: 0
       }
     );
+  };
+
+  const enrichAddressWithViaCEP = async (cep: string, currentAddress: Address) => {
+    try {
+      const cleanCEP = cep.replace(/\D/g, '');
+      if (cleanCEP.length !== 8) return;
+      
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
+      const data = await response.json();
+      
+      if (data && !data.erro) {
+        setAddress(prev => ({
+          ...prev,
+          street: data.logradouro || prev.street,
+          neighborhood: data.bairro || prev.neighborhood,
+          city: data.localidade || prev.city,
+          zipCode: data.cep || prev.zipCode
+        }));
+      }
+    } catch (error) {
+      console.log('ViaCEP não disponível, usando dados do Nominatim');
+    }
+  };
+
+  const fetchAddressByCEP = async (cep: string) => {
+    try {
+      const cleanCEP = cep.replace(/\D/g, '');
+      if (cleanCEP.length !== 8) return;
+      
+      toast.loading('Buscando endereço...', { id: 'cep-search' });
+      
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
+      const data = await response.json();
+      
+      if (data && !data.erro) {
+        setAddress(prev => ({
+          ...prev,
+          street: data.logradouro || prev.street,
+          neighborhood: data.bairro || prev.neighborhood,
+          city: data.localidade || prev.city,
+          zipCode: data.cep || prev.zipCode
+        }));
+        toast.success('Endereço encontrado!', { id: 'cep-search' });
+      } else {
+        toast.error('CEP não encontrado', { id: 'cep-search' });
+      }
+    } catch (error) {
+      toast.error('Erro ao buscar CEP', { id: 'cep-search' });
+    }
   };
 
   const searchAddress = async (query: string) => {
@@ -162,6 +252,32 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Dados do Cliente */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b">
+          <div>
+            <Label htmlFor="customerName">Nome *</Label>
+            <Input
+              id="customerName"
+              type="text"
+              value={address.customerName || ''}
+              onChange={(e) => handleInputChange('customerName', e.target.value)}
+              placeholder="Seu nome completo"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="customerPhone">Telefone/WhatsApp *</Label>
+            <Input
+              id="customerPhone"
+              type="tel"
+              value={address.customerPhone || ''}
+              onChange={(e) => handleInputChange('customerPhone', e.target.value)}
+              placeholder="(00) 00000-0000"
+              required
+            />
+          </div>
+        </div>
+
         {/* Busca de endereço */}
         <div className="relative">
           <Label htmlFor="search" className="text-sm font-medium">Buscar endereço</Label>
@@ -280,8 +396,17 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
               id="zipCode"
               type="text"
               value={address.zipCode}
-              onChange={(e) => handleInputChange('zipCode', e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                handleInputChange('zipCode', value);
+                // Buscar endereço automaticamente quando CEP estiver completo
+                const cleanCEP = value.replace(/\D/g, '');
+                if (cleanCEP.length === 8) {
+                  fetchAddressByCEP(cleanCEP);
+                }
+              }}
               placeholder="00000-000"
+              maxLength={9}
             />
           </div>
         </div>

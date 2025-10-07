@@ -21,6 +21,8 @@ interface CartItem {
 }
 
 interface Address {
+  customerName?: string;
+  customerPhone?: string;
   street: string;
   number: string;
   complement?: string;
@@ -131,9 +133,25 @@ export default function CheckoutFlow({
 
     try {
       // Criar pedido completo com itens em uma única requisição
+      const addressText = selectedAddress ? 
+        `${selectedAddress.street}, ${selectedAddress.number}${selectedAddress.complement ? `, ${selectedAddress.complement}` : ''} - ${selectedAddress.neighborhood}, ${selectedAddress.city} - CEP: ${selectedAddress.zipCode}` : 
+        '';
+
+      const paymentMethodText = selectedPayment ? 
+        (selectedPayment.method === 'pix' ? 'PIX' :
+         selectedPayment.method === 'credit_card' ? 'Cartão de Crédito' :
+         selectedPayment.method === 'cash_on_delivery' ? 
+           (selectedPayment.cashChange ? `Dinheiro (Troco para R$ ${selectedPayment.cashChange.toFixed(2)})` : 'Dinheiro (Sem troco)') :
+         'Dinheiro') : 'Dinheiro';
+
       const orderData = {
         restaurantId: restaurant.id,
         total: total,
+        customerName: selectedAddress?.customerName || 'Cliente',
+        customerPhone: selectedAddress?.customerPhone || '',
+        deliveryAddress: addressText,
+        paymentMethod: paymentMethodText,
+        notes: items.some(i => i.customizations) ? 'Pedido com observações' : undefined,
         items: items.map(item => ({
           menuItemId: item.id,
           quantity: item.quantity,
@@ -217,16 +235,16 @@ export default function CheckoutFlow({
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6 pb-8">
+    <div className="max-w-4xl mx-auto p-2 sm:p-4 space-y-4 sm:space-y-6 pb-8">
       {/* Progress Steps */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-3 sm:p-6">
           <div className="flex items-center justify-between">
             {(['cart', 'address', 'payment', 'confirmation'] as CheckoutStep[]).map((step, index) => (
               <div key={step} className="flex items-center">
                 <div className="flex flex-col items-center">
                   {getStepIcon(step)}
-                  <span className="text-xs mt-1 capitalize">
+                  <span className="text-[10px] sm:text-xs mt-1 capitalize hidden sm:block">
                     {step === 'cart' ? 'Carrinho' :
                      step === 'address' ? 'Endereço' :
                      step === 'payment' ? 'Pagamento' :
@@ -234,7 +252,7 @@ export default function CheckoutFlow({
                   </span>
                 </div>
                 {index < 3 && (
-                  <div className={`w-16 h-0.5 mx-4 ${
+                  <div className={`w-6 sm:w-16 h-0.5 mx-1 sm:mx-4 ${
                     (step === 'cart') ||
                     (step === 'address' && selectedAddress) ||
                     (step === 'payment' && selectedPayment)
@@ -262,26 +280,26 @@ export default function CheckoutFlow({
       {currentStep === 'cart' && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <ShoppingCart className="w-5 h-5 text-red-600" />
               Seu Pedido
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4">
             {items.map((item) => (
-              <div key={item.id} className="flex justify-between items-start p-3 border rounded-lg">
+              <div key={item.id} className="flex flex-col sm:flex-row justify-between items-start p-3 border rounded-lg gap-2">
                 <div className="flex-1">
-                  <div className="font-medium">{item.name}</div>
+                  <div className="font-medium text-sm sm:text-base">{item.name}</div>
                   {item.customizations && item.customizations.length > 0 && (
-                    <div className="text-sm text-gray-600 mt-1">
+                    <div className="text-xs sm:text-sm text-gray-600 mt-1">
                       {item.customizations.join(', ')}
                     </div>
                   )}
-                  <div className="text-sm text-gray-500">Quantidade: {item.quantity}</div>
+                  <div className="text-xs sm:text-sm text-gray-500">Quantidade: {item.quantity}</div>
                 </div>
-                <div className="text-right">
-                  <div className="font-medium">R$ {(item.price * item.quantity).toFixed(2)}</div>
-                  <div className="text-sm text-gray-500">R$ {item.price.toFixed(2)} cada</div>
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <div className="font-medium text-sm sm:text-base">R$ {(item.price * item.quantity).toFixed(2)}</div>
+                  <div className="text-xs sm:text-sm text-gray-500">R$ {item.price.toFixed(2)} cada</div>
                 </div>
               </div>
             ))}
@@ -289,17 +307,17 @@ export default function CheckoutFlow({
             <Separator />
             
             <div className="space-y-2">
-              <div className="flex justify-between">
+              <div className="flex justify-between text-sm sm:text-base">
                 <span>Subtotal:</span>
                 <span>R$ {subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between text-sm sm:text-base">
                 <span>Taxa de entrega:</span>
                 <span>R$ {deliveryConfig.deliveryFee.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between font-bold text-lg">
+              <div className="flex justify-between font-bold text-base sm:text-lg">
                 <span>Total:</span>
-                <span>R$ {total.toFixed(2)}</span>
+                <span className="text-red-600">R$ {total.toFixed(2)}</span>
               </div>
             </div>
 
@@ -315,7 +333,7 @@ export default function CheckoutFlow({
             <Button
               onClick={() => setCurrentStep('address')}
               disabled={subtotal < deliveryConfig.minOrderValue}
-              className="w-full bg-red-600 hover:bg-red-700"
+              className="w-full bg-red-600 hover:bg-red-700 h-12 text-base font-semibold"
             >
               Continuar para Endereço
             </Button>

@@ -3,6 +3,7 @@
 
 import Image from 'next/image';
 import { ClientRestaurant } from '@/lib/restaurant';
+import { BusinessHoursIndicator } from '@/components/business-hours-alert';
 
 interface RestaurantHeaderProps {
   restaurant: ClientRestaurant;
@@ -32,7 +33,15 @@ export default function RestaurantHeader({ restaurant }: RestaurantHeaderProps) 
             <p className="text-gray-600 text-sm">{restaurant?.description || 'Tradição e Sabor'}</p>
           </div>
         </div>
-        <div className="info-bar flex gap-8 items-center">
+        <div className="info-bar flex gap-6 items-center">
+          <BusinessHoursIndicator 
+            restaurant={{
+              name: restaurant.name,
+              openTime: restaurant.openTime || null,
+              closeTime: restaurant.closeTime || null,
+              workingDays: restaurant.workingDays || null
+            }}
+          />
           <div className="info-item flex items-center gap-2 text-gray-600">
             <span className="text-red-600">📍</span>
             <span>{restaurant?.address ? `${restaurant.address}, ${restaurant.city}` : 'Localização não informada'}</span>

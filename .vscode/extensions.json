@@ -2,6 +2,7 @@
   "recommendations": [
     "bradlc.vscode-tailwindcss",
     "ms-vscode.vscode-typescript-next",
-    "esbenp.prettier-vscode"
+    "esbenp.prettier-vscode",
+    "codeium.codeium"
   ]
 }

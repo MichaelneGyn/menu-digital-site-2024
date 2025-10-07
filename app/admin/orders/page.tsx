@@ -25,6 +25,12 @@ interface Order {
   code: string;
   status: string;
   total: number;
+  customerName: string | null;
+  customerPhone: string | null;
+  customerAddress: string | null;
+  deliveryAddress: string | null;
+  paymentMethod: string | null;
+  notes: string | null;
   createdAt: string;
   orderItems: OrderItem[];
 }
@@ -171,6 +177,41 @@ export default function AdminOrdersPage() {
                         </Badge>
                       </div>
 
+                      {/* Informações do Cliente */}
+                      <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                        <h4 className="font-semibold mb-3 text-blue-900 flex items-center gap-2">
+                          👤 Informações do Cliente
+                        </h4>
+                        <div className="space-y-2 text-sm">
+                          {order.customerName && (
+                            <div className="flex items-start gap-2">
+                              <span className="font-medium text-blue-800 min-w-[80px]">Nome:</span>
+                              <span className="text-gray-700">{order.customerName}</span>
+                            </div>
+                          )}
+                          {order.customerPhone && (
+                            <div className="flex items-start gap-2">
+                              <Phone className="w-4 h-4 text-blue-600 mt-0.5" />
+                              <span className="font-medium text-blue-800 min-w-[80px]">Telefone:</span>
+                              <span className="text-gray-700">{order.customerPhone}</span>
+                            </div>
+                          )}
+                          {order.deliveryAddress && (
+                            <div className="flex items-start gap-2">
+                              <MapPin className="w-4 h-4 text-blue-600 mt-0.5" />
+                              <span className="font-medium text-blue-800 min-w-[80px]">Endereço:</span>
+                              <span className="text-gray-700">{order.deliveryAddress}</span>
+                            </div>
+                          )}
+                          {order.notes && (
+                            <div className="flex items-start gap-2 mt-2 pt-2 border-t border-blue-200">
+                              <span className="font-medium text-blue-800 min-w-[80px]">Obs:</span>
+                              <span className="text-gray-700 italic">{order.notes}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
                       {/* Items do Pedido */}
                       <div className="bg-gray-50 rounded-xl p-4">
                         <h4 className="font-semibold mb-3 text-gray-700">Itens do Pedido:</h4>
@@ -198,7 +239,7 @@ export default function AdminOrdersPage() {
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <CreditCard className="w-4 h-4" />
-                          <span>Pagamento: Dinheiro</span>
+                          <span>Pagamento: {order.paymentMethod || 'Dinheiro'}</span>
                         </div>
                       </div>
                     </div>

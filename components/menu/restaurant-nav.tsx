@@ -17,7 +17,7 @@ export default function RestaurantNav({
 }: RestaurantNavProps) {
   return (
     <nav className="restaurant-nav">
-      <div className="nav-container max-w-6xl mx-auto px-8 flex gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-red-600">
+      <div className="nav-container max-w-6xl mx-auto px-4 sm:px-8 flex gap-2 sm:gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-red-600" style={{ scrollbarWidth: 'thin' }}>
         {categories?.map((category) => (
           <button
             key={category.id}

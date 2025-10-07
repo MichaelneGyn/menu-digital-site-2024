@@ -9,12 +9,13 @@ import { z } from 'zod';
 const createItemSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   description: z.string().min(1, 'Descrição é obrigatória'),
-  price: z.number().positive('Preço deve ser maior que zero'),
+  price: z.number().positive('Preço deve ser positivo'),
   categoryId: z.string().min(1, 'Categoria é obrigatória'),
   restaurantId: z.string().min(1, 'Restaurante é obrigatório'),
   image: z.string().min(1, 'Imagem é obrigatória'),
-  isPromo: z.boolean().optional(),
+  isPromo: z.boolean().optional().default(false),
   oldPrice: z.number().positive().optional(),
+  promoTag: z.string().optional(),
 });
 
 export async function DELETE(request: NextRequest) {
@@ -67,7 +68,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, description, price, categoryId, restaurantId, image, isPromo, oldPrice } = createItemSchema.parse(body);
+    console.log('📥 Dados recebidos na API:', body);
+    
+    const { name, description, price, categoryId, restaurantId, image, isPromo, oldPrice, promoTag } = createItemSchema.parse(body);
+    
+    console.log('✅ Dados validados:', { name, description, price, categoryId, restaurantId, image, isPromo, oldPrice, promoTag });
 
     // Verificar se o usuário é dono do restaurante
     const user = await prisma.user.findUnique({
@@ -91,21 +96,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Categoria não encontrada' }, { status: 404 });
     }
 
+    const itemData = {
+      name,
+      description,
+      price,
+      categoryId,
+      restaurantId,
+      image,
+      isPromo: isPromo || false,
+      originalPrice: oldPrice,
+      promoTag: promoTag || null
+    };
+
+    console.log('💾 Salvando item no banco:', itemData);
+
     const item = await prisma.menuItem.create({
-      data: {
-        name,
-        description,
-        price,
-        categoryId,
-        restaurantId,
-        image,
-        isPromo: isPromo || false,
-        originalPrice: oldPrice
-      },
+      data: itemData,
       include: {
         category: true
       }
     });
+
+    console.log('✅ Item salvo com sucesso:', item);
 
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
