@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Navigation, Search } from 'lucide-react';
+import { MapPin, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Address {
@@ -39,7 +39,6 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
     city: '',
     zipCode: '',
   });
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -49,97 +48,6 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
       setAddress(selectedAddress);
     }
   }, [selectedAddress]);
-
-  const getCurrentLocation = async () => {
-    setIsLoadingLocation(true);
-    
-    if (!navigator.geolocation) {
-      toast.error('Geolocalização não é suportada pelo seu navegador');
-      setIsLoadingLocation(false);
-      return;
-    }
-
-    // Solicitar permissão explícita
-    toast.loading('Obtendo sua localização...', { id: 'geolocation' });
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        
-        console.log('📍 Coordenadas obtidas:', { latitude, longitude });
-        
-        try {
-          // Usando múltiplas APIs para melhor precisão
-          // 1. Tentar Nominatim (OpenStreetMap)
-          const nominatimResponse = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`,
-            {
-              headers: {
-                'Accept-Language': 'pt-BR,pt;q=0.9'
-              }
-            }
-          );
-          const nominatimData = await nominatimResponse.json();
-          
-          console.log('🗺️ Dados do Nominatim:', nominatimData);
-          
-          if (nominatimData && nominatimData.address) {
-            const addr = nominatimData.address;
-            const newAddress: Address = {
-              street: addr.road || addr.street || addr.pedestrian || addr.highway || '',
-              number: addr.house_number || '',
-              neighborhood: addr.suburb || addr.neighbourhood || addr.quarter || addr.district || '',
-              city: addr.city || addr.town || addr.municipality || addr.village || '',
-              zipCode: addr.postcode || '',
-              coordinates: {
-                lat: latitude,
-                lng: longitude
-              }
-            };
-            
-            setAddress(newAddress);
-            toast.success('✅ Localização obtida com sucesso!', { id: 'geolocation' });
-            
-            // Se encontrou CEP, tentar enriquecer com ViaCEP
-            if (newAddress.zipCode) {
-              enrichAddressWithViaCEP(newAddress.zipCode, newAddress);
-            }
-          } else {
-            toast.error('Não foi possível obter o endereço desta localização', { id: 'geolocation' });
-          }
-        } catch (error) {
-          console.error('Erro ao obter endereço:', error);
-          toast.error('Erro ao obter endereço da localização', { id: 'geolocation' });
-        }
-        
-        setIsLoadingLocation(false);
-      },
-      (error) => {
-        console.error('Erro de geolocalização:', error);
-        let errorMessage = 'Erro ao obter localização.';
-        
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = 'Permissão de localização negada. Habilite nas configurações do navegador.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Localização indisponível no momento.';
-            break;
-          case error.TIMEOUT:
-            errorMessage = 'Tempo esgotado ao obter localização. Tente novamente.';
-            break;
-        }
-        
-        toast.error(errorMessage, { id: 'geolocation' });
-        setIsLoadingLocation(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-      }
-    );
-  };
 
   const enrichAddressWithViaCEP = async (cep: string, currentAddress: Address) => {
     try {
@@ -317,17 +225,21 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
           )}
         </div>
 
-        {/* Botão de localização atual */}
-        <Button
-          type="button"
-          variant="outline"
-          onClick={getCurrentLocation}
-          disabled={isLoadingLocation}
-          className="w-full flex items-center gap-2"
-        >
-          <Navigation className="w-4 h-4" />
-          {isLoadingLocation ? 'Obtendo localização...' : 'Usar minha localização atual'}
-        </Button>
+        {/* Dica de preenchimento */}
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-800">
+                <strong className="text-blue-900">💡 Dica:</strong> Digite seu <strong>CEP</strong> no campo abaixo para preencher automaticamente a rua, bairro e cidade!
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* Campos do endereço */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -391,7 +303,7 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
           </div>
           
           <div>
-            <Label htmlFor="zipCode">CEP</Label>
+            <Label htmlFor="zipCode">CEP *</Label>
             <Input
               id="zipCode"
               type="text"
@@ -405,8 +317,9 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
                   fetchAddressByCEP(cleanCEP);
                 }
               }}
-              placeholder="00000-000"
+              placeholder="Digite seu CEP"
               maxLength={9}
+              required
             />
           </div>
         </div>

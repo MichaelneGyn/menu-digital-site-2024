@@ -24,6 +24,8 @@ interface Restaurant {
   closeTime?: string | null;
   workingDays?: string | null;
   slug?: string;
+  pixKey?: string | null;
+  pixQrCode?: string | null;
   categories?: Category[];
   menuItems?: MenuItem[];
 }
@@ -170,26 +172,26 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-6 gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Painel Administrativo
               </h1>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600">
                 Bem-vindo, {session.user?.name || session.user?.email}!
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3 flex-wrap">
               {restaurant && (
                 <Link href={`/${restaurant.slug}`}>
-                  <Button variant="outline" className="animated-button">
+                  <Button variant="outline" className="animated-button text-sm sm:text-base">
                     <span className="mr-2">👁️</span>
                     Ver Cardápio
                   </Button>
                 </Link>
               )}
               <Link href="/auth/logout">
-                <Button variant="destructive" className="animated-button">
+                <Button variant="destructive" className="animated-button text-sm sm:text-base">
                   Sair
                 </Button>
               </Link>
@@ -200,14 +202,14 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Cards de Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <Card className="stat-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 sm:px-6">
               <CardTitle className="text-sm font-medium">Total de Itens</CardTitle>
-              <span className="text-2xl">🍕</span>
+              <span className="text-xl sm:text-2xl">🍕</span>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.totalItems}</div>
+            <CardContent className="px-4 sm:px-6">
+              <div className="text-xl sm:text-2xl font-bold text-red-600">{stats.totalItems}</div>
               <p className="text-xs text-muted-foreground">
                 Itens no cardápio
               </p>
@@ -215,12 +217,12 @@ export default function AdminDashboard() {
           </Card>
 
           <Card className="stat-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 sm:px-6">
               <CardTitle className="text-sm font-medium">Categorias</CardTitle>
-              <span className="text-2xl">📁</span>
+              <span className="text-xl sm:text-2xl">📁</span>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.totalCategories}</div>
+            <CardContent className="px-4 sm:px-6">
+              <div className="text-xl sm:text-2xl font-bold text-blue-600">{stats.totalCategories}</div>
               <p className="text-xs text-muted-foreground">
                 Categorias ativas
               </p>
@@ -228,12 +230,12 @@ export default function AdminDashboard() {
           </Card>
 
           <Card className="stat-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 sm:px-6">
               <CardTitle className="text-sm font-medium">Promoções</CardTitle>
-              <span className="text-2xl">🎉</span>
+              <span className="text-xl sm:text-2xl">🎉</span>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{stats.promoItems}</div>
+            <CardContent className="px-4 sm:px-6">
+              <div className="text-xl sm:text-2xl font-bold text-yellow-600">{stats.promoItems}</div>
               <p className="text-xs text-muted-foreground">
                 Itens em promoção
               </p>
@@ -251,79 +253,80 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Grade original de Ações Rápidas: manter exatamente os cards e funcionalidades */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {/* Adicionar Item */}
                   <button
                     onClick={() => setShowAddItemModal(true)}
-                    className="h-20 flex flex-col items-center justify-center space-y-2 border rounded-lg p-4 hover-scale animated-button hover-float bg-white"
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
                   >
-                    <span className="text-2xl">➕</span>
-                    <span className="font-medium">Adicionar Item</span>
+                    <span className="text-xl sm:text-2xl">➕</span>
+                    <span className="text-xs sm:text-sm font-medium text-center">Adicionar Item</span>
                   </button>
 
                   {/* Nova Categoria */}
                   <button
                     onClick={() => setShowAddCategoryModal(true)}
-                    className="h-20 flex flex-col items-center justify-center space-y-2 border rounded-lg p-4 hover-scale animated-button hover-float bg-white"
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
                   >
-                    <span className="text-2xl">📁</span>
-                    <span className="font-medium">Nova Categoria</span>
+                    <span className="text-xl sm:text-2xl">📁</span>
+                    <span className="text-xs sm:text-sm font-medium text-center">Nova Categoria</span>
                   </button>
 
                   {/* Importar do iFood */}
                   <button
                     onClick={() => router.push('/admin/ifood/import')}
-                    className="h-20 flex flex-col items-center justify-center space-y-2 border rounded-lg p-4 hover-scale animated-button hover-float bg-white"
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
                   >
-                    <span className="text-2xl">🧪</span>
-                    <span className="font-medium">Importar do iFood</span>
+                    <span className="text-xl sm:text-2xl">🧪</span>
+                    <span className="text-xs sm:text-sm font-medium text-center">Importar iFood</span>
                   </button>
 
                   {/* Personalizar */}
                   <button
                     onClick={() => setShowPersonalizeModal(true)}
-                    className="h-20 flex flex-col items-center justify-center space-y-2 border rounded-lg p-4 hover-scale animated-button hover-float bg-white"
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
                   >
-                    <span className="text-2xl">🎨</span>
-                    <span className="font-medium">Personalizar</span>
+                    <span className="text-xl sm:text-2xl">🎨</span>
+                    <span className="text-xs sm:text-sm font-medium text-center">Personalizar</span>
                   </button>
 
-                  {/* Promoções */}
+                  {/* Calculadora CMV */}
                   <button
-                    onClick={() => router.push('/admin/promotions')}
-                    className="h-20 flex flex-col items-center justify-center space-y-2 border rounded-lg p-4 hover-scale animated-button hover-float bg-white"
+                    onClick={() => router.push('/admin/cmv')}
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-green-50 to-blue-50 border-green-200"
                   >
-                    <span className="text-2xl">🏷️</span>
-                    <span className="font-medium">Promoções</span>
+                    <span className="text-xl sm:text-2xl">🧮</span>
+                    <span className="text-xs sm:text-sm font-medium text-center">Calculadora CMV</span>
+                    <span className="text-xs text-green-600 font-semibold">NOVO</span>
                   </button>
 
                   {/* Relatórios */}
                   <button
                     onClick={() => setShowReportsModal(true)}
-                    className="h-20 flex flex-col items-center justify-center space-y-2 border rounded-lg p-4 hover-scale animated-button hover-float bg-white"
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
                   >
-                    <span className="text-2xl">📊</span>
-                    <span className="font-medium">Relatórios</span>
+                    <span className="text-xl sm:text-2xl">📊</span>
+                    <span className="text-xs sm:text-sm font-medium text-center">Relatórios</span>
                   </button>
 
                   {/* Novos cards adicionais */}
                   {/* Comandas: sempre visível */}
                   <button
                     onClick={() => router.push('/admin/orders')}
-                    className="h-20 flex flex-col items-center justify-center space-y-2 border rounded-lg p-4 hover-scale animated-button hover-float bg-white"
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
                   >
-                    <span className="text-2xl">🧾</span>
-                    <span className="font-medium">Comandas</span>
+                    <span className="text-xl sm:text-2xl">🧾</span>
+                    <span className="text-xs sm:text-sm font-medium text-center">Comandas</span>
                   </button>
 
                   {/* Usuários & Assinaturas: somente para admin */}
                   {isAdmin && (
                     <button
                       onClick={() => router.push('/admin/customers')}
-                      className="h-20 flex flex-col items-center justify-center space-y-2 border rounded-lg p-4 hover-scale animated-button hover-float bg-white"
+                      className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
                     >
-                      <span className="text-2xl">👥💳</span>
-                      <span className="font-medium">Usuários & Assinaturas</span>
+                      <span className="text-xl sm:text-2xl">👥💳</span>
+                      <span className="text-xs sm:text-sm font-medium text-center">Usuários</span>
                     </button>
                   )}
                 </div>
@@ -978,7 +981,7 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const icons = ['🎉', '🍕', '🥗', '🍝', '🍰', '🥤', '🥘', '🍖', '🐟', '🌮', '🍜'];
+  const icons = ['🔥', '🍕', '🥗', '🍝', '🧁', '🍹', '🍤', '🍖', '🐟', '🌮', '🍜'];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1074,7 +1077,9 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
     address: restaurant.address || '',
     openTime: restaurant.openTime || '08:00',
     closeTime: restaurant.closeTime || '22:00',
-    workingDays: restaurant.workingDays || '0,1,2,3,4,5,6' // Todos os dias
+    workingDays: restaurant.workingDays || '0,1,2,3,4,5,6', // Todos os dias
+    pixKey: restaurant.pixKey || '',
+    pixQrCode: restaurant.pixQrCode || ''
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -1120,6 +1125,8 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
           openTime: formData.openTime,
           closeTime: formData.closeTime,
           workingDays: formData.workingDays,
+          pixKey: formData.pixKey,
+          pixQrCode: formData.pixQrCode,
         }),
       });
 
@@ -1175,6 +1182,30 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                 onChange={(e) => setFormData({...formData, address: e.target.value})}
                 placeholder="Endereço do restaurante"
               />
+            </div>
+
+            <div className="border-t pt-4">
+              <h3 className="font-semibold mb-3 text-lg">💳 Configurações PIX</h3>
+              
+              <div>
+                <Label htmlFor="pixKey">Chave PIX</Label>
+                <Input
+                  id="pixKey"
+                  value={formData.pixKey}
+                  onChange={(e) => setFormData({...formData, pixKey: e.target.value})}
+                  placeholder="CPF, CNPJ, e-mail ou chave aleatória"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="pixQrCode">QR Code PIX (URL da imagem)</Label>
+                <Input
+                  id="pixQrCode"
+                  value={formData.pixQrCode}
+                  onChange={(e) => setFormData({...formData, pixQrCode: e.target.value})}
+                  placeholder="https://exemplo.com/qrcode.png"
+                />
+              </div>
             </div>
 
             <div className="border-t pt-4">

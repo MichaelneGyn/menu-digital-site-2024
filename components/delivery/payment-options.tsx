@@ -6,19 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { CreditCard, Smartphone, Banknote, QrCode } from 'lucide-react';
+import { CreditCard, Smartphone, Banknote, QrCode, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ClientRestaurant } from '@/lib/restaurant';
 
-export type PaymentMethod = 'pix' | 'credit_card' | 'cash_on_delivery';
+export type PaymentMethod = 'pix' | 'card_on_delivery' | 'cash_on_delivery';
 
 interface PaymentData {
   method: PaymentMethod;
-  cardData?: {
-    number: string;
-    name: string;
-    expiry: string;
-    cvv: string;
-  };
+  cardType?: 'credit' | 'debit';
   cashChange?: number;
 }
 
@@ -26,74 +22,27 @@ interface PaymentOptionsProps {
   onPaymentSelect: (paymentData: PaymentData) => void;
   selectedPayment?: PaymentData;
   totalAmount: number;
+  restaurant: ClientRestaurant;
 }
 
-export default function PaymentOptions({ onPaymentSelect, selectedPayment, totalAmount }: PaymentOptionsProps) {
+export default function PaymentOptions({ onPaymentSelect, selectedPayment, totalAmount, restaurant }: PaymentOptionsProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(selectedPayment?.method || 'pix');
-  const [cardData, setCardData] = useState({
-    number: '',
-    name: '',
-    expiry: '',
-    cvv: ''
-  });
+  const [cardType, setCardType] = useState<'credit' | 'debit'>('credit');
   const [cashChange, setCashChange] = useState<number>(0);
   const [needsChange, setNeedsChange] = useState(false);
+  const [pixKeyCopied, setPixKeyCopied] = useState(false);
 
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
+  const copyPixKey = async () => {
+    if (restaurant.pixKey) {
+      try {
+        await navigator.clipboard.writeText(restaurant.pixKey);
+        setPixKeyCopied(true);
+        toast.success('Chave PIX copiada!');
+        setTimeout(() => setPixKeyCopied(false), 3000);
+      } catch (error) {
+        toast.error('Erro ao copiar chave');
+      }
     }
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return v;
-    }
-  };
-
-  const formatExpiry = (value: string) => {
-    const v = value.replace(/\D/g, '');
-    if (v.length >= 2) {
-      return v.substring(0, 2) + '/' + v.substring(2, 4);
-    }
-    return v;
-  };
-
-  const handleCardInputChange = (field: string, value: string) => {
-    let formattedValue = value;
-    
-    if (field === 'number') {
-      formattedValue = formatCardNumber(value);
-    } else if (field === 'expiry') {
-      formattedValue = formatExpiry(value);
-    } else if (field === 'cvv') {
-      formattedValue = value.replace(/\D/g, '').substring(0, 4);
-    }
-    
-    setCardData(prev => ({ ...prev, [field]: formattedValue }));
-  };
-
-  const validateCardData = () => {
-    if (!cardData.number || cardData.number.replace(/\s/g, '').length < 13) {
-      toast.error('Número do cartão inválido');
-      return false;
-    }
-    if (!cardData.name.trim()) {
-      toast.error('Nome do portador é obrigatório');
-      return false;
-    }
-    if (!cardData.expiry || cardData.expiry.length < 5) {
-      toast.error('Data de validade inválida');
-      return false;
-    }
-    if (!cardData.cvv || cardData.cvv.length < 3) {
-      toast.error('CVV inválido');
-      return false;
-    }
-    return true;
   };
 
   const handleSubmit = () => {
@@ -101,9 +50,8 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
       method: paymentMethod
     };
 
-    if (paymentMethod === 'credit_card') {
-      if (!validateCardData()) return;
-      paymentData.cardData = cardData;
+    if (paymentMethod === 'card_on_delivery') {
+      paymentData.cardType = cardType;
     } else if (paymentMethod === 'cash_on_delivery' && needsChange) {
       if (cashChange <= totalAmount) {
         toast.error('Valor para troco deve ser maior que o total do pedido');
@@ -140,16 +88,16 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
             </Label>
           </div>
 
-          {/* Cartão de Crédito */}
+          {/* Cartão na Entrega */}
           <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50">
-            <RadioGroupItem value="credit_card" id="credit_card" />
-            <Label htmlFor="credit_card" className="flex items-center gap-3 cursor-pointer flex-1">
+            <RadioGroupItem value="card_on_delivery" id="card_on_delivery" />
+            <Label htmlFor="card_on_delivery" className="flex items-center gap-3 cursor-pointer flex-1">
               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                 <CreditCard className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <div className="font-medium">Cartão de Crédito</div>
-                <div className="text-sm text-gray-500">Pagamento antecipado</div>
+                <div className="font-medium">Cartão na Entrega</div>
+                <div className="text-sm text-gray-500">Crédito ou Débito na entrega</div>
               </div>
             </Label>
           </div>
@@ -176,65 +124,104 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
               <Smartphone className="w-4 h-4 text-green-600" />
               <span className="font-medium text-green-800">Pagamento via PIX</span>
             </div>
-            <p className="text-sm text-green-700">
-              Após confirmar o pedido, você receberá o código PIX para pagamento instantâneo.
-            </p>
+            
+            {restaurant.pixKey || restaurant.pixQrCode ? (
+              <div className="space-y-4">
+                {restaurant.pixKey && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-green-700">Chave PIX:</p>
+                    <div className="flex gap-2">
+                      <div className="flex-1 bg-white p-3 rounded border font-mono text-sm break-all">
+                        {restaurant.pixKey}
+                      </div>
+                      <button
+                        onClick={copyPixKey}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded flex items-center gap-2 transition-colors"
+                      >
+                        {pixKeyCopied ? (
+                          <>
+                            <Check className="w-4 h-4" />
+                            <span className="hidden sm:inline">Copiado!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" />
+                            <span className="hidden sm:inline">Copiar</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {restaurant.pixQrCode && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-green-700">Ou escaneie o QR Code:</p>
+                    <div className="bg-white p-4 rounded border flex justify-center">
+                      <img 
+                        src={restaurant.pixQrCode} 
+                        alt="QR Code PIX" 
+                        className="max-w-[200px] max-h-[200px] w-full h-auto object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                <div className="p-3 bg-green-100 rounded border border-green-300">
+                  <p className="text-sm text-green-800 font-medium mb-1">
+                    📱 Como pagar:
+                  </p>
+                  <ol className="text-xs text-green-700 space-y-1 list-decimal list-inside">
+                    <li>Copie a chave PIX ou escaneie o QR Code</li>
+                    <li>Abra o app do seu banco</li>
+                    <li>Faça o pagamento de <strong>R$ {totalAmount.toFixed(2)}</strong></li>
+                    <li>Envie o comprovante via WhatsApp</li>
+                  </ol>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm text-green-700 font-medium">
+                  ⚠️ Chave PIX não configurada
+                </p>
+                <p className="text-xs text-green-600">
+                  Entre em contato via WhatsApp para receber os dados PIX e finalizar o pagamento.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {paymentMethod === 'credit_card' && (
+        {paymentMethod === 'card_on_delivery' && (
           <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h4 className="font-medium text-blue-800">Dados do Cartão</h4>
+            <div className="flex items-center gap-2 mb-2">
+              <CreditCard className="w-4 h-4 text-blue-600" />
+              <span className="font-medium text-blue-800">Cartão na Entrega</span>
+            </div>
             
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <Label htmlFor="card-number">Número do Cartão</Label>
-                <Input
-                  id="card-number"
-                  type="text"
-                  placeholder="0000 0000 0000 0000"
-                  value={cardData.number}
-                  onChange={(e) => handleCardInputChange('number', e.target.value)}
-                  maxLength={19}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="card-name">Nome do Portador</Label>
-                <Input
-                  id="card-name"
-                  type="text"
-                  placeholder="Nome como está no cartão"
-                  value={cardData.name}
-                  onChange={(e) => handleCardInputChange('name', e.target.value.toUpperCase())}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="card-expiry">Validade</Label>
-                  <Input
-                    id="card-expiry"
-                    type="text"
-                    placeholder="MM/AA"
-                    value={cardData.expiry}
-                    onChange={(e) => handleCardInputChange('expiry', e.target.value)}
-                    maxLength={5}
-                  />
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Tipo de Cartão</Label>
+              <RadioGroup value={cardType} onValueChange={(value) => setCardType(value as 'credit' | 'debit')}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="credit" id="credit" />
+                  <Label htmlFor="credit" className="text-sm cursor-pointer">
+                    Cartão de Crédito
+                  </Label>
                 </div>
-                
-                <div>
-                  <Label htmlFor="card-cvv">CVV</Label>
-                  <Input
-                    id="card-cvv"
-                    type="text"
-                    placeholder="123"
-                    value={cardData.cvv}
-                    onChange={(e) => handleCardInputChange('cvv', e.target.value)}
-                    maxLength={4}
-                  />
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="debit" id="debit" />
+                  <Label htmlFor="debit" className="text-sm cursor-pointer">
+                    Cartão de Débito
+                  </Label>
                 </div>
-              </div>
+              </RadioGroup>
+              
+              <p className="text-sm text-blue-700">
+                O pagamento será processado na hora da entrega com a máquina de cartão.
+              </p>
             </div>
           </div>
         )}

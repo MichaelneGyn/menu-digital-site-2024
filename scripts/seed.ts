@@ -64,19 +64,19 @@ async function main() {
     create: {
       userId: admin.id,
       plan: 'pro',
-      status: 'active',
+      status: 'ACTIVE',
     },
   });
 
   // Create categories
   const categories = [
-    { name: 'Promoções', icon: '🎉', description: 'Combos e promoções especiais' },
-    { name: 'Entradas', icon: '🥘', description: 'Deliciosas entradas para começar bem' },
+    { name: 'Promoções', icon: '🔥', description: 'Combos e promoções especiais' },
+    { name: 'Entradas', icon: '🍤', description: 'Deliciosas entradas para começar bem' },
     { name: 'Pizzas', icon: '🍕', description: 'Nossas famosas pizzas artesanais' },
     { name: 'Massas', icon: '🍝', description: 'Massas frescas e saborosas' },
     { name: 'Saladas', icon: '🥗', description: 'Saladas frescas e nutritivas' },
-    { name: 'Sobremesas', icon: '🍰', description: 'Doces tentações para finalizar' },
-    { name: 'Bebidas', icon: '🥤', description: 'Bebidas geladas e refrescantes' },
+    { name: 'Sobremesas', icon: '🧁', description: 'Doces tentações para finalizar' },
+    { name: 'Bebidas', icon: '🍹', description: 'Bebidas geladas e refrescantes' },
   ];
 
   for (const [index, categoryData] of categories.entries()) {
