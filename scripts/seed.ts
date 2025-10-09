@@ -57,14 +57,14 @@ async function main() {
     },
   });
 
-  // Optionally seed a basic subscription for admin
-  await prisma.subscription.upsert({
-    where: { id: admin.id },
+  // Optionally create a restaurant for admin
+  await prisma.restaurant.upsert({
+    where: { slug: 'admin-restaurant' },
     update: {},
     create: {
+      name: 'Restaurante Admin',
+      slug: 'admin-restaurant',
       userId: admin.id,
-      plan: 'pro',
-      status: 'ACTIVE',
     },
   });
 

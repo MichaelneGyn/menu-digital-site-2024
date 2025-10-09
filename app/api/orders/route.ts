@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   let where: any = {};
   if (restaurantId) {
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: session.user!.email },
       include: { restaurants: true },
     });
     if (!user || !user.restaurants?.find((r) => r.id === restaurantId)) {
@@ -123,7 +123,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: session.user!.email },
       include: { restaurants: true }
     });
 

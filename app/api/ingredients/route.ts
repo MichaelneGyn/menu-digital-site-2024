@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
     // Buscar restaurante do usuário
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: session.user!.email },
       include: { restaurants: true }
     });
 
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: session.user!.email },
       include: { restaurants: true }
     });
 
