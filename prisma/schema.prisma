@@ -48,7 +48,6 @@ model User {
   accounts         Account[]
   restaurants      Restaurant[]
   sessions         Session[]
-  subscriptions    Subscription[]
 }
 
 model VerificationToken {
@@ -60,14 +59,14 @@ model VerificationToken {
 }
 
 model Restaurant {
-  id               String     @id @default(cuid())
+  id               String       @id @default(cuid())
   name             String
   description      String?
-  slug             String     @unique
+  slug             String       @unique
   logo             String?
   bannerImage      String?
-  primaryColor     String     @default("#d32f2f")
-  secondaryColor   String     @default("#ffc107")
+  primaryColor     String       @default("#d32f2f")
+  secondaryColor   String       @default("#ffc107")
   email            String?
   address          String?
   city             String?
@@ -75,28 +74,31 @@ model Restaurant {
   zipCode          String?
   openTime         String?
   closeTime        String?
-  workingDays      String?    @default("")
+  workingDays      String?      @default("")
   facebook         String?
   instagram        String?
   twitter          String?
   whatsapp         String?
-  isActive         Boolean    @default(true)
-  allowOrders      Boolean    @default(true)
-  deliveryFee      Float      @default(0)
-  minOrderValue    Float      @default(0)
+  isActive         Boolean      @default(true)
+  allowOrders      Boolean      @default(true)
+  deliveryFee      Float        @default(0)
+  minOrderValue    Float        @default(0)
   userId           String
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
   bannerUrl        String?
   customCss        String?
   logoUrl          String?
-  showDeliveryTime Boolean    @default(true)
-  showRatings      Boolean    @default(true)
-  theme            String     @default("light")
+  showDeliveryTime Boolean      @default(true)
+  showRatings      Boolean      @default(true)
+  theme            String       @default("light")
+  pixKey           String?
+  pixQrCode        String?
   categories       Category[]
+  ingredients      Ingredient[]
   menuItems        MenuItem[]
   orders           Order[]
-  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Category {
@@ -137,23 +139,24 @@ model MenuItem {
   category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orderItems    OrderItem[]
+  recipe        Recipe?
 }
 
 model Order {
-  id              String     @id @default(cuid())
+  id              String      @id @default(cuid())
   restaurantId    String
-  code            String     @unique
+  code            String      @unique
   status          String
-  total           Decimal    @default(0)
+  total           Decimal     @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  customerAddress String?
   customerName    String?
   customerPhone   String?
-  customerAddress String?
   deliveryAddress String?
-  paymentMethod   String?    @default("Dinheiro")
   notes           String?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  paymentMethod   String?     @default("Dinheiro")
+  restaurant      Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orderItems      OrderItem[]
 }
 
@@ -182,21 +185,59 @@ model Analytics {
   @@unique([restaurantId, date])
 }
 
+model Ingredient {
+  id           String                   @id @default(cuid())
+  restaurantId String
+  name         String
+  unit         String
+  pricePerUnit Float
+  supplier     String?
+  lastPurchase DateTime?
+  notes        String?
+  isActive     Boolean                  @default(true)
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  restaurant   Restaurant               @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  priceHistory IngredientPriceHistory[]
+  recipeItems  RecipeItem[]
+
+  @@unique([restaurantId, name])
+}
+
+model IngredientPriceHistory {
+  id           String     @id @default(cuid())
+  ingredientId String
+  price        Float
+  date         DateTime   @default(now())
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+}
+
+model Recipe {
+  id         String       @id @default(cuid())
+  menuItemId String       @unique
+  totalCost  Float        @default(0)
+  cmv        Float        @default(0)
+  margin     Float        @default(0)
+  notes      String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  menuItem   MenuItem     @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  items      RecipeItem[]
+}
+
+model RecipeItem {
+  id           String     @id @default(cuid())
+  recipeId     String
+  ingredientId String
+  quantity     Float
+  cost         Float      @default(0)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
 enum UserRole {
   ADMIN
   STAFF
-}
-
-model Subscription {
-  id         String   @id @default(cuid())
-  userId     String
-  plan       String
-  status     String
-  validUntil DateTime?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum OrderStatus {
@@ -206,11 +247,4 @@ enum OrderStatus {
   READY
   DELIVERED
   CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  PAID
-  FAILED
-  REFUNDED
 }

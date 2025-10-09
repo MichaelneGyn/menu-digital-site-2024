@@ -9,25 +9,41 @@ async function restoreAdmin() {
   try {
     const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
-    const user = await prisma.user.upsert({
-      where: { email },
-      update: {
-        role: UserRole.ADMIN,
-        password: hashedPassword,
-        name: 'Michael Douglas Queiroz',
-      },
-      create: {
-        email,
-        name: 'Michael Douglas Queiroz',
-        role: UserRole.ADMIN,
-        password: hashedPassword,
-      },
+    // Primeiro, vamos verificar se o usuário já existe
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
     });
 
-    console.log('✅ Admin restaurado com sucesso');
-    console.log('📧 Email:', user.email);
-    console.log('👤 Nome:', user.name);
-    console.log('🔑 Senha redefinida para:', defaultPassword);
+    if (existingUser) {
+      // Se existe, apenas atualiza a senha e role
+      const user = await prisma.user.update({
+        where: { email },
+        data: {
+          role: UserRole.ADMIN,
+          password: hashedPassword,
+          name: 'Michael Douglas Queiroz',
+        },
+      });
+      console.log('✅ Admin atualizado com sucesso');
+      console.log('📧 Email:', user.email);
+      console.log('👤 Nome:', user.name);
+      console.log('🔑 Senha redefinida para:', defaultPassword);
+    } else {
+      // Se não existe, cria um novo usuário com campos mínimos
+      const user = await prisma.user.create({
+        data: {
+          email,
+          name: 'Michael Douglas Queiroz',
+          role: UserRole.ADMIN,
+          password: hashedPassword,
+        },
+      });
+      console.log('✅ Admin criado com sucesso');
+      console.log('📧 Email:', user.email);
+      console.log('👤 Nome:', user.name);
+      console.log('🔑 Senha definida para:', defaultPassword);
+    }
+    
     console.log('⚠️  Altere a senha após o primeiro login.');
   } catch (error) {
     console.error('❌ Erro ao restaurar admin:', error);
