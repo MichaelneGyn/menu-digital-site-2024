@@ -35,20 +35,24 @@ model Session {
 }
 
 model User {
-  id               String       @id @default(cuid())
+  id               String         @id @default(cuid())
   name             String?
-  email            String       @unique
+  email            String         @unique
   emailVerified    DateTime?
   image            String?
   password         String?
-  resetToken       String?      @unique
+  cpfCnpj          String?        @unique
+  phone            String?
+  resetToken       String?        @unique
   resetTokenExpiry DateTime?
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  role             UserRole     @default(STAFF)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  role             UserRole       @default(STAFF)
   accounts         Account[]
   restaurants      Restaurant[]
   sessions         Session[]
+  subscriptions    Subscription[]
+  payments         Payment[]
 }
 
 model VerificationToken {
@@ -99,6 +103,7 @@ model Restaurant {
   ingredients      Ingredient[]
   menuItems        MenuItem[]
   orders           Order[]
+  coupons          Coupon[]
   user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -236,6 +241,58 @@ model RecipeItem {
   recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String
+  status             SubscriptionStatus @default(TRIAL)
+  plan               String
+  amount             Float
+  trialEndsAt        DateTime?
+  currentPeriodStart DateTime           @default(now())
+  currentPeriodEnd   DateTime?
+  canceledAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments           Payment[]
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  userId            String
+  subscriptionId    String?
+  amount            Float
+  status            PaymentStatus @default(PENDING)
+  paymentMethod     String?
+  paymentProvider   String        @default("mercadopago")
+  providerPaymentId String?
+  providerData      String?
+  paidAt            DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+}
+
+model Coupon {
+  id           String     @id @default(cuid())
+  restaurantId String
+  code         String     @unique
+  type         CouponType
+  discount     Float
+  description  String?
+  minValue     Float?
+  maxUses      Int?
+  currentUses  Int        @default(0)
+  usesPerUser  Int?
+  validFrom    DateTime   @default(now())
+  validUntil   DateTime?
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
 enum UserRole {
   ADMIN
   STAFF
@@ -248,4 +305,24 @@ enum OrderStatus {
   READY
   DELIVERED
   CANCELLED
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum CouponType {
+  FIXED
+  PERCENT
 }
