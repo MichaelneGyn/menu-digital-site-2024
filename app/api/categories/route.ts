@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Verificar se o usuário é dono do restaurante
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: session.user!.email },
       include: { restaurants: true }
     });
 

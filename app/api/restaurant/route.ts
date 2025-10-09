@@ -28,7 +28,7 @@ export async function GET() {
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: session.user!.email },
       include: {
         restaurants: {
           include: {
@@ -75,7 +75,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: session.user!.email },
       include: { restaurants: true }
     });
 
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
     const { name, whatsapp, address } = createRestaurantSchema.parse(body);
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user!.email }
     });
 
     if (!user) {

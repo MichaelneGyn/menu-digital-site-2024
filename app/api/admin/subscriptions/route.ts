@@ -9,11 +9,11 @@ export async function GET() {
   if (!(await userIsAdmin(email))) {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
   }
-  const subs = await prisma.subscription.findMany({
+  const restaurants = await prisma.restaurant.findMany({
     include: { user: true },
     orderBy: { createdAt: 'desc' },
   });
-  return NextResponse.json(subs);
+  return NextResponse.json(restaurants);
 }
 
 export async function POST(req: Request) {
@@ -23,6 +23,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
   }
   const body = await req.json();
-  const created = await prisma.subscription.create({ data: body });
+  const { name, slug, userId } = body;
+  const created = await prisma.restaurant.create({ 
+    data: { 
+      name, 
+      slug: slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''), 
+      userId 
+    } 
+  });
   return NextResponse.json(created);
 }
