@@ -6,6 +6,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["public", "auth"]
 }
 
 model Account {
@@ -24,6 +25,7 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@schema("public")
 }
 
 model Session {
@@ -32,6 +34,8 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@schema("public")
 }
 
 model User {
@@ -53,6 +57,8 @@ model User {
   sessions         Session[]
   subscriptions    Subscription[]
   payments         Payment[]
+
+  @@schema("public")
 }
 
 model VerificationToken {
@@ -61,6 +67,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@schema("public")
 }
 
 model Restaurant {
@@ -105,6 +112,8 @@ model Restaurant {
   orders           Order[]
   coupons          Coupon[]
   user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@schema("public")
 }
 
 model Category {
@@ -121,6 +130,7 @@ model Category {
   menuItems    MenuItem[]
 
   @@unique([restaurantId, name])
+  @@schema("public")
 }
 
 model MenuItem {
@@ -146,6 +156,8 @@ model MenuItem {
   restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orderItems    OrderItem[]
   recipe        Recipe?
+
+  @@schema("public")
 }
 
 model Order {
@@ -164,6 +176,8 @@ model Order {
   paymentMethod   String?     @default("Dinheiro")
   restaurant      Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orderItems      OrderItem[]
+
+  @@schema("public")
 }
 
 model OrderItem {
@@ -176,6 +190,8 @@ model OrderItem {
   menuItemId String
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
   order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@schema("public")
 }
 
 model Analytics {
@@ -189,6 +205,7 @@ model Analytics {
   totalRevenue Float    @default(0)
 
   @@unique([restaurantId, date])
+  @@schema("public")
 }
 
 model Ingredient {
@@ -208,6 +225,7 @@ model Ingredient {
   recipeItems  RecipeItem[]
 
   @@unique([restaurantId, name])
+  @@schema("public")
 }
 
 model IngredientPriceHistory {
@@ -216,6 +234,8 @@ model IngredientPriceHistory {
   price        Float
   date         DateTime   @default(now())
   ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@schema("public")
 }
 
 model Recipe {
@@ -229,6 +249,8 @@ model Recipe {
   updatedAt  DateTime     @updatedAt
   menuItem   MenuItem     @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
   items      RecipeItem[]
+
+  @@schema("public")
 }
 
 model RecipeItem {
@@ -239,6 +261,8 @@ model RecipeItem {
   cost         Float      @default(0)
   ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
   recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@schema("public")
 }
 
 model Subscription {
@@ -255,6 +279,8 @@ model Subscription {
   updatedAt          DateTime           @updatedAt
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   payments           Payment[]
+
+  @@schema("public")
 }
 
 model Payment {
@@ -271,7 +297,9 @@ model Payment {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subscription      Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@schema("public")
 }
 
 model Coupon {
@@ -291,6 +319,8 @@ model Coupon {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@schema("public")
 }
 
 enum UserRole {
