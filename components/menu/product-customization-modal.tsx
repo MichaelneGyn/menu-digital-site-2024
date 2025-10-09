@@ -201,6 +201,13 @@ export default function ProductCustomizationModal({ item, onAdd, onClose }: Prod
 
         <div className="modal-footer">
           <button
+            className="cancel-button"
+            onClick={onClose}
+            type="button"
+          >
+            Cancelar
+          </button>
+          <button
             className="add-to-cart-button"
             onClick={handleAddToCart}
             disabled={!isValid}

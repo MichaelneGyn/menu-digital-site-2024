@@ -37,12 +37,7 @@ interface Address {
 
 interface PaymentData {
   method: PaymentMethod;
-  cardData?: {
-    number: string;
-    name: string;
-    expiry: string;
-    cvv: string;
-  };
+  cardType?: 'credit' | 'debit';
   cashChange?: number;
 }
 
@@ -65,6 +60,9 @@ export default function CheckoutFlow({
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<PaymentData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{code: string; discount: number; type: 'percent' | 'fixed'} | null>(null);
+  const [couponError, setCouponError] = useState('');
 
   // Configurações de entrega (podem vir de uma API)
   const deliveryConfig = {
@@ -74,7 +72,18 @@ export default function CheckoutFlow({
   };
 
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const total = subtotal + deliveryConfig.deliveryFee;
+  
+  // Cálculo de desconto
+  let discount = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.type === 'percent') {
+      discount = subtotal * (appliedCoupon.discount / 100);
+    } else {
+      discount = appliedCoupon.discount;
+    }
+  }
+  
+  const total = subtotal + deliveryConfig.deliveryFee - discount;
 
   const handleAddressSelect = (address: Address) => {
     setSelectedAddress(address);
@@ -84,6 +93,32 @@ export default function CheckoutFlow({
   const handlePaymentSelect = (paymentData: PaymentData) => {
     setSelectedPayment(paymentData);
     setCurrentStep('confirmation');
+  };
+
+  const applyCoupon = () => {
+    setCouponError('');
+    
+    // Cupons de exemplo - em produção viria de uma API
+    const validCoupons = [
+      { code: 'PRIMEIRACOMPRA', discount: 10, type: 'fixed' as const, description: 'R$ 10 OFF na primeira compra' },
+      { code: 'DESCONTO15', discount: 15, type: 'percent' as const, description: '15% de desconto' },
+      { code: 'FRETEGRATIS', discount: deliveryConfig.deliveryFee, type: 'fixed' as const, description: 'Frete grátis' },
+    ];
+    
+    const coupon = validCoupons.find(c => c.code === couponCode.toUpperCase());
+    
+    if (coupon) {
+      setAppliedCoupon(coupon);
+      toast.success(`Cupom "${coupon.code}" aplicado! ${coupon.description}`);
+      setCouponCode('');
+    } else {
+      setCouponError('Cupom inválido ou expirado');
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    toast.success('Cupom removido');
   };
 
   const generateOrderSummary = () => {
@@ -101,7 +136,8 @@ export default function CheckoutFlow({
 
     const paymentText = selectedPayment ? 
       (selectedPayment.method === 'pix' ? 'PIX' :
-       selectedPayment.method === 'credit_card' ? 'Cartão de Crédito' :
+       selectedPayment.method === 'card_on_delivery' ? 
+         `Cartão de ${selectedPayment.cardType === 'credit' ? 'Crédito' : 'Débito'} na Entrega` :
        selectedPayment.method === 'cash_on_delivery' ? 
          (selectedPayment.cashChange ? `Dinheiro (Troco para R$ ${selectedPayment.cashChange.toFixed(2)})` : 'Dinheiro (Sem troco)') :
        'Não informado') : 'Não informado';
@@ -139,7 +175,8 @@ export default function CheckoutFlow({
 
       const paymentMethodText = selectedPayment ? 
         (selectedPayment.method === 'pix' ? 'PIX' :
-         selectedPayment.method === 'credit_card' ? 'Cartão de Crédito' :
+         selectedPayment.method === 'card_on_delivery' ? 
+           `Cartão de ${selectedPayment.cardType === 'credit' ? 'Crédito' : 'Débito'} na Entrega` :
          selectedPayment.method === 'cash_on_delivery' ? 
            (selectedPayment.cashChange ? `Dinheiro (Troco para R$ ${selectedPayment.cashChange.toFixed(2)})` : 'Dinheiro (Sem troco)') :
          'Dinheiro') : 'Dinheiro';
@@ -315,11 +352,52 @@ export default function CheckoutFlow({
                 <span>Taxa de entrega:</span>
                 <span>R$ {deliveryConfig.deliveryFee.toFixed(2)}</span>
               </div>
+              {appliedCoupon && (
+                <div className="flex justify-between text-sm sm:text-base text-green-600">
+                  <span className="flex items-center gap-2">
+                    Desconto ({appliedCoupon.code})
+                    <button
+                      onClick={removeCoupon}
+                      className="text-xs text-red-600 underline hover:text-red-700"
+                    >
+                      remover
+                    </button>
+                  </span>
+                  <span>- R$ {discount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-base sm:text-lg">
                 <span>Total:</span>
                 <span className="text-red-600">R$ {total.toFixed(2)}</span>
               </div>
             </div>
+
+            {/* Cupom de desconto */}
+            {!appliedCoupon && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Cupom de desconto</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Digite o cupom"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                  />
+                  <Button
+                    onClick={applyCoupon}
+                    disabled={!couponCode.trim()}
+                    variant="outline"
+                    className="px-4"
+                  >
+                    Aplicar
+                  </Button>
+                </div>
+                {couponError && (
+                  <p className="text-xs text-red-600">{couponError}</p>
+                )}
+              </div>
+            )}
 
             {subtotal < deliveryConfig.minOrderValue && (
               <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -330,30 +408,58 @@ export default function CheckoutFlow({
               </div>
             )}
 
-            <Button
-              onClick={() => setCurrentStep('address')}
-              disabled={subtotal < deliveryConfig.minOrderValue}
-              className="w-full bg-red-600 hover:bg-red-700 h-12 text-base font-semibold"
-            >
-              Continuar para Endereço
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={onBack}
+                className="flex-1 h-12 text-base font-semibold"
+              >
+                Voltar ao Cardápio
+              </Button>
+              <Button
+                onClick={() => setCurrentStep('address')}
+                disabled={subtotal < deliveryConfig.minOrderValue}
+                className="flex-1 bg-red-600 hover:bg-red-700 h-12 text-base font-semibold"
+              >
+                Continuar
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
 
       {currentStep === 'address' && (
-        <AddressForm
-          onAddressSelect={handleAddressSelect}
-          selectedAddress={selectedAddress || undefined}
-        />
+        <div className="space-y-4">
+          <AddressForm
+            onAddressSelect={handleAddressSelect}
+            selectedAddress={selectedAddress || undefined}
+          />
+          <Button
+            variant="outline"
+            onClick={() => setCurrentStep('cart')}
+            className="w-full h-12 text-base font-semibold"
+          >
+            ← Voltar ao Carrinho
+          </Button>
+        </div>
       )}
 
       {currentStep === 'payment' && (
-        <PaymentOptions
-          onPaymentSelect={handlePaymentSelect}
-          selectedPayment={selectedPayment || undefined}
-          totalAmount={total}
-        />
+        <div className="space-y-4">
+          <PaymentOptions
+            onPaymentSelect={handlePaymentSelect}
+            selectedPayment={selectedPayment || undefined}
+            totalAmount={total}
+            restaurant={restaurant}
+          />
+          <Button
+            variant="outline"
+            onClick={() => setCurrentStep('address')}
+            className="w-full h-12 text-base font-semibold"
+          >
+            ← Voltar ao Endereço
+          </Button>
+        </div>
       )}
 
       {currentStep === 'confirmation' && (
@@ -397,7 +503,9 @@ export default function CheckoutFlow({
               <h4 className="font-medium mb-2">Forma de Pagamento:</h4>
               <p className="text-sm text-gray-600">
                 {selectedPayment?.method === 'pix' && 'PIX - Pagamento instantâneo'}
-                {selectedPayment?.method === 'credit_card' && 'Cartão de Crédito - Pagamento antecipado'}
+                {selectedPayment?.method === 'card_on_delivery' && (
+                  `Cartão de ${selectedPayment.cardType === 'credit' ? 'Crédito' : 'Débito'} na Entrega`
+                )}
                 {selectedPayment?.method === 'cash_on_delivery' && (
                   selectedPayment.cashChange ? 
                     `Dinheiro na entrega - Troco para R$ ${selectedPayment.cashChange.toFixed(2)}` :
@@ -418,6 +526,12 @@ export default function CheckoutFlow({
                 <span>Taxa de entrega:</span>
                 <span>R$ {deliveryConfig.deliveryFee.toFixed(2)}</span>
               </div>
+              {appliedCoupon && (
+                <div className="flex justify-between text-green-600">
+                  <span>Desconto ({appliedCoupon.code}):</span>
+                  <span>- R$ {discount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-lg">
                 <span>Total:</span>
                 <span>R$ {total.toFixed(2)}</span>

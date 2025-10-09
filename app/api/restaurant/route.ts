@@ -68,7 +68,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, name, whatsapp, address, openTime, closeTime, workingDays } = body;
+    const { id, name, whatsapp, address, openTime, closeTime, workingDays, pixKey, pixQrCode } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'ID do restaurante é obrigatório' }, { status: 400 });
@@ -128,6 +128,8 @@ export async function PUT(request: NextRequest) {
         openTime: openTime || null,
         closeTime: closeTime || null,
         workingDays: workingDays || null,
+        pixKey: pixKey || null,
+        pixQrCode: pixQrCode || null,
       },
       include: {
         categories: {
