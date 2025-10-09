@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { UserRole } from '@prisma/client';
 
-export async function POST() {
+async function setupUser() {
   try {
     // Delete existing user if exists
     await prisma.user.deleteMany({
@@ -49,8 +49,16 @@ export async function POST() {
   } catch (error) {
     console.error('Error creating user:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create user' },
+      { success: false, error: 'Failed to create user', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
+}
+
+export async function GET() {
+  return setupUser();
+}
+
+export async function POST() {
+  return setupUser();
 }
