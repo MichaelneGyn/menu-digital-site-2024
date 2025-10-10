@@ -155,21 +155,34 @@ model MenuItem {
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  restaurantId    String
-  code            String      @unique
-  status          String
-  total           Decimal     @default(0)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  customerAddress String?
-  customerName    String?
-  customerPhone   String?
-  deliveryAddress String?
-  notes           String?
-  paymentMethod   String?     @default("Dinheiro")
-  restaurant      Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  orderItems      OrderItem[]
+  id               String           @id @default(cuid())
+  restaurantId     String
+  code             String           @unique
+  status           OrderStatus      @default(PENDING)
+  total            Decimal          @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  customerAddress  String?
+  customerName     String?
+  customerPhone    String?
+  deliveryAddress  String?
+  notes            String?
+  paymentMethod    String?          @default("Dinheiro")
+  
+  // Novos campos para rastreamento
+  confirmedAt      DateTime?
+  preparingAt      DateTime?
+  readyAt          DateTime?
+  deliveredAt      DateTime?
+  cancelledAt      DateTime?
+  estimatedTime    Int?             // Tempo estimado em minutos
+  notificationSent Boolean          @default(false)
+  trackingUrl      String?          // URL de rastreamento para o cliente
+  
+  restaurant       Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orderItems       OrderItem[]
+  statusHistory    OrderStatusHistory[]
+  notifications    OrderNotification[]
 
 }
 
@@ -304,6 +317,29 @@ model Coupon {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  message   String?
+  createdAt DateTime    @default(now())
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+}
+
+model OrderNotification {
+  id          String   @id @default(cuid())
+  orderId     String
+  type        String   // SMS, WHATSAPP, EMAIL
+  message     String
+  sent        Boolean  @default(false)
+  sentAt      DateTime?
+  error       String?
+  createdAt   DateTime @default(now())
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
 }
 

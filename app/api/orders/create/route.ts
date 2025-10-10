@@ -98,6 +98,10 @@ export async function POST(req: NextRequest) {
       console.log('MenuItem válido:', menuItem.name);
     }
 
+    // Gerar URL de rastreamento
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const trackingUrl = `${baseUrl}/track/${code.replace('#', '')}`;
+
     // Criar pedido e itens em uma transação
     const order = await prisma.$transaction(async (tx) => {
       // Criar pedido
@@ -112,6 +116,7 @@ export async function POST(req: NextRequest) {
           deliveryAddress: deliveryAddress || null,
           paymentMethod: paymentMethod || 'Dinheiro',
           notes: notes || null,
+          trackingUrl,
         },
       });
       
