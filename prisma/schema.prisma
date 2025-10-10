@@ -181,8 +181,6 @@ model Order {
   
   restaurant       Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orderItems       OrderItem[]
-  statusHistory    OrderStatusHistory[]
-  notifications    OrderNotification[]
 
 }
 
@@ -317,29 +315,6 @@ model Coupon {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-
-}
-
-model OrderStatusHistory {
-  id        String      @id @default(cuid())
-  orderId   String
-  status    OrderStatus
-  message   String?
-  createdAt DateTime    @default(now())
-  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-}
-
-model OrderNotification {
-  id          String   @id @default(cuid())
-  orderId     String
-  type        String   // SMS, WHATSAPP, EMAIL
-  message     String
-  sent        Boolean  @default(false)
-  sentAt      DateTime?
-  error       String?
-  createdAt   DateTime @default(now())
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
 }
 

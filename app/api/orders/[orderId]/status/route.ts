@@ -104,29 +104,29 @@ export async function PATCH(
       data: updateData,
     });
 
-    // Cria histórico de status
-    await prisma.orderStatusHistory.create({
-      data: {
-        orderId: order.id,
-        status: status,
-        message: STATUS_MESSAGES[status as keyof typeof STATUS_MESSAGES],
-      },
-    });
+    // TODO: Criar histórico de status quando migration rodar
+    // await prisma.orderStatusHistory.create({
+    //   data: {
+    //     orderId: order.id,
+    //     status: status,
+    //     message: STATUS_MESSAGES[status as keyof typeof STATUS_MESSAGES],
+    //   },
+    // });
 
     // Envia notificação por WhatsApp (se telefone disponível)
     if (order.customerPhone) {
       const whatsappMessage = generateWhatsAppMessage(order, status, estimatedTime);
       
-      // Registra a tentativa de notificação
-      await prisma.orderNotification.create({
-        data: {
-          orderId: order.id,
-          type: 'WHATSAPP',
-          message: whatsappMessage,
-          sent: true,
-          sentAt: now,
-        },
-      });
+      // TODO: Registrar a tentativa de notificação quando migration rodar
+      // await prisma.orderNotification.create({
+      //   data: {
+      //     orderId: order.id,
+      //     type: 'WHATSAPP',
+      //     message: whatsappMessage,
+      //     sent: true,
+      //     sentAt: now,
+      //   },
+      // });
 
       // Retorna URL do WhatsApp para envio automático
       const phoneNumber = order.customerPhone.replace(/\D/g, '');
