@@ -15,17 +15,61 @@ export async function GET() {
     orderBy: { createdAt: 'desc' },
     include: {
       restaurants: true,
+      subscriptions: {
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+      },
+      payments: {
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      },
     },
   });
 
-  const payload = users.map((u) => ({
-    id: u.id,
-    email: u.email,
-    name: u.name,
-    role: u.role,
-    createdAt: u.createdAt,
-    restaurants: u.restaurants,
-  }));
+  const now = new Date();
+
+  const payload = users.map((u) => {
+    const subscription = u.subscriptions[0] || null;
+    
+    let daysRemaining = 0;
+    let isExpired = false;
+
+    if (subscription) {
+      const endDate = subscription.trialEndsAt || subscription.currentPeriodEnd;
+      if (endDate) {
+        const diffTime = endDate.getTime() - now.getTime();
+        daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        isExpired = daysRemaining < 0;
+      }
+    }
+
+    return {
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      role: u.role,
+      createdAt: u.createdAt,
+      restaurants: u.restaurants,
+      subscription: subscription ? {
+        id: subscription.id,
+        plan: subscription.plan,
+        status: subscription.status,
+        amount: subscription.amount,
+        trialEndsAt: subscription.trialEndsAt,
+        currentPeriodEnd: subscription.currentPeriodEnd,
+        daysRemaining,
+        isExpired,
+      } : null,
+      recentPayments: u.payments.map(p => ({
+        id: p.id,
+        amount: p.amount,
+        status: p.status,
+        paymentMethod: p.paymentMethod,
+        paidAt: p.paidAt,
+        createdAt: p.createdAt,
+      })),
+    };
+  });
 
   return NextResponse.json(payload);
 }
