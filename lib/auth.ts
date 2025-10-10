@@ -17,7 +17,7 @@ export async function userIsAdmin(email?: string) {
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma as any),
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV !== 'production',
   providers: [
