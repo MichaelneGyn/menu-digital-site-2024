@@ -273,6 +273,16 @@ function AdminDashboard() {
                     <span className="text-xs sm:text-sm font-medium text-center">Nova Categoria</span>
                   </button>
 
+                  {/* Importar em Massa */}
+                  <button
+                    onClick={() => router.push('/admin/import-menu')}
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200"
+                  >
+                    <span className="text-xl sm:text-2xl">📤</span>
+                    <span className="text-xs sm:text-sm font-medium text-center">Importar em Massa</span>
+                    <span className="text-xs text-purple-600 font-semibold">NOVO</span>
+                  </button>
+
                   {/* Importar do iFood */}
                   <button
                     onClick={() => router.push('/admin/ifood/import')}
