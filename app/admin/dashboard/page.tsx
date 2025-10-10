@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { onlyDigits, isValidWhatsapp, formatBRMask } from '@/lib/phone';
 import { toast } from 'sonner';
+import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
 
 interface Restaurant {
   id: string;
@@ -48,7 +49,7 @@ interface MenuItem {
   category: Category;
 }
 
-export default function AdminDashboard() {
+function AdminDashboard() {
   const { data: session, status } = useSession() || {};
   const router = useRouter();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
@@ -529,6 +530,9 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+// Exporta o componente com proteção de assinatura
+export default withSubscriptionCheck(AdminDashboard);
 
 // Modal components
 interface ModalProps {
