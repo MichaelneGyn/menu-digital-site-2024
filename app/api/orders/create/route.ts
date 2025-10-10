@@ -98,9 +98,9 @@ export async function POST(req: NextRequest) {
       console.log('MenuItem válido:', menuItem.name);
     }
 
-    // Gerar URL de rastreamento
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const trackingUrl = `${baseUrl}/track/${code.replace('#', '')}`;
+    // TODO: Gerar URL de rastreamento quando migration rodar
+    // const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    // const trackingUrl = `${baseUrl}/track/${code.replace('#', '')}`;
 
     // Criar pedido e itens em uma transação
     const order = await prisma.$transaction(async (tx) => {
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
           deliveryAddress: deliveryAddress || null,
           paymentMethod: paymentMethod || 'Dinheiro',
           notes: notes || null,
-          trackingUrl,
+          // trackingUrl, // TODO: Adicionar quando migration rodar
         },
       });
       
