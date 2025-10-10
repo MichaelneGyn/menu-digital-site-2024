@@ -53,6 +53,21 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // Create 14-day trial subscription automatically
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 14); // 14 dias de trial
+
+      const subscription = await tx.subscription.create({
+        data: {
+          userId: user.id,
+          status: 'TRIAL',
+          plan: 'basic',
+          amount: 0, // Trial gratuito
+          trialEndsAt: trialEndsAt,
+          currentPeriodEnd: trialEndsAt,
+        },
+      });
+
       let restaurant = null;
       
       if (restaurantName) {
@@ -94,7 +109,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      return { user, restaurant };
+      return { user, restaurant, subscription };
     });
 
     return NextResponse.json(
