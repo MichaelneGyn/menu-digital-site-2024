@@ -5,45 +5,74 @@ import { UserRole } from '@prisma/client';
 
 async function setupUser() {
   try {
-    // Delete existing user if exists
+    // Update password for your admin user
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    
+    const adminUser = await prisma.user.upsert({
+      where: { email: 'michaeldouglasqueiroz@gmail.com' },
+      update: {
+        password: hashedPassword,
+      },
+      create: {
+        email: 'michaeldouglasqueiroz@gmail.com',
+        name: 'Michael Douglas Queiroz',
+        password: hashedPassword,
+        role: UserRole.ADMIN,
+      },
+    });
+
+    // Delete existing test user if exists
     await prisma.user.deleteMany({
       where: { email: 'john@doe.com' }
     });
 
-    // Create fresh user with hashed password
-    const hashedPassword = await bcrypt.hash('johndoe123', 10);
+    // Create test user
+    const testHashedPassword = await bcrypt.hash('johndoe123', 10);
     
-    const user = await prisma.user.create({
+    const testUser = await prisma.user.create({
       data: {
         email: 'john@doe.com',
         name: 'João Silva',
-        password: hashedPassword,
+        password: testHashedPassword,
         role: UserRole.STAFF,
       },
     });
 
-    // Create a restaurant for the user
-    const restaurant = await prisma.restaurant.upsert({
+    // Create restaurants
+    const adminRestaurant = await prisma.restaurant.upsert({
+      where: { slug: 'meu-restaurante' },
+      update: {
+        userId: adminUser.id,
+      },
+      create: {
+        name: 'Meu Restaurante',
+        slug: 'meu-restaurante',
+        userId: adminUser.id,
+      },
+    });
+
+    const testRestaurant = await prisma.restaurant.upsert({
       where: { slug: 'di-sarda-pizzaria' },
       update: {},
       create: {
         name: 'Di Sarda Pizzaria',
         slug: 'di-sarda-pizzaria',
-        userId: user.id,
+        userId: testUser.id,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: 'User created successfully!',
-      user: {
-        email: user.email,
-        name: user.name,
-        role: user.role,
+      message: 'Users created successfully!',
+      admin: {
+        email: adminUser.email,
+        name: adminUser.name,
+        role: adminUser.role,
       },
-      restaurant: {
-        name: restaurant.name,
-        slug: restaurant.slug,
+      testUser: {
+        email: testUser.email,
+        name: testUser.name,
+        role: testUser.role,
       },
     });
   } catch (error) {
