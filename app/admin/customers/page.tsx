@@ -105,7 +105,15 @@ export default function AdminCustomersPage() {
           <h1 className="text-3xl font-bold">Usuários & Assinaturas</h1>
           <p className="text-gray-600 mt-1">Gerencie clientes e seus planos de assinatura</p>
         </div>
-        <Button onClick={() => router.push('/admin/dashboard')}>Voltar</Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => router.push('/admin/payments')}
+          >
+            💳 Gerenciar Pagamentos
+          </Button>
+          <Button onClick={() => router.push('/admin/dashboard')}>Voltar</Button>
+        </div>
       </div>
 
       <Card>
