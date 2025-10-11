@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
 import { EmojiIcon } from '@/components/EmojiIcon';
 import { PriceInput } from '@/components/PriceInput';
+import { CouponsModal } from '@/components/CouponsModal';
 
 interface Restaurant {
   id: string;
@@ -66,6 +67,7 @@ function AdminDashboard() {
   const [showEditItemModal, setShowEditItemModal] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
+  const [showCouponsModal, setShowCouponsModal] = useState(false);
   const [showCreateRestaurantModal, setShowCreateRestaurantModal] = useState(false);
   const [showEditRestaurantModal, setShowEditRestaurantModal] = useState(false);
   const [showPersonalizeModal, setShowPersonalizeModal] = useState(false);
@@ -276,6 +278,16 @@ function AdminDashboard() {
                   >
                     <span className="text-xl sm:text-2xl">📁</span>
                     <span className="text-xs sm:text-sm font-medium text-center">Nova Categoria</span>
+                  </button>
+
+                  {/* Cupons de Desconto */}
+                  <button
+                    onClick={() => setShowCouponsModal(true)}
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200"
+                  >
+                    <span className="text-xl sm:text-2xl">🎫</span>
+                    <span className="text-xs sm:text-sm font-medium text-center">Cupons</span>
+                    <span className="text-xs text-orange-600 font-semibold">NOVO</span>
                   </button>
 
                   {/* Importar em Massa */}
@@ -563,6 +575,14 @@ function AdminDashboard() {
             toast.success('🎨 Personalização salva com sucesso!');
             fetchRestaurantData();
           }}
+        />
+      )}
+
+      {showCouponsModal && restaurant && (
+        <CouponsModal 
+          isOpen={showCouponsModal}
+          onClose={() => setShowCouponsModal(false)}
+          restaurant={restaurant}
         />
       )}
 
