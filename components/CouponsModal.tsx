@@ -44,7 +44,9 @@ export function CouponsModal({ isOpen, onClose, restaurant }: CouponsModalProps)
     maxUses: '',
     usesPerUser: '',
     validFrom: new Date().toISOString().split('T')[0],
+    validFromTime: '00:00',
     validUntil: '',
+    validUntilTime: '23:59',
     isActive: true
   });
 
@@ -75,16 +77,26 @@ export function CouponsModal({ isOpen, onClose, restaurant }: CouponsModalProps)
       const url = editingCoupon ? `/api/coupons/${editingCoupon.id}` : '/api/coupons';
       const method = editingCoupon ? 'PUT' : 'POST';
 
+      // Combina data + hora para criar DateTime completo
+      const validFromDateTime = `${formData.validFrom}T${formData.validFromTime}:00`;
+      const validUntilDateTime = formData.validUntil 
+        ? `${formData.validUntil}T${formData.validUntilTime}:00` 
+        : null;
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
+          code: formData.code,
+          type: formData.type,
           discount: parseFloat(formData.discount),
+          description: formData.description,
           minValue: formData.minValue ? parseFloat(formData.minValue) : null,
           maxUses: formData.maxUses ? parseInt(formData.maxUses) : null,
           usesPerUser: formData.usesPerUser ? parseInt(formData.usesPerUser) : null,
-          validUntil: formData.validUntil || null
+          validFrom: validFromDateTime,
+          validUntil: validUntilDateTime,
+          isActive: formData.isActive
         })
       });
 
@@ -146,6 +158,9 @@ export function CouponsModal({ isOpen, onClose, restaurant }: CouponsModalProps)
 
   const handleEdit = (coupon: Coupon) => {
     setEditingCoupon(coupon);
+    const validFromDate = new Date(coupon.validFrom);
+    const validUntilDate = coupon.validUntil ? new Date(coupon.validUntil) : null;
+    
     setFormData({
       code: coupon.code,
       type: coupon.type,
@@ -154,8 +169,10 @@ export function CouponsModal({ isOpen, onClose, restaurant }: CouponsModalProps)
       minValue: coupon.minValue?.toString() || '',
       maxUses: coupon.maxUses?.toString() || '',
       usesPerUser: coupon.usesPerUser?.toString() || '',
-      validFrom: new Date(coupon.validFrom).toISOString().split('T')[0],
-      validUntil: coupon.validUntil ? new Date(coupon.validUntil).toISOString().split('T')[0] : '',
+      validFrom: validFromDate.toISOString().split('T')[0],
+      validFromTime: validFromDate.toTimeString().slice(0, 5),
+      validUntil: validUntilDate ? validUntilDate.toISOString().split('T')[0] : '',
+      validUntilTime: validUntilDate ? validUntilDate.toTimeString().slice(0, 5) : '23:59',
       isActive: coupon.isActive
     });
     setShowForm(true);
@@ -171,7 +188,9 @@ export function CouponsModal({ isOpen, onClose, restaurant }: CouponsModalProps)
       maxUses: '',
       usesPerUser: '',
       validFrom: new Date().toISOString().split('T')[0],
+      validFromTime: '00:00',
       validUntil: '',
+      validUntilTime: '23:59',
       isActive: true
     });
     setEditingCoupon(null);
@@ -384,26 +403,53 @@ export function CouponsModal({ isOpen, onClose, restaurant }: CouponsModalProps)
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="validFrom">Válido A Partir De *</Label>
-                  <Input
-                    id="validFrom"
-                    type="date"
-                    value={formData.validFrom}
-                    onChange={(e) => setFormData({...formData, validFrom: e.target.value})}
-                    required
-                  />
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="validFrom">Válido A Partir De *</Label>
+                    <Input
+                      id="validFrom"
+                      type="date"
+                      value={formData.validFrom}
+                      onChange={(e) => setFormData({...formData, validFrom: e.target.value})}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="validFromTime">Horário Início *</Label>
+                    <Input
+                      id="validFromTime"
+                      type="time"
+                      value={formData.validFromTime}
+                      onChange={(e) => setFormData({...formData, validFromTime: e.target.value})}
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Ex: 00:00 ou 18:00</p>
+                  </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="validUntil">Válido Até</Label>
-                  <Input
-                    id="validUntil"
-                    type="date"
-                    value={formData.validUntil}
-                    onChange={(e) => setFormData({...formData, validUntil: e.target.value})}
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="validUntil">Válido Até</Label>
+                    <Input
+                      id="validUntil"
+                      type="date"
+                      value={formData.validUntil}
+                      onChange={(e) => setFormData({...formData, validUntil: e.target.value})}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="validUntilTime">Horário Fim</Label>
+                    <Input
+                      id="validUntilTime"
+                      type="time"
+                      value={formData.validUntilTime}
+                      onChange={(e) => setFormData({...formData, validUntilTime: e.target.value})}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Ex: 23:59 ou 20:00</p>
+                  </div>
                 </div>
               </div>
 
