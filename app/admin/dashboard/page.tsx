@@ -1624,16 +1624,54 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                   onChange={(e) => setFormData({...formData, pixKey: e.target.value})}
                   placeholder="CPF, CNPJ, e-mail ou chave aleatória"
                 />
+                <p className="text-xs text-gray-500 mt-1">Digite apenas a chave PIX (não o código copia e cola)</p>
               </div>
               
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="pixQrCode">QR Code PIX (URL da imagem)</Label>
-                <Input
-                  id="pixQrCode"
-                  value={formData.pixQrCode}
-                  onChange={(e) => setFormData({...formData, pixQrCode: e.target.value})}
-                  placeholder="https://exemplo.com/qrcode.png"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="pixQrCode"
+                    value={formData.pixQrCode}
+                    onChange={(e) => setFormData({...formData, pixQrCode: e.target.value})}
+                    placeholder="https://exemplo.com/qrcode.png"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      if (formData.pixKey) {
+                        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(formData.pixKey)}`;
+                        setFormData({...formData, pixQrCode: qrCodeUrl});
+                        toast.success('🎯 QR Code gerado automaticamente!');
+                      } else {
+                        toast.error('⚠️ Digite a chave PIX primeiro');
+                      }
+                    }}
+                    className="whitespace-nowrap"
+                  >
+                    🔄 Gerar QR Code
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Cole a URL de uma imagem QR Code ou clique em "Gerar QR Code" para criar automaticamente
+                </p>
+                
+                {formData.pixQrCode && (
+                  <div className="mt-2 p-3 bg-gray-50 rounded border">
+                    <p className="text-xs font-medium text-gray-700 mb-2">Prévia do QR Code:</p>
+                    <img 
+                      src={formData.pixQrCode} 
+                      alt="QR Code Preview" 
+                      className="w-32 h-32 mx-auto border-2 border-gray-300 rounded"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.parentElement!.innerHTML += '<p class="text-xs text-red-600 text-center">❌ URL inválida ou QR Code não carregou</p>';
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
