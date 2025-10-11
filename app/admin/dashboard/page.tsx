@@ -1235,9 +1235,43 @@ function EditItemModal({ isOpen, onClose, item, categories, onSuccess }: EditIte
                     type="text"
                     value={formData.promoTag}
                     onChange={(e) => setFormData({...formData, promoTag: e.target.value})}
-                    placeholder="Ex: COMBO, 2 POR 1, OFERTA"
+                    placeholder="Ex: COMBO, 2 POR 1, OFERTA, etc."
                     maxLength={20}
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Texto que aparecerá na tag acima do card (máx. 20 caracteres)
+                  </p>
+                  {/* Sugestões rápidas */}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, promoTag: 'COMBO'})}
+                      className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
+                    >
+                      COMBO
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, promoTag: '2 POR 1'})}
+                      className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
+                    >
+                      2 POR 1
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, promoTag: 'OFERTA'})}
+                      className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
+                    >
+                      OFERTA
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, promoTag: 'PROMOÇÃO'})}
+                      className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
+                    >
+                      PROMOÇÃO
+                    </button>
+                  </div>
                 </div>
               </>
             )}
