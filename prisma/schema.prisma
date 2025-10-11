@@ -150,21 +150,34 @@ model MenuItem {
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  restaurantId    String
-  code            String      @unique
-  status          String
-  total           Decimal     @default(0)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  customerAddress String?
-  customerName    String?
-  customerPhone   String?
-  deliveryAddress String?
-  notes           String?
-  paymentMethod   String?     @default("Dinheiro")
-  restaurant      Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  orderItems      OrderItem[]
+  id               String      @id @default(cuid())
+  restaurantId     String
+  code             String      @unique
+  status           String
+  total            Decimal     @default(0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  customerAddress  String?
+  customerName     String?
+  customerPhone    String?
+  deliveryAddress  String?
+  notes            String?
+  paymentMethod    String?     @default("Dinheiro")
+  
+  // Timestamps de status
+  confirmedAt      DateTime?
+  preparingAt      DateTime?
+  readyAt          DateTime?
+  deliveredAt      DateTime?
+  cancelledAt      DateTime?
+  
+  // Rastreamento
+  estimatedTime    Int?
+  trackingUrl      String?
+  notificationSent Boolean     @default(false)
+  
+  restaurant       Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orderItems       OrderItem[]
 }
 
 model OrderItem {
