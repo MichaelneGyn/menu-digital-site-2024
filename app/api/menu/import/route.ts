@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
             name: item.name,
             description: item.description || '',
             price: item.price,
-            image: item.image || '/placeholder-food.jpg',
+            image: item.image || null,
             isPromo: item.isPromo,
             originalPrice: item.originalPrice,
             categoryId,

@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       const imageFile = formData.get(`items[${index}][image]`) as File | null;
 
       // Upload de imagem (se houver)
-      let imagePath = '/placeholder-food.jpg';
+      let imagePath: string | null = null;
       if (imageFile && imageFile.size > 0) {
         const bytes = await imageFile.arrayBuffer();
         const buffer = Buffer.from(bytes);
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
           imagePath = `/uploads/${filename}`;
         } catch (error) {
           console.error('Erro ao salvar imagem:', error);
-          // Continua com imagem placeholder
+          // Deixa como null se falhar
         }
       }
 
