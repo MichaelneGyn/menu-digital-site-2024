@@ -996,7 +996,112 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const icons = ['🔥', '🍕', '🥗', '🍝', '🧁', '🍹', '🍤', '🍖', '🐟', '🌮', '🍜'];
+  // Ícones organizados por categoria
+  const icons = [
+    // 🍕 COMIDAS PRINCIPAIS
+    '🍕', // Pizza
+    '🍔', // Hambúrguer
+    '🌭', // Hot Dog
+    '🥪', // Sanduíche
+    '🌮', // Taco
+    '🌯', // Burrito
+    '🥙', // Kebab
+    
+    // 🍖 CARNES E PROTEÍNAS
+    '🍖', // Carne no osso
+    '🥩', // Bife
+    '🍗', // Frango
+    '🍤', // Camarão
+    '🐟', // Peixe
+    '🦐', // Lagosta
+    '🦞', // Caranguejo
+    
+    // 🍝 MASSAS E ITALIANA
+    '🍝', // Espaguete
+    '🍜', // Lámen/Macarrão
+    '🥘', // Paella
+    '🍲', // Ensopado
+    
+    // 🥗 SAUDÁVEIS E VEGETARIANO
+    '🥗', // Salada
+    '🥑', // Abacate
+    '🌱', // Vegetariano
+    '🥦', // Brócolis
+    
+    // 🍰 SOBREMESAS
+    '🍰', // Bolo
+    '🧁', // Cupcake
+    '🍮', // Pudim
+    '🍩', // Donut
+    '🍪', // Cookie
+    '🎂', // Torta
+    '🍨', // Sorvete
+    '🍦', // Casquinha
+    '🧇', // Waffle
+    '🥞', // Panqueca
+    
+    // 🍺 BEBIDAS ALCOÓLICAS
+    '🍺', // Cerveja
+    '🍻', // Chopp
+    '🍷', // Vinho
+    '🍾', // Champagne
+    '🍸', // Coquetel
+    '🍹', // Drink Tropical
+    '🥃', // Whisky
+    
+    // 🥤 BEBIDAS NÃO ALCOÓLICAS
+    '🥤', // Refrigerante
+    '🧃', // Suco de caixinha
+    '🧋', // Bubble Tea
+    '☕', // Café
+    '🍵', // Chá
+    '🥛', // Leite
+    '💧', // Água
+    '🧉', // Mate/Chimarrão
+    
+    // 🍟 LANCHES E PORÇÕES
+    '🍟', // Batata Frita
+    '🥓', // Bacon
+    '🧀', // Queijo
+    '🥨', // Pretzel
+    '🍿', // Pipoca
+    '🌰', // Castanha
+    
+    // 🍚 ASIÁTICA E ORIENTAL
+    '🍚', // Arroz
+    '🍱', // Bento Box
+    '🍛', // Curry
+    '🍙', // Onigiri
+    '🥟', // Gyoza
+    '🍣', // Sushi
+    '🍤', // Tempurá
+    
+    // 🥐 PADARIA E CAFÉ DA MANHÃ
+    '🥐', // Croissant
+    '🥖', // Baguete
+    '🍞', // Pão
+    '🥯', // Bagel
+    '🧈', // Manteiga
+    
+    // 🍎 FRUTAS E NATURAL
+    '🍎', // Maçã
+    '🍓', // Morango
+    '🍌', // Banana
+    '🍉', // Melancia
+    '🥝', // Kiwi
+    '🍇', // Uva
+    
+    // 🎉 ESPECIAIS E CATEGORIAS
+    '⭐', // Destaque
+    '🔥', // Promoção/Popular
+    '🎉', // Festa/Combo
+    '🎁', // Brinde/Gift
+    '⏰', // Express/Rápido
+    '🌟', // Novidade
+    '💝', // Favoritos
+    '🏆', // Top Vendas
+    '💯', // Melhor Avaliado
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1047,15 +1152,17 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
             
             <div>
               <Label>Ícone</Label>
-              <div className="grid grid-cols-5 gap-2 mt-2">
+              <p className="text-xs text-gray-500 mb-2">Escolha o ícone que melhor representa sua categoria</p>
+              <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 mt-2 max-h-[280px] overflow-y-auto p-2 border rounded-lg bg-gray-50">
                 {icons.map(icon => (
                   <button
                     key={icon}
                     type="button"
                     onClick={() => setFormData({...formData, icon})}
-                    className={`p-2 text-2xl border rounded hover:bg-gray-100 ${
-                      formData.icon === icon ? 'bg-red-100 border-red-500' : ''
+                    className={`p-2 text-2xl border rounded hover:bg-gray-100 hover:scale-110 transition-transform ${
+                      formData.icon === icon ? 'bg-red-100 border-red-500 ring-2 ring-red-300' : 'bg-white'
                     }`}
+                    title={icon}
                   >
                     {icon}
                   </button>
