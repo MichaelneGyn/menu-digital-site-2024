@@ -22,7 +22,7 @@ export default function RestaurantNav({
   // Detecta scroll para adicionar sombra
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 100);
+      setIsScrolled(window.scrollY > 200);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -37,7 +37,6 @@ export default function RestaurantNav({
       
       const buttonLeft = button.offsetLeft;
       const buttonWidth = button.offsetWidth;
-      const containerScrollLeft = container.scrollLeft;
       const containerWidth = container.clientWidth;
 
       // Centraliza o botão ativo
@@ -50,85 +49,124 @@ export default function RestaurantNav({
     }
   }, [activeCategory]);
 
+  // Se não tem categorias, não renderiza
+  if (!categories || categories.length === 0) {
+    return null;
+  }
+
   return (
     <nav 
-      className={`restaurant-nav ${isScrolled ? 'scrolled' : ''}`}
+      className="category-sticky-menu"
       style={{ 
-        display: 'block', 
-        visibility: 'visible', 
-        opacity: 1,
         position: 'sticky',
         top: 0,
-        zIndex: 999,
+        zIndex: 1000,
         background: 'white',
-        borderBottom: '1px solid #e5e7eb',
-        boxShadow: isScrolled ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
-        transition: 'box-shadow 0.3s ease'
+        borderBottom: '2px solid #f3f4f6',
+        boxShadow: isScrolled ? '0 4px 12px rgba(0,0,0,0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
+        transition: 'all 0.3s ease',
+        width: '100%',
+        minHeight: '64px',
+        display: 'flex',
+        alignItems: 'center'
       }}
     >
       <div 
         ref={navContainerRef}
-        className="nav-container max-w-6xl mx-auto px-2 sm:px-4 md:px-8 flex gap-2 sm:gap-3 md:gap-4 overflow-x-auto py-3" 
+        className="category-menu-container"
         style={{ 
-          scrollbarWidth: 'none', 
-          WebkitOverflowScrolling: 'touch',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          width: '100%',
+          padding: '12px 16px',
           display: 'flex',
-          flexWrap: 'nowrap',
-          maxWidth: '100%',
-          msOverflowStyle: 'none'
+          gap: '12px',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch'
         }}
       >
         <style jsx>{`
-          .nav-container::-webkit-scrollbar {
+          .category-menu-container::-webkit-scrollbar {
             display: none;
           }
         `}</style>
         
-        {categories?.map((category) => {
+        {categories.map((category) => {
           const isActive = activeCategory === category.id;
           return (
             <button
               key={category.id}
               ref={isActive ? activeButtonRef : null}
-              className={`category-nav-button ${isActive ? 'active' : ''}`}
               onClick={() => onCategoryChange(category.id)}
               style={{ 
                 flexShrink: 0,
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: isActive ? '2px solid #d32f2f' : '1px solid #e5e7eb',
-                background: isActive ? '#fef2f2' : 'white',
-                color: isActive ? '#d32f2f' : '#4b5563',
+                minWidth: '120px',
+                height: '44px',
+                padding: '0 20px',
+                borderRadius: '24px',
+                border: 'none',
+                background: isActive 
+                  ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' 
+                  : '#f9fafb',
+                color: isActive ? 'white' : '#4b5563',
                 fontWeight: isActive ? '600' : '500',
                 fontSize: '14px',
-                transition: 'all 0.3s ease',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 cursor: 'pointer',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
+                justifyContent: 'center',
+                gap: '8px',
                 whiteSpace: 'nowrap',
-                boxShadow: isActive ? '0 2px 4px rgba(211,47,47,0.2)' : '0 1px 2px rgba(0,0,0,0.05)',
-                transform: isActive ? 'translateY(-1px)' : 'none'
+                boxShadow: isActive 
+                  ? '0 4px 12px rgba(239, 68, 68, 0.4), 0 2px 4px rgba(0,0,0,0.1)' 
+                  : '0 1px 3px rgba(0,0,0,0.1)',
+                transform: isActive ? 'translateY(-2px) scale(1.02)' : 'scale(1)',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+                outline: 'none',
+                userSelect: 'none'
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = '#f9fafb';
-                  e.currentTarget.style.borderColor = '#d1d5db';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.background = '#f3f4f6';
+                  e.currentTarget.style.transform = 'translateY(-1px) scale(1.01)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = 'white';
-                  e.currentTarget.style.borderColor = '#e5e7eb';
-                  e.currentTarget.style.transform = 'none';
+                  e.currentTarget.style.background = '#f9fafb';
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
                 }
               }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = 'scale(0.98)';
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = isActive 
+                  ? 'translateY(-2px) scale(1.02)' 
+                  : 'scale(1)';
+              }}
             >
-              <span style={{ fontSize: '16px' }}>{category.icon}</span>
-              <span>{category.name}</span>
+              <span style={{ 
+                fontSize: '20px',
+                lineHeight: 1,
+                filter: isActive ? 'brightness(1.2)' : 'none'
+              }}>
+                {category.icon}
+              </span>
+              <span style={{ 
+                fontSize: '14px',
+                fontWeight: isActive ? '600' : '500',
+                letterSpacing: '0.01em'
+              }}>
+                {category.name}
+              </span>
             </button>
           );
         })}
