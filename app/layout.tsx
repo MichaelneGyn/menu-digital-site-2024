@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "@/components/providers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,6 +31,21 @@ export default async function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <Providers session={session}>
           {children}
+          <Toaster 
+            position="top-right" 
+            richColors 
+            closeButton
+            duration={4000}
+            toastOptions={{
+              style: {
+                background: 'white',
+                border: '1px solid #e5e7eb',
+                fontSize: '14px',
+              },
+              className: 'toast-custom',
+              descriptionClassName: 'toast-description',
+            }}
+          />
         </Providers>
       </body>
     </html>
