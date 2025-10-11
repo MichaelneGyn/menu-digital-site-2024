@@ -2846,3 +2846,28 @@ body {
     transform: rotate(360deg);
   }
 }
+
+/* ========================================
+   EMOJI ICONS (Twemoji 3D Style)
+   ======================================== */
+
+/* Twemoji images */
+.emoji-icon img.emoji {
+  height: 1em;
+  width: 1em;
+  margin: 0 0.05em 0 0.1em;
+  vertical-align: -0.1em;
+  display: inline-block;
+}
+
+/* Garantir que emojis em botões fiquem centralizados */
+button .emoji-icon img.emoji {
+  vertical-align: middle;
+  margin: 0;
+}
+
+/* Emojis grandes (para seleção de ícones) */
+.emoji-icon-large img.emoji {
+  height: 2em;
+  width: 2em;
+}
