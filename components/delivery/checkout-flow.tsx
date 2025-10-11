@@ -95,24 +95,47 @@ export default function CheckoutFlow({
     setCurrentStep('confirmation');
   };
 
-  const applyCoupon = () => {
+  const applyCoupon = async () => {
     setCouponError('');
     
-    // Cupons de exemplo - em produção viria de uma API
-    const validCoupons = [
-      { code: 'PRIMEIRACOMPRA', discount: 10, type: 'fixed' as const, description: 'R$ 10 OFF na primeira compra' },
-      { code: 'DESCONTO15', discount: 15, type: 'percent' as const, description: '15% de desconto' },
-      { code: 'FRETEGRATIS', discount: deliveryConfig.deliveryFee, type: 'fixed' as const, description: 'Frete grátis' },
-    ];
-    
-    const coupon = validCoupons.find(c => c.code === couponCode.toUpperCase());
-    
-    if (coupon) {
-      setAppliedCoupon(coupon);
-      toast.success(`Cupom "${coupon.code}" aplicado! ${coupon.description}`);
-      setCouponCode('');
-    } else {
-      setCouponError('Cupom inválido ou expirado');
+    if (!couponCode.trim()) {
+      setCouponError('Digite um código de cupom');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: couponCode.toUpperCase(),
+          restaurantId: restaurant.id,
+          cartTotal: subtotal
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.valid) {
+        // Converte o cupom para o formato esperado pelo componente
+        const coupon = {
+          code: data.coupon.code,
+          discount: data.discountAmount,
+          type: 'fixed' as const, // Sempre tratamos como desconto fixo já calculado
+          description: data.coupon.description || `Desconto de R$ ${data.discountAmount.toFixed(2)}`
+        };
+        
+        setAppliedCoupon(coupon);
+        toast.success(`🎫 Cupom "${coupon.code}" aplicado! ${coupon.description}`);
+        setCouponCode('');
+      } else {
+        setCouponError(data.error || 'Cupom inválido ou expirado');
+      }
+    } catch (error) {
+      console.error('Erro ao validar cupom:', error);
+      setCouponError('Erro ao validar cupom. Tente novamente.');
     }
   };
 
