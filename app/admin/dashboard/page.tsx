@@ -1574,12 +1574,12 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <Card className="w-full max-w-md my-8 max-h-[90vh] flex flex-col">
+        <CardHeader className="flex-shrink-0">
           <CardTitle>Editar Informações do Restaurante</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-y-auto flex-1">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="name">Nome do Restaurante</Label>
@@ -1724,17 +1724,26 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                 </div>
               </div>
             </div>
-
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading} className="flex-1">
-                {isLoading ? 'Salvando...' : 'Salvar'}
-              </Button>
-            </div>
           </form>
         </CardContent>
+        <div className="border-t p-4 flex gap-3 flex-shrink-0 bg-white">
+          <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+            Cancelar
+          </Button>
+          <Button 
+            type="button" 
+            disabled={isLoading}
+            onClick={() => {
+              const form = document.querySelector('form');
+              if (form) {
+                form.requestSubmit();
+              }
+            }}
+            className="flex-1"
+          >
+            {isLoading ? 'Salvando...' : 'Salvar'}
+          </Button>
+        </div>
       </Card>
     </div>
   );
