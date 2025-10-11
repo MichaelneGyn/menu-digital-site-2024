@@ -434,7 +434,7 @@ function AdminDashboard() {
                               : 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'
                       } 
                       alt={item.name}
-                      className="w-full h-32 object-cover rounded-md mb-3"
+                      className="w-full h-32 object-contain bg-white rounded-md mb-3"
                     />
                     <h3 className="font-semibold">{item.name}</h3>
                     <p className="text-sm text-gray-600 mb-2">{item.description}</p>
@@ -837,7 +837,7 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
                     <img 
                       src={imagePreview} 
                       alt="Preview" 
-                      className="w-full h-32 object-cover rounded-md border"
+                      className="w-full h-32 object-contain bg-gray-50 rounded-md border"
                     />
                     <button
                       type="button"
