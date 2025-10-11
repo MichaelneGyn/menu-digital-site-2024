@@ -37,17 +37,18 @@ interface Category {
   id: string;
   name: string;
   icon: string;
-  menuItems: MenuItem[];
+  menuItems?: MenuItem[];
 }
 
 interface MenuItem {
   id: string;
   name: string;
-  description: string;
+  description?: string | null;
   price: number;
-  image: string;
+  image?: string | null;
   isPromo?: boolean;
   originalPrice?: number;
+  promoTag?: string | null;
   category: Category;
 }
 
@@ -62,6 +63,8 @@ function AdminDashboard() {
     promoItems: 0
   });
   const [showAddItemModal, setShowAddItemModal] = useState(false);
+  const [showEditItemModal, setShowEditItemModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
   const [showCreateRestaurantModal, setShowCreateRestaurantModal] = useState(false);
   const [showEditRestaurantModal, setShowEditRestaurantModal] = useState(false);
@@ -416,13 +419,25 @@ function AdminDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {restaurant.menuItems.slice(0, 6).map((item) => (
                   <div key={item.id} className="border rounded-lg p-4 hover-scale relative">
-                    <button
-                      onClick={() => handleDeleteItem(item.id)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 z-10"
-                      title="Remover item"
-                    >
-                      ✕
-                    </button>
+                    <div className="absolute top-2 right-2 flex gap-2 z-10">
+                      <button
+                        onClick={() => {
+                          setEditingItem(item);
+                          setShowEditItemModal(true);
+                        }}
+                        className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-blue-600"
+                        title="Editar item"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => handleDeleteItem(item.id)}
+                        className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                        title="Remover item"
+                      >
+                        ✕
+                      </button>
+                    </div>
                     <img 
                       src={
                         item.image?.startsWith('/') 
@@ -489,6 +504,24 @@ function AdminDashboard() {
           onSuccess={() => {
             setShowAddItemModal(false);
             toast.success('🍕 Item adicionado com sucesso!');
+            fetchRestaurantData();
+          }}
+        />
+      )}
+
+      {showEditItemModal && editingItem && (
+        <EditItemModal 
+          isOpen={showEditItemModal}
+          onClose={() => {
+            setShowEditItemModal(false);
+            setEditingItem(null);
+          }}
+          item={editingItem}
+          categories={restaurant?.categories || []}
+          onSuccess={() => {
+            setShowEditItemModal(false);
+            setEditingItem(null);
+            toast.success('✏️ Item atualizado com sucesso!');
             fetchRestaurantData();
           }}
         />
@@ -943,6 +976,258 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
               </Button>
               <Button type="submit" disabled={isLoading || isUploading} className="flex-1">
                 {isUploading ? 'Enviando imagem...' : isLoading ? 'Adicionando...' : 'Adicionar'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Edit Item Modal
+interface EditItemModalProps extends ModalProps {
+  item: MenuItem;
+  categories: Category[];
+  onSuccess: () => void;
+}
+
+function EditItemModal({ isOpen, onClose, item, categories, onSuccess }: EditItemModalProps) {
+  const [formData, setFormData] = useState({
+    name: item.name,
+    description: item.description || '',
+    price: item.price.toString(),
+    categoryId: item.category.id,
+    isPromo: item.isPromo || false,
+    oldPrice: item.originalPrice?.toString() || '',
+    promoTag: item.promoTag || ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(item.image || null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      let imageUrl = item.image; // Mantém a imagem atual por padrão
+
+      // Upload da nova imagem se selecionada
+      if (selectedImage) {
+        setIsUploading(true);
+        const uploadData = new FormData();
+        uploadData.append('file', selectedImage);
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadData
+        });
+
+        if (uploadResponse.ok) {
+          const uploadResult = await uploadResponse.json();
+          imageUrl = uploadResult.image_url;
+        } else {
+          let errMsg = 'Erro no upload da imagem';
+          try {
+            const errBody = await uploadResponse.json();
+            if (errBody?.error) errMsg = errBody.error;
+          } catch {}
+          toast.error(errMsg);
+          setIsLoading(false);
+          setIsUploading(false);
+          return;
+        }
+        setIsUploading(false);
+      }
+
+      const itemData = {
+        ...formData,
+        price: formData.price,
+        oldPrice: formData.oldPrice || null,
+        image: imageUrl
+      };
+
+      console.log('📤 Atualizando item:', itemData);
+
+      const response = await fetch(`/api/menu/${item.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itemData),
+      });
+
+      if (response.ok) {
+        const updatedItem = await response.json();
+        console.log('✅ Item atualizado:', updatedItem);
+        onSuccess();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Erro ao atualizar item');
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar item:', error);
+      toast.error('Erro ao atualizar item');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <Card className="w-full max-w-2xl my-8">
+        <CardHeader>
+          <CardTitle>✏️ Editar Item</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-name">Nome do Item</Label>
+                <Input
+                  id="edit-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  required
+                  placeholder="Ex: Pizza Margherita"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-category">Categoria</Label>
+                <select
+                  id="edit-category"
+                  value={formData.categoryId}
+                  onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
+                  className="w-full p-2 border rounded-md"
+                  required
+                >
+                  <option value="">Selecione...</option>
+                  {categories.map(category => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="edit-description">Descrição</Label>
+              <Input
+                id="edit-description"
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                placeholder="Descrição do item"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="edit-price">Preço</Label>
+              <PriceInput
+                value={formData.price}
+                onChange={(val) => setFormData({...formData, price: val})}
+                placeholder="Digite: 2990 = R$ 29,90"
+              />
+            </div>
+            
+            <div>
+              <Label>Imagem do Item</Label>
+              <div className="space-y-3">
+                {imagePreview ? (
+                  <div className="relative">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="w-full h-32 object-contain bg-gray-50 rounded-md border"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center">
+                    <p className="text-gray-500 mb-2">Adicionar/Trocar imagem</p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      id="edit-image-upload"
+                    />
+                    <label
+                      htmlFor="edit-image-upload"
+                      className="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md text-sm"
+                    >
+                      Escolher Arquivo
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="edit-isPromo"
+                checked={formData.isPromo}
+                onChange={(e) => setFormData({...formData, isPromo: e.target.checked})}
+              />
+              <Label htmlFor="edit-isPromo">Item em promoção</Label>
+            </div>
+            
+            {formData.isPromo && (
+              <>
+                <div>
+                  <Label htmlFor="edit-oldPrice">Preço Anterior</Label>
+                  <PriceInput
+                    value={formData.oldPrice}
+                    onChange={(val) => setFormData({...formData, oldPrice: val})}
+                    placeholder="Digite: 3990 = R$ 39,90"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="edit-promoTag">Etiqueta da Promoção</Label>
+                  <Input
+                    id="edit-promoTag"
+                    type="text"
+                    value={formData.promoTag}
+                    onChange={(e) => setFormData({...formData, promoTag: e.target.value})}
+                    placeholder="Ex: COMBO, 2 POR 1, OFERTA"
+                    maxLength={20}
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="flex gap-3 pt-4">
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isLoading || isUploading} className="flex-1">
+                {isUploading ? 'Enviando imagem...' : isLoading ? 'Salvando...' : '✏️ Salvar Alterações'}
               </Button>
             </div>
           </form>
