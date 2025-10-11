@@ -27,6 +27,15 @@ export interface CartItem extends ClientMenuItem {
 }
 
 export default function MenuPage({ restaurant }: MenuPageProps) {
+  // Debug: verificar dados PIX do restaurante
+  console.log('🔍 MenuPage - Restaurant PIX Data:', {
+    restaurantName: restaurant.name,
+    pixKey: restaurant.pixKey,
+    pixQrCode: restaurant.pixQrCode,
+    hasPixKey: !!restaurant.pixKey,
+    hasPixQrCode: !!restaurant.pixQrCode,
+  });
+
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showNotification, setShowNotification] = useState(false);
