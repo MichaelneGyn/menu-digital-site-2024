@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Upload, Download, CheckCircle, AlertCircle, ArrowLeft, Plus, X, Eye, FileSpreadsheet } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { PriceInput } from '@/components/PriceInput';
 
 type ImportResult = {
   success: number;
@@ -334,12 +335,10 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                               {/* Preço */}
                               <div>
                                 <Label>Preço (R$) *</Label>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  placeholder="Ex: 45.90"
+                                <PriceInput
                                   value={item.price}
-                                  onChange={(e) => updateItem(item.id, 'price', e.target.value)}
+                                  onChange={(val) => updateItem(item.id, 'price', val)}
+                                  placeholder="Digite: 1490 = R$ 14,90"
                                 />
                               </div>
                             </div>
@@ -405,12 +404,10 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
 
                               {item.isPromo && (
                                 <div className="flex-1">
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="Preço original (ex: 55.90)"
+                                  <PriceInput
                                     value={item.originalPrice}
-                                    onChange={(e) => updateItem(item.id, 'originalPrice', e.target.value)}
+                                    onChange={(val) => updateItem(item.id, 'originalPrice', val)}
+                                    placeholder="Digite: 5590 = R$ 55,90"
                                   />
                                 </div>
                               )}
