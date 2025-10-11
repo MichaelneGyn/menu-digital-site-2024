@@ -16,6 +16,7 @@ import { onlyDigits, isValidWhatsapp, formatBRMask } from '@/lib/phone';
 import { toast } from 'sonner';
 import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
 import { EmojiIcon } from '@/components/EmojiIcon';
+import { PriceInput } from '@/components/PriceInput';
 
 interface Restaurant {
   id: string;
@@ -676,33 +677,6 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Formata entrada numérica para duas casas decimais automaticamente.
-  // Remove zeros à esquerda e garante casas decimais.
-  // Exemplos:
-  //   "1" -> "0.01"
-  //   "12" -> "0.12"
-  //   "120" -> "1.20"
-  //   "00012" -> "0.12"
-  const formatCents = (raw: string) => {
-    const digits = raw.replace(/\D/g, '');
-    if (!digits) return '';
-
-    // Para até 2 dígitos, apenas prefixa com 0 e separa decimal
-    if (digits.length <= 2) {
-      const padded = digits.padStart(2, '0');
-      return `0.${padded}`;
-    }
-
-    // Separa parte inteira e decimal (2 últimas casas)
-    const intRaw = digits.slice(0, -2);
-    const decPart = digits.slice(-2);
-
-    // Remove zeros à esquerda da parte inteira
-    const intPart = intRaw.replace(/^0+(?=\d)/, '') || '0';
-
-    return `${intPart}.${decPart}`;
-  };
-
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -848,14 +822,10 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
             
             <div>
               <Label htmlFor="price">Preço</Label>
-              <Input
-                id="price"
-                type="text"
-                inputMode="decimal"
+              <PriceInput
                 value={formData.price}
-                onChange={(e) => setFormData({...formData, price: formatCents(e.target.value)})}
-                required
-                placeholder="29.90"
+                onChange={(val) => setFormData({...formData, price: val})}
+                placeholder="Digite: 2990 = R$ 29,90"
               />
             </div>
             
@@ -912,13 +882,10 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
               <>
                 <div>
                   <Label htmlFor="oldPrice">Preço Anterior</Label>
-                  <Input
-                    id="oldPrice"
-                    type="text"
-                    inputMode="decimal"
+                  <PriceInput
                     value={formData.oldPrice}
-                    onChange={(e) => setFormData({...formData, oldPrice: formatCents(e.target.value)})}
-                    placeholder="39.90"
+                    onChange={(val) => setFormData({...formData, oldPrice: val})}
+                    placeholder="Digite: 3990 = R$ 39,90"
                   />
                 </div>
 
