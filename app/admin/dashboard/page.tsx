@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { onlyDigits, isValidWhatsapp, formatBRMask } from '@/lib/phone';
 import { toast } from 'sonner';
 import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
+import { EmojiIcon } from '@/components/EmojiIcon';
 
 interface Restaurant {
   id: string;
@@ -1152,19 +1153,19 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
             
             <div>
               <Label>Ícone</Label>
-              <p className="text-xs text-gray-500 mb-2">Escolha o ícone que melhor representa sua categoria</p>
-              <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 mt-2 max-h-[280px] overflow-y-auto p-2 border rounded-lg bg-gray-50">
+              <p className="text-xs text-gray-500 mb-2">Escolha o ícone que melhor representa sua categoria (estilo 3D)</p>
+              <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 mt-2 max-h-[320px] overflow-y-auto p-2 border rounded-lg bg-gray-50">
                 {icons.map(icon => (
                   <button
                     key={icon}
                     type="button"
                     onClick={() => setFormData({...formData, icon})}
-                    className={`p-2 text-2xl border rounded hover:bg-gray-100 hover:scale-110 transition-transform ${
-                      formData.icon === icon ? 'bg-red-100 border-red-500 ring-2 ring-red-300' : 'bg-white'
+                    className={`p-3 border rounded-lg hover:bg-gray-100 hover:scale-110 transition-all duration-200 flex items-center justify-center ${
+                      formData.icon === icon ? 'bg-red-50 border-red-500 ring-2 ring-red-300 shadow-lg' : 'bg-white shadow-sm'
                     }`}
                     title={icon}
                   >
-                    {icon}
+                    <EmojiIcon emoji={icon} size={32} className="emoji-icon-large" />
                   </button>
                 ))}
               </div>
