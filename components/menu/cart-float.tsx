@@ -45,17 +45,43 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
       className={`cart-float ${isAnimating ? 'cart-animate' : ''}`}
       onClick={handleCartClick}
       type="button"
+      style={{
+        position: 'fixed',
+        bottom: '16px',
+        left: '16px',
+        right: '16px',
+        zIndex: 999999,
+        display: 'flex',
+        background: 'linear-gradient(135deg, #EA1D2C 0%, #D01726 100%)',
+        padding: '14px 20px',
+        borderRadius: '50px',
+        border: 'none',
+        color: 'white',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        boxShadow: '0 8px 30px rgba(234, 29, 44, 0.6)',
+        cursor: 'pointer'
+      }}
     >
-      <div className="cart-float-content">
-        <div className="cart-icon-wrapper">
-          <ShoppingCart size={22} strokeWidth={2.5} />
-          <span className="cart-text">Carrinho</span>
-          {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
-        </div>
-        
-        <div className="cart-total">
-          {formatPrice(totalPrice)}
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <ShoppingCart size={22} strokeWidth={2.5} />
+        <span style={{ display: window.innerWidth > 768 ? 'inline' : 'none' }}>Carrinho</span>
+        {totalItems > 0 && (
+          <span style={{
+            background: 'white',
+            color: '#EA1D2C',
+            padding: '4px 10px',
+            borderRadius: '20px',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}>
+            {totalItems}
+          </span>
+        )}
+      </div>
+      
+      <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+        {formatPrice(totalPrice)}
       </div>
     </button>
   );
