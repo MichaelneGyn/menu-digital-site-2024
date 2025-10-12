@@ -33,17 +33,28 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
   const [needsChange, setNeedsChange] = useState(false);
   const [pixKeyCopied, setPixKeyCopied] = useState(false);
 
-  // Gera QR Code PIX simples com chave (mais compatível)
+  // Gera QR Code PIX dinâmico com valor usando biblioteca validada
   const pixDynamicQrCode = useMemo(() => {
-    if (!restaurant.pixKey) {
+    if (!restaurant.pixKey || !restaurant.name || totalAmount <= 0) {
       return null;
     }
 
-    // QR Code simples com apenas a chave PIX
-    // É o método mais compatível e funciona em 100% dos apps bancários
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(restaurant.pixKey)}`;
-    return qrCodeUrl;
-  }, [restaurant.pixKey]);
+    try {
+      // Usa biblioteca emv-qrcps (validada pela comunidade)
+      const { qrCodeUrl } = generatePix({
+        pixKey: restaurant.pixKey,
+        merchantName: restaurant.name,
+        merchantCity: restaurant.address?.split(',').pop()?.trim() || 'Cidade',
+        description: `Pedido ${restaurant.name}`,
+        amount: totalAmount // ✅ VALOR AUTOMÁTICO!
+      });
+      return qrCodeUrl;
+    } catch (error) {
+      console.error('Erro ao gerar QR Code PIX:', error);
+      // Fallback: QR Code simples se der erro
+      return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(restaurant.pixKey)}`;
+    }
+  }, [restaurant.pixKey, restaurant.name, restaurant.address, totalAmount]);
 
   const copyPixKey = async () => {
     if (restaurant.pixKey) {
@@ -170,6 +181,13 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                 {(pixDynamicQrCode || restaurant.pixQrCode) && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-green-700">Ou escaneie o QR Code:</p>
+                    {pixDynamicQrCode && restaurant.pixKey && restaurant.name && (
+                      <div className="p-2 bg-blue-50 border border-blue-200 rounded">
+                        <p className="text-xs text-blue-700 font-medium">
+                          ✅ Valor de R$ {totalAmount.toFixed(2)} já incluído no QR Code!
+                        </p>
+                      </div>
+                    )}
                     <div className="bg-white p-4 rounded border flex justify-center">
                       <img 
                         src={pixDynamicQrCode || restaurant.pixQrCode || ''} 
@@ -180,11 +198,6 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                           e.currentTarget.style.display = 'none';
                         }}
                       />
-                    </div>
-                    <div className="p-2 bg-yellow-50 border border-yellow-200 rounded">
-                      <p className="text-xs text-yellow-800">
-                        ⚠️ Após escanear, digite o valor: <strong>R$ {totalAmount.toFixed(2)}</strong>
-                      </p>
                     </div>
                   </div>
                 )}
