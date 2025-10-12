@@ -110,7 +110,8 @@ export async function PATCH(
 
       // Retorna URL do WhatsApp para envio automático
       const phoneNumber = order.customerPhone.replace(/\D/g, '');
-      const whatsappUrl = `https://wa.me/55${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+      // Usar api.whatsapp.com ao invés de wa.me para abrir DIRETO na conversa
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=55${phoneNumber}&text=${encodeURIComponent(whatsappMessage)}`;
 
       return NextResponse.json({
         success: true,
