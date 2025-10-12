@@ -345,7 +345,7 @@ export default function OrderTrackingPage() {
             <CardContent className="pt-6">
               <Button 
                 className="w-full bg-green-600 hover:bg-green-700"
-                onClick={() => window.open(`https://wa.me/${order.restaurant.whatsapp}`, '_blank')}
+                onClick={() => window.open(`https://api.whatsapp.com/send?phone=${order.restaurant.whatsapp}`, '_blank')}
               >
                 <Phone className="w-4 h-4 mr-2" />
                 Falar com o Restaurante

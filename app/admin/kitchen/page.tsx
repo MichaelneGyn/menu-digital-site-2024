@@ -142,7 +142,11 @@ export default function KitchenDisplayPage() {
 
         // Abre WhatsApp se houver notificação
         if (data.notification?.whatsappUrl) {
+          // Abre WhatsApp DIRETO na conversa com mensagem pré-preenchida
           window.open(data.notification.whatsappUrl, '_blank');
+          
+          // Feedback para o usuário
+          alert('✅ WhatsApp aberto!\n📱 Mensagem já está pronta, só clicar em Enviar!');
         }
       }
     } catch (error) {

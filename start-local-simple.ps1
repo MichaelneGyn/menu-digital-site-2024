@@ -27,6 +27,17 @@ if (-not (Test-Path "node_modules")) {
         Write-Host "ERRO ao instalar dependencias!" -ForegroundColor Red
         exit 1
     }
+} else {
+    # Verificar se emv-qrcps está instalado
+    $emvInstalled = npm list emv-qrcps 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Instalando modulo PIX (emv-qrcps)..." -ForegroundColor Yellow
+        npm install emv-qrcps
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERRO ao instalar modulo PIX!" -ForegroundColor Red
+            exit 1
+        }
+    }
 }
 
 # Configurar .env se nao existir
