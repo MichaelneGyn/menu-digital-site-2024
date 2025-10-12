@@ -4,6 +4,8 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "NEXTAUTH_URL": "https://menu-digital-site-2024-8773d37d6064-git-main-michaeldouglasqueiroz.vercel.app",
+    "NEXTAUTH_URL_INTERNAL": "https://menu-digital-site-2024-8773d37d6064-git-main-michaeldouglasqueiroz.vercel.app"
   }
 }
