@@ -66,19 +66,22 @@ export default function RestaurantNav({
         boxShadow: isScrolled ? '0 4px 16px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.15)',
         transition: 'box-shadow 0.3s ease',
         width: '100%',
-        padding: '0'
+        minHeight: '80px',
+        padding: '0',
+        display: 'flex',
+        alignItems: 'center'
       }}
     >
       <div 
         ref={navContainerRef}
         className="category-menu-container"
         style={{ 
-          maxWidth: '100%',
-          margin: '0',
+          maxWidth: '1200px',
+          margin: '0 auto',
           width: '100%',
-          padding: '16px 20px',
+          padding: '20px 24px',
           display: 'flex',
-          gap: '16px',
+          gap: '20px',
           overflowX: 'auto',
           overflowY: 'hidden',
           scrollbarWidth: 'none',
@@ -99,14 +102,15 @@ export default function RestaurantNav({
           bottom: 0,
           left: 0,
           right: 0,
-          height: '3px',
-          background: 'rgba(255,255,255,0.2)'
+          height: '4px',
+          background: 'rgba(255,255,255,0.15)'
         }}>
           <div style={{
             height: '100%',
-            background: 'linear-gradient(90deg, #fbbf24, #f59e0b, #ef4444)',
-            width: '30%',
-            transition: 'width 0.3s ease'
+            background: 'linear-gradient(90deg, #fbbf24 0%, #f59e0b 50%, #ef4444 100%)',
+            width: '33%',
+            transition: 'width 0.3s ease',
+            boxShadow: '0 0 8px rgba(251, 191, 36, 0.5)'
           }} />
         </div>
         
@@ -119,17 +123,17 @@ export default function RestaurantNav({
               onClick={() => onCategoryChange(category.id)}
               style={{ 
                 flexShrink: 0,
-                minWidth: '150px',
-                height: '44px',
-                padding: '0 20px',
-                borderRadius: '6px',
+                minWidth: '180px',
+                height: '52px',
+                padding: '0 28px',
+                borderRadius: '8px',
                 border: 'none',
                 background: isActive 
                   ? 'rgba(255, 255, 255, 0.95)' 
                   : 'transparent',
                 color: isActive ? '#6a1b9a' : 'white',
                 fontWeight: isActive ? '700' : '600',
-                fontSize: '15px',
+                fontSize: '16px',
                 transition: 'all 0.2s ease',
                 cursor: 'pointer',
                 display: 'inline-flex',
@@ -164,15 +168,18 @@ export default function RestaurantNav({
               }}
             >
               <span style={{ 
-                fontSize: '18px',
-                lineHeight: 1
+                fontSize: '22px',
+                lineHeight: 1,
+                display: 'flex',
+                alignItems: 'center'
               }}>
                 {category.icon}
               </span>
               <span style={{ 
-                fontSize: '15px',
+                fontSize: '16px',
                 fontWeight: isActive ? '700' : '600',
-                letterSpacing: '0.02em'
+                letterSpacing: '0.03em',
+                lineHeight: 1
               }}>
                 {category.name}
               </span>
