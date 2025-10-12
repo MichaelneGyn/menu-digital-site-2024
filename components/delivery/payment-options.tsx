@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CreditCard, Smartphone, Banknote, QrCode, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ClientRestaurant } from '@/lib/restaurant';
+import { generatePix } from '@/lib/pix';
 
 export type PaymentMethod = 'pix' | 'card_on_delivery' | 'cash_on_delivery';
 
@@ -31,6 +32,27 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
   const [cashChange, setCashChange] = useState<number>(0);
   const [needsChange, setNeedsChange] = useState(false);
   const [pixKeyCopied, setPixKeyCopied] = useState(false);
+
+  // Gera QR Code PIX dinâmico com o valor total do pedido
+  const pixDynamicQrCode = useMemo(() => {
+    if (!restaurant.pixKey || !restaurant.name || totalAmount <= 0) {
+      return null;
+    }
+
+    try {
+      const { qrCodeUrl } = generatePix({
+        pixKey: restaurant.pixKey,
+        merchantName: restaurant.name.substring(0, 25),
+        merchantCity: restaurant.address?.split(',').pop()?.trim().substring(0, 15) || 'Cidade',
+        description: `Pedido ${restaurant.name}`.substring(0, 72),
+        amount: totalAmount // VALOR AUTOMÁTICO DO PEDIDO!
+      });
+      return qrCodeUrl;
+    } catch (error) {
+      console.error('Erro ao gerar QR Code PIX dinâmico:', error);
+      return null;
+    }
+  }, [restaurant.pixKey, restaurant.name, restaurant.address, totalAmount]);
 
   const copyPixKey = async () => {
     if (restaurant.pixKey) {
@@ -154,15 +176,23 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                   </div>
                 )}
                 
-                {restaurant.pixQrCode && (
+                {(pixDynamicQrCode || restaurant.pixQrCode) && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-green-700">Ou escaneie o QR Code:</p>
+                    {pixDynamicQrCode && (
+                      <div className="p-2 bg-blue-50 border border-blue-200 rounded mb-2">
+                        <p className="text-xs text-blue-700 font-medium">
+                          ✅ QR Code com valor de R$ {totalAmount.toFixed(2)} já incluído!
+                        </p>
+                      </div>
+                    )}
                     <div className="bg-white p-4 rounded border flex justify-center">
                       <img 
-                        src={restaurant.pixQrCode} 
+                        src={pixDynamicQrCode || restaurant.pixQrCode || ''} 
                         alt="QR Code PIX" 
                         className="max-w-[200px] max-h-[200px] w-full h-auto object-contain"
                         onError={(e) => {
+                          console.error('Erro ao carregar QR Code');
                           e.currentTarget.style.display = 'none';
                         }}
                       />
