@@ -144,7 +144,7 @@ export default function CartModal({
     
     const orderMessage = generateOrderMessage();
     const whatsappNumber = (restaurant.whatsapp || '5562999999999').replace(/\D/g, '');
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${orderMessage}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${orderMessage}`;
     
     // Abrir WhatsApp
     window.open(whatsappUrl, '_blank');
