@@ -18,6 +18,7 @@ import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
 import { EmojiIcon } from '@/components/EmojiIcon';
 import { PriceInput } from '@/components/PriceInput';
 import { CouponsModal } from '@/components/CouponsModal';
+import AddItemWithCustomizationsModal from '@/components/admin/AddItemWithCustomizationsModal';
 
 interface Restaurant {
   id: string;
@@ -507,7 +508,7 @@ function AdminDashboard() {
       )}
 
       {showAddItemModal && (
-        <AddItemModal 
+        <AddItemWithCustomizationsModal 
           isOpen={showAddItemModal}
           onClose={() => setShowAddItemModal(false)}
           restaurantId={restaurant?.id || ''}
