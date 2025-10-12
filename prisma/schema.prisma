@@ -99,6 +99,7 @@ model Restaurant {
   showRatings      Boolean      @default(true)
   theme            String       @default("light")
   pixKey           String?
+  pixQrCode        String?      // Deprecated: não usado mais, mas mantido para compatibilidade
   categories       Category[]
   coupons          Coupon[]
   ingredients      Ingredient[]
