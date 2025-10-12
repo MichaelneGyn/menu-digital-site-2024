@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protótipo - Sistema de Customizações</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #EA1D2C 0%, #D01726 100%);
+            color: white;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #EA1D2C;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+        }
+        
+        .content {
+            padding: 24px;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .group-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+        }
+        
+        .group-card:hover {
+            border-color: #EA1D2C;
+            box-shadow: 0 4px 12px rgba(234, 29, 44, 0.1);
+        }
+        
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .group-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .group-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            background: #f5f5f5;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .icon-btn:hover {
+            background: #EA1D2C;
+            color: white;
+        }
+        
+        .group-meta {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        
+        .badge-required {
+            background: #FEE;
+            color: #EA1D2C;
+        }
+        
+        .badge-optional {
+            background: #EEF;
+            color: #4285F4;
+        }
+        
+        .options-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .option-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        
+        .option-item.active {
+            border-color: #4CAF50;
+            background: #f1f8f4;
+        }
+        
+        .option-item.inactive {
+            opacity: 0.6;
+            border-color: #ddd;
+        }
+        
+        .option-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+        }
+        
+        .status-dot.inactive {
+            background: #999;
+        }
+        
+        .option-price {
+            font-weight: 600;
+            color: #EA1D2C;
+        }
+        
+        .show-more {
+            text-align: center;
+            padding: 12px;
+            color: #EA1D2C;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        .customization-section {
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .option-button {
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .option-button:hover {
+            border-color: #EA1D2C;
+        }
+        
+        .option-button.selected {
+            border-color: #EA1D2C;
+            background: #FEE;
+        }
+        
+        .option-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-cancel {
+            flex: 1;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-add {
+            flex: 2;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #EA1D2C 0%, #D01726 100%);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            color: #EA1D2C;
+            border-bottom-color: #EA1D2C;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍕 Gerenciar Customizações</h1>
+            <button class="btn-primary" onclick="alert('Abriria modal para criar novo grupo')">+ Novo Grupo</button>
+        </div>
+        
+        <div class="content">
+            <input type="text" class="search-box" placeholder="🔍 Buscar grupos de customização...">
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('dashboard')">Dashboard</button>
+                <button class="tab" onclick="switchTab('preview')">Preview do Cliente</button>
+            </div>
+            
+            <!-- Dashboard Tab -->
+            <div id="tab-dashboard" class="tab-content active">
+                <!-- Grupo 1: Sabores de Pizza -->
+                <div class="group-card">
+                    <div class="group-header">
+                        <div class="group-title">
+                            🍕 Sabores de Pizza
+                        </div>
+                        <div class="group-actions">
+                            <button class="icon-btn" title="Editar">✏️</button>
+                            <button class="icon-btn" title="Excluir">🗑️</button>
+                            <button class="icon-btn" title="Ativar/Desativar">⚡</button>
+                        </div>
+                    </div>
+                    <div class="group-meta">
+                        <span class="badge badge-required">Obrigatório</span>
+                        <span>Máximo 2 seleções • 12 opções</span>
+                    </div>
+                    <div class="options-list">
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Calabresa com Catupiry
+                            </div>
+                            <div class="option-price">R$ 0,00</div>
+                        </div>
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Portuguesa
+                            </div>
+                            <div class="option-price">R$ 0,00</div>
+                        </div>
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Frango com Catupiry
+                            </div>
+                            <div class="option-price">R$ 0,00</div>
+                        </div>
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Bacon
+                            </div>
+                            <div class="option-price">R$ 0,00</div>
+                        </div>
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                4 Queijos
+                            </div>
+                            <div class="option-price">R$ 0,00</div>
+                        </div>
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Margherita
+                            </div>
+                            <div class="option-price">R$ 0,00</div>
+                        </div>
+                    </div>
+                    <div class="show-more">... e mais 6 opções [Ver todas ▼]</div>
+                </div>
+                
+                <!-- Grupo 2: Bordas -->
+                <div class="group-card">
+                    <div class="group-header">
+                        <div class="group-title">
+                            🧀 Bordas Irresistíveis
+                        </div>
+                        <div class="group-actions">
+                            <button class="icon-btn" title="Editar">✏️</button>
+                            <button class="icon-btn" title="Excluir">🗑️</button>
+                            <button class="icon-btn" title="Ativar/Desativar">⚡</button>
+                        </div>
+                    </div>
+                    <div class="group-meta">
+                        <span class="badge badge-optional">Opcional</span>
+                        <span>Máximo 1 seleção • 8 opções</span>
+                    </div>
+                    <div class="options-list">
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Borda de Catupiry
+                            </div>
+                            <div class="option-price">+ R$ 15,90</div>
+                        </div>
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Borda de Cheddar
+                            </div>
+                            <div class="option-price">+ R$ 15,90</div>
+                        </div>
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Borda de Mussarela
+                            </div>
+                            <div class="option-price">+ R$ 17,90</div>
+                        </div>
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Borda de Cream Cheese
+                            </div>
+                            <div class="option-price">+ R$ 17,90</div>
+                        </div>
+                        <div class="option-item inactive">
+                            <div class="option-name">
+                                <span class="status-dot inactive"></span>
+                                Borda de Chocolate (inativa)
+                            </div>
+                            <div class="option-price">+ R$ 12,00</div>
+                        </div>
+                    </div>
+                    <div class="show-more">... e mais 3 opções [Ver todas ▼]</div>
+                </div>
+                
+                <!-- Grupo 3: Extras -->
+                <div class="group-card">
+                    <div class="group-header">
+                        <div class="group-title">
+                            ➕ Extras Adicionais
+                        </div>
+                        <div class="group-actions">
+                            <button class="icon-btn" title="Editar">✏️</button>
+                            <button class="icon-btn" title="Excluir">🗑️</button>
+                            <button class="icon-btn" title="Ativar/Desativar">⚡</button>
+                        </div>
+                    </div>
+                    <div class="group-meta">
+                        <span class="badge badge-optional">Opcional</span>
+                        <span>Sem limite • 6 opções</span>
+                    </div>
+                    <div class="options-list">
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Extra Queijo
+                            </div>
+                            <div class="option-price">+ R$ 8,00</div>
+                        </div>
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Extra Bacon
+                            </div>
+                            <div class="option-price">+ R$ 10,00</div>
+                        </div>
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Extra Catupiry
+                            </div>
+                            <div class="option-price">+ R$ 6,00</div>
+                        </div>
+                        <div class="option-item active">
+                            <div class="option-name">
+                                <span class="status-dot"></span>
+                                Extra Calabresa
+                            </div>
+                            <div class="option-price">+ R$ 8,00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Preview Tab -->
+            <div id="tab-preview" class="tab-content">
+                <div style="text-align: center; padding: 40px;">
+                    <h2 style="margin-bottom: 20px;">Preview - Como o Cliente Vê</h2>
+                    <button class="btn-primary" onclick="openModal()">🍕 Ver Modal de Customização</button>
+                    <p style="margin-top: 16px; color: #666;">Clique para ver como ficará no site do cliente</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Customização (Preview do Cliente) -->
+    <div class="modal-overlay" id="customizationModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Escolha o sabor de Pizza Grande</h2>
+                <button class="icon-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="customization-section">
+                    <div class="section-title">
+                        <h3>🍕 SABORES DE PIZZA</h3>
+                        <span class="badge badge-required">OBRIGATÓRIO</span>
+                    </div>
+                    <p style="color: #666; margin-bottom: 12px;">Escolha até 2 sabores</p>
+                    <div class="option-grid">
+                        <div class="option-button" onclick="toggleOption(this)">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="width: 20px; height: 20px; border: 2px solid #EA1D2C; border-radius: 50%;"></span>
+                                Calabresa com Catupiry
+                            </div>
+                        </div>
+                        <div class="option-button" onclick="toggleOption(this)">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="width: 20px; height: 20px; border: 2px solid #EA1D2C; border-radius: 50%;"></span>
+                                Portuguesa
+                            </div>
+                        </div>
+                        <div class="option-button selected" onclick="toggleOption(this)">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="width: 20px; height: 20px; background: #EA1D2C; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px;">✓</span>
+                                Frango com Catupiry
+                            </div>
+                        </div>
+                        <div class="option-button selected" onclick="toggleOption(this)">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="width: 20px; height: 20px; background: #EA1D2C; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px;">✓</span>
+                                Bacon
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="customization-section">
+                    <div class="section-title">
+                        <h3>🧀 BORDAS IRRESISTÍVEIS</h3>
+                        <span class="badge badge-optional">OPCIONAL</span>
+                    </div>
+                    <div class="option-grid">
+                        <div class="option-button" onclick="toggleOptionSingle(this, 'border')">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <span style="width: 20px; height: 20px; border: 2px solid #EA1D2C; border-radius: 50%;"></span>
+                                Borda de Catupiry
+                            </div>
+                            <div style="color: #EA1D2C; font-weight: 600;">+ R$ 15,90</div>
+                        </div>
+                        <div class="option-button selected" onclick="toggleOptionSingle(this, 'border')">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <span style="width: 20px; height: 20px; background: #EA1D2C; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px;">✓</span>
+                                Borda de Cheddar
+                            </div>
+                            <div style="color: #EA1D2C; font-weight: 600;">+ R$ 15,90</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="customization-section">
+                    <div class="section-title">
+                        <h3>➕ EXTRAS ADICIONAIS</h3>
+                        <span class="badge badge-optional">OPCIONAL</span>
+                    </div>
+                    <div class="option-grid">
+                        <div class="option-button selected" onclick="toggleOption(this)">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <span style="width: 20px; height: 20px; background: #EA1D2C; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px;">✓</span>
+                                Extra Queijo
+                            </div>
+                            <div style="color: #EA1D2C; font-weight: 600;">+ R$ 8,00</div>
+                        </div>
+                        <div class="option-button" onclick="toggleOption(this)">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <span style="width: 20px; height: 20px; border: 2px solid #EA1D2C; border-radius: 50%;"></span>
+                                Extra Bacon
+                            </div>
+                            <div style="color: #EA1D2C; font-weight: 600;">+ R$ 10,00</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="customization-section">
+                    <div class="section-title">
+                        <h3>📝 OBSERVAÇÕES?</h3>
+                        <span class="badge badge-optional">OPCIONAL</span>
+                    </div>
+                    <textarea style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; resize: vertical; min-height: 80px;" placeholder="Sem cebola, por favor..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+                <button class="btn-add">
+                    <span>+ Adicionar</span>
+                    <span>R$ 68,90</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'dashboard') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('tab-dashboard').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('tab-preview').classList.add('active');
+            }
+        }
+        
+        function openModal() {
+            document.getElementById('customizationModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('customizationModal').classList.remove('active');
+        }
+        
+        function toggleOption(btn) {
+            btn.classList.toggle('selected');
+        }
+        
+        function toggleOptionSingle(btn, group) {
+            // Remove seleção de outros no mesmo grupo
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.option-button').forEach(b => {
+                if (b !== btn) b.classList.remove('selected');
+            });
+            btn.classList.toggle('selected');
+        }
+    </script>
+</body>
+</html>
