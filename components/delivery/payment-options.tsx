@@ -137,7 +137,7 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
               <span className="font-medium text-green-800">Pagamento via PIX</span>
             </div>
             
-            {restaurant.pixKey || restaurant.pixQrCode ? (
+            {restaurant.pixKey ? (
               <div className="space-y-4">
                 {restaurant.pixKey && (
                   <div className="space-y-2">
@@ -166,7 +166,7 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                   </div>
                 )}
                 
-                {(pixDynamicQrCode || restaurant.pixQrCode) && (
+                {pixDynamicQrCode && (
                   <div className="space-y-3">
                     <p className="text-sm font-medium text-green-700">💳 Escaneie o QR Code PIX:</p>
                     
@@ -181,7 +181,7 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                     {/* QR Code */}
                     <div className="bg-white p-4 rounded-lg border-2 border-green-200 flex justify-center">
                       <img 
-                        src={pixDynamicQrCode || restaurant.pixQrCode || ''} 
+                        src={pixDynamicQrCode} 
                         alt="QR Code PIX" 
                         className="max-w-[200px] max-h-[200px] w-full h-auto object-contain"
                         onError={(e) => {
