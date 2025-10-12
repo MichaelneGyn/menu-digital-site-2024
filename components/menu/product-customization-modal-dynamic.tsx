@@ -222,10 +222,11 @@ export default function ProductCustomizationModalDynamic({ item, onAdd, onClose 
               <div className="options-grid">
                 {group.options.map((option) => {
                   const isSelected = (selections[group.id] || []).includes(option.id);
-                  const isDisabled =
+                  const isDisabled = Boolean(
                     !isSelected &&
                     group.maxSelections &&
-                    (selections[group.id] || []).length >= group.maxSelections;
+                    (selections[group.id] || []).length >= group.maxSelections
+                  );
 
                   return (
                     <button
