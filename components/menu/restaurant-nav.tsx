@@ -112,13 +112,14 @@ export default function RestaurantNav({
                 padding: '0 16px',
                 borderRadius: '20px',
                 border: isActive ? '2px solid #ef4444' : '1px solid #e5e7eb',
+                borderBottom: isActive ? '3px solid #ef4444' : '1px solid #e5e7eb',
                 background: isActive 
-                  ? '#fef2f2' 
+                  ? 'linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%)' 
                   : 'white',
-                color: isActive ? '#ef4444' : '#6b7280',
-                fontWeight: isActive ? '600' : '500',
+                color: isActive ? '#dc2626' : '#6b7280',
+                fontWeight: isActive ? '700' : '500',
                 fontSize: '14px',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -126,13 +127,14 @@ export default function RestaurantNav({
                 gap: '6px',
                 whiteSpace: 'nowrap',
                 boxShadow: isActive 
-                  ? '0 2px 8px rgba(239, 68, 68, 0.2)' 
+                  ? '0 4px 20px rgba(239, 68, 68, 0.4), 0 2px 8px rgba(239, 68, 68, 0.2)' 
                   : '0 1px 3px rgba(0,0,0,0.1)',
-                transform: 'scale(1)',
+                transform: isActive ? 'translateY(-2px) scale(1.05)' : 'scale(1)',
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation',
                 outline: 'none',
-                userSelect: 'none'
+                userSelect: 'none',
+                position: 'relative'
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
@@ -147,10 +149,14 @@ export default function RestaurantNav({
                 }
               }}
               onMouseDown={(e) => {
-                e.currentTarget.style.transform = 'scale(0.98)';
+                e.currentTarget.style.transform = isActive 
+                  ? 'translateY(-1px) scale(1.03)' 
+                  : 'scale(0.98)';
               }}
               onMouseUp={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.transform = isActive 
+                  ? 'translateY(-2px) scale(1.05)' 
+                  : 'scale(1)';
               }}
             >
               <span style={{ 
@@ -163,9 +169,10 @@ export default function RestaurantNav({
               </span>
               <span style={{ 
                 fontSize: '14px',
-                fontWeight: isActive ? '600' : '500',
-                letterSpacing: '0.01em',
-                lineHeight: 1
+                fontWeight: isActive ? '700' : '500',
+                letterSpacing: isActive ? '0.02em' : '0.01em',
+                lineHeight: 1,
+                textShadow: isActive ? '0 1px 2px rgba(220, 38, 38, 0.1)' : 'none'
               }}>
                 {category.name}
               </span>
