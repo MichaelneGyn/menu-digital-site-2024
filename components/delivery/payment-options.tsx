@@ -167,9 +167,19 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                 )}
                 
                 {(pixDynamicQrCode || restaurant.pixQrCode) && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-green-700">Ou escaneie o QR Code:</p>
-                    <div className="bg-white p-4 rounded border flex justify-center">
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium text-green-700">💳 Escaneie o QR Code PIX:</p>
+                    
+                    {/* Valor em destaque */}
+                    <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-green-800 font-medium">Valor total a pagar:</span>
+                        <span className="text-2xl font-bold text-green-700">R$ {totalAmount.toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    {/* QR Code */}
+                    <div className="bg-white p-4 rounded-lg border-2 border-green-200 flex justify-center">
                       <img 
                         src={pixDynamicQrCode || restaurant.pixQrCode || ''} 
                         alt="QR Code PIX" 
@@ -179,11 +189,6 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                           e.currentTarget.style.display = 'none';
                         }}
                       />
-                    </div>
-                    <div className="p-2 bg-yellow-50 border border-yellow-200 rounded">
-                      <p className="text-xs text-yellow-800 font-medium">
-                        ⚠️ Após escanear, digite o valor: <strong>R$ {totalAmount.toFixed(2)}</strong>
-                      </p>
                     </div>
                   </div>
                 )}
