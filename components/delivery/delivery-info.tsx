@@ -26,8 +26,8 @@ export default function DeliveryInfo({
           <div className="flex items-center justify-between gap-4">
             {/* Tempo de Entrega */}
             <div className="flex items-center gap-3 flex-1">
-              <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Clock className="w-5 h-5 text-emerald-600" />
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-blue-600" />
               </div>
               <div>
                 <div className="text-xs text-gray-500 mb-0.5">Entrega</div>
@@ -40,8 +40,8 @@ export default function DeliveryInfo({
 
             {/* Taxa de Entrega */}
             <div className="flex items-center gap-3 flex-1">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Truck className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Truck className="w-5 h-5 text-orange-600" />
               </div>
               <div>
                 <div className="text-xs text-gray-500 mb-0.5">Taxa</div>
@@ -60,8 +60,8 @@ export default function DeliveryInfo({
               <>
                 <div className="h-10 w-px bg-gray-200"></div>
                 <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 bg-rose-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <DollarSign className="w-5 h-5 text-rose-600" />
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <DollarSign className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 mb-0.5">Mínimo</div>
