@@ -2476,26 +2476,27 @@ body {
 
 /* Cart Float Button - Estilo iFood Melhorado */
 .cart-float {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: linear-gradient(135deg, #EA1D2C 0%, #D01726 100%);
-  color: white;
-  padding: 1rem 1.5rem;
-  border-radius: 50px;
-  box-shadow: 0 8px 30px rgba(234, 29, 44, 0.4);
-  cursor: pointer;
-  transition: all 0.3s ease;
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  background: linear-gradient(135deg, #EA1D2C 0%, #D01726 100%) !important;
+  color: white !important;
+  padding: 1rem 1.5rem !important;
+  border-radius: 50px !important;
+  box-shadow: 0 8px 30px rgba(234, 29, 44, 0.4) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
   display: flex !important;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 1000;
-  min-width: 280px;
-  max-width: 320px;
-  border: none;
-  outline: none;
+  align-items: center !important;
+  justify-content: space-between !important;
+  z-index: 999999 !important;
+  min-width: 280px !important;
+  max-width: 320px !important;
+  border: none !important;
+  outline: none !important;
   visibility: visible !important;
   opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .cart-float:hover {
@@ -2565,6 +2566,7 @@ body {
 
 @media (max-width: 768px) {
   .cart-float {
+    position: fixed !important;
     bottom: 16px !important;
     left: 16px !important;
     right: 16px !important;
@@ -2574,9 +2576,11 @@ body {
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
-    z-index: 9999 !important;
+    z-index: 999999 !important;
     padding: 0.875rem 1.25rem !important;
     border-radius: 50px !important;
+    pointer-events: auto !important;
+    background: linear-gradient(135deg, #EA1D2C 0%, #D01726 100%) !important;
   }
   
   .cart-text {
