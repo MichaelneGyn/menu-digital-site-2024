@@ -19,13 +19,20 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      console.log('🛒 CartFloat - Detecção:', { 
+        width: window.innerWidth, 
+        isMobile: mobile,
+        totalItems,
+        totalPrice 
+      });
     };
     
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }, [totalItems, totalPrice]);
 
   useEffect(() => {
     if (totalItems > 0) {
@@ -34,6 +41,9 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
       return () => clearTimeout(timer);
     }
   }, [totalItems]);
+
+  // LOG para debug
+  console.log('🛒 CartFloat RENDERIZANDO:', { isMobile, totalItems, totalPrice });
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -51,44 +61,43 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
   };
 
   // Estilos diferentes para mobile e desktop
-  const buttonStyle: React.CSSProperties = isMobile ? {
-    // MOBILE: Full width na parte inferior
+  const baseStyle: React.CSSProperties = {
     position: 'fixed',
+    zIndex: 999999,
+    display: 'flex',
+    background: '#EA1D2C',
+    border: 'none',
+    color: 'white',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    boxShadow: '0 8px 30px rgba(234, 29, 44, 0.8)',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    WebkitTapHighlightColor: 'transparent'
+  };
+
+  const buttonStyle: React.CSSProperties = isMobile ? {
+    ...baseStyle,
+    // MOBILE: Full width na parte inferior
     bottom: '16px',
     left: '16px',
     right: '16px',
-    zIndex: 999999,
-    display: 'flex',
-    background: 'linear-gradient(135deg, #EA1D2C 0%, #D01726 100%)',
-    padding: '16px 20px',
+    padding: '18px 20px',
     borderRadius: '50px',
-    border: 'none',
-    color: 'white',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    boxShadow: '0 8px 30px rgba(234, 29, 44, 0.6)',
-    cursor: 'pointer',
     width: 'calc(100vw - 32px)',
-    maxWidth: 'none'
+    maxWidth: 'none',
+    fontSize: '16px'
   } : {
+    ...baseStyle,
     // DESKTOP: Lado direito
-    position: 'fixed',
     bottom: '20px',
     right: '20px',
     left: 'auto',
-    zIndex: 999999,
-    display: 'flex',
-    background: 'linear-gradient(135deg, #EA1D2C 0%, #D01726 100%)',
     padding: '14px 24px',
     borderRadius: '50px',
-    border: 'none',
-    color: 'white',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    boxShadow: '0 8px 30px rgba(234, 29, 44, 0.6)',
-    cursor: 'pointer',
     minWidth: '280px',
-    maxWidth: '350px'
+    maxWidth: '350px',
+    fontSize: '16px'
   };
 
   return (
