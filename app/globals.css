@@ -2565,39 +2565,10 @@ body {
 }
 
 @media (max-width: 768px) {
-  .cart-float {
-    position: fixed !important;
-    bottom: 16px !important;
-    left: 16px !important;
-    right: 16px !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    width: calc(100vw - 32px) !important;
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    z-index: 999999 !important;
-    padding: 0.875rem 1.25rem !important;
-    border-radius: 50px !important;
-    pointer-events: auto !important;
-    background: linear-gradient(135deg, #EA1D2C 0%, #D01726 100%) !important;
-  }
-  
   .cart-text {
     display: none !important;
   }
-  
-  .cart-float-content {
-    width: 100%;
-    justify-content: space-between !important;
-    gap: 1rem;
-  }
-  
-  .cart-icon-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+}
   
   .cart-badge {
     position: relative !important;
@@ -2610,7 +2581,6 @@ body {
     font-size: 1.125rem !important;
     font-weight: 700 !important;
   }
-}
 
 .cart-count {
   position: absolute;
@@ -2801,6 +2771,9 @@ body {
   .main-content {
     margin-top: 5rem;
     padding: 0.75rem;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
   }
   
   /* Garantir que produtos não quebrem */
@@ -2813,6 +2786,22 @@ body {
   .product-card {
     width: 100%;
     max-width: 100%;
+  }
+  
+  /* Garantir que containers não ultrapassem a tela */
+  * {
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Containers principais */
+  .container, .max-w-6xl, .max-w-4xl, .max-w-2xl {
+    width: 100% !important;
+    max-width: calc(100vw - 2rem) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 }
 
