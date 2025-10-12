@@ -1,9 +1,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ClientMenuItem } from '@/lib/restaurant';
+import ProductCustomizationModalDynamic from './product-customization-modal-dynamic';
 import ProductCustomizationModal from './product-customization-modal';
 
 interface ProductCardProps {
@@ -20,6 +21,27 @@ export interface ProductCustomization {
 
 export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
+  const [hasCustomizations, setHasCustomizations] = useState(false);
+  const [checkingCustomizations, setCheckingCustomizations] = useState(false);
+
+  useEffect(() => {
+    checkForCustomizations();
+  }, [item.id]);
+
+  const checkForCustomizations = async () => {
+    try {
+      setCheckingCustomizations(true);
+      const response = await fetch(`/api/menu-items/${item.id}/customizations`);
+      if (response.ok) {
+        const customizations = await response.json();
+        setHasCustomizations(customizations.length > 0);
+      }
+    } catch (error) {
+      console.error('Error checking customizations:', error);
+    } finally {
+      setCheckingCustomizations(false);
+    }
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -29,16 +51,21 @@ export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
   };
 
   const handleAddToCart = () => {
-    // Produtos que precisam de personalização
-    const needsCustomization = ['pizza', 'massa', 'lanche'].some(type => 
-      item.name?.toLowerCase().includes(type) || 
-      item.description?.toLowerCase().includes(type)
-    );
-
-    if (needsCustomization) {
+    // Se tem customizações vinculadas, sempre abre o modal
+    if (hasCustomizations) {
       setShowCustomizationModal(true);
     } else {
-      onAddToCart(item);
+      // Fallback: verificar por palavras-chave (comportamento antigo)
+      const needsCustomization = ['pizza', 'massa', 'lanche'].some(type => 
+        item.name?.toLowerCase().includes(type) || 
+        item.description?.toLowerCase().includes(type)
+      );
+
+      if (needsCustomization) {
+        setShowCustomizationModal(true);
+      } else {
+        onAddToCart(item);
+      }
     }
   };
 
@@ -100,11 +127,21 @@ export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
       </div>
 
       {showCustomizationModal && (
-        <ProductCustomizationModal
-          item={item}
-          onAdd={handleCustomizedAdd}
-          onClose={() => setShowCustomizationModal(false)}
-        />
+        <>
+          {hasCustomizations ? (
+            <ProductCustomizationModalDynamic
+              item={item}
+              onAdd={handleCustomizedAdd}
+              onClose={() => setShowCustomizationModal(false)}
+            />
+          ) : (
+            <ProductCustomizationModal
+              item={item}
+              onAdd={handleCustomizedAdd}
+              onClose={() => setShowCustomizationModal(false)}
+            />
+          )}
+        </>
       )}
     </>
   );
