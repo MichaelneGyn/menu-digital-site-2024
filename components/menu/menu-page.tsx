@@ -218,13 +218,15 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ position: 'relative' }}>
       <RestaurantHeader restaurant={restaurant} />
-      <RestaurantNav
-        categories={restaurant?.categories || []}
-        activeCategory={activeCategory}
-        onCategoryChange={handleCategoryChange}
-      />
+      <div style={{ position: 'sticky', top: 0, zIndex: 1000 }}>
+        <RestaurantNav
+          categories={restaurant?.categories || []}
+          activeCategory={activeCategory}
+          onCategoryChange={handleCategoryChange}
+        />
+      </div>
 
       <main className="main-content">
         {/* Status de horário de funcionamento */}
