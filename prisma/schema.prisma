@@ -5,9 +5,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Account {
@@ -99,14 +98,15 @@ model Restaurant {
   showDeliveryTime Boolean      @default(true)
   showRatings      Boolean      @default(true)
   theme            String       @default("light")
-  pixKey           String?
-  pixQrCode        String?      // Deprecated: não usado mais, mas mantido para compatibilidade
-  categories       Category[]
-  coupons          Coupon[]
-  ingredients      Ingredient[]
-  menuItems        MenuItem[]
-  orders           Order[]
-  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pixKey              String?
+  pixQrCode           String?                // Deprecated: não usado mais, mas mantido para compatibilidade
+  categories          Category[]
+  coupons             Coupon[]
+  ingredients         Ingredient[]
+  menuItems           MenuItem[]
+  orders              Order[]
+  customizationGroups CustomizationGroup[]
+  user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Category {
@@ -126,28 +126,59 @@ model Category {
 }
 
 model MenuItem {
-  id            String      @id @default(cuid())
+  id                  String                @id @default(cuid())
+  name                String
+  description         String?
+  price               Float
+  originalPrice       Float?
+  image               String?
+  isActive            Boolean               @default(true)
+  isPromo             Boolean               @default(false)
+  promoTag            String?
+  sortOrder           Int                   @default(0)
+  calories            Int?
+  servingSize         String?
+  ingredients         String?
+  allergens           String?
+  restaurantId        String
+  categoryId          String
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  category            Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  restaurant          Restaurant            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orderItems          OrderItem[]
+  recipe              Recipe?
+  customizationGroups CustomizationGroup[]
+}
+
+model CustomizationGroup {
+  id            String                 @id @default(cuid())
   name          String
   description   String?
-  price         Float
-  originalPrice Float?
-  image         String?
-  isActive      Boolean     @default(true)
-  isPromo       Boolean     @default(false)
-  promoTag      String?
-  sortOrder     Int         @default(0)
-  calories      Int?
-  servingSize   String?
-  ingredients   String?
-  allergens     String?
+  isRequired    Boolean                @default(false)
+  minSelections Int                    @default(0)
+  maxSelections Int?
+  sortOrder     Int                    @default(0)
+  isActive      Boolean                @default(true)
   restaurantId  String
-  categoryId    String
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  orderItems    OrderItem[]
-  recipe        Recipe?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  restaurant    Restaurant             @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  options       CustomizationOption[]
+  menuItems     MenuItem[]
+}
+
+model CustomizationOption {
+  id          String             @id @default(cuid())
+  name        String
+  price       Float              @default(0)
+  image       String?
+  isActive    Boolean            @default(true)
+  sortOrder   Int                @default(0)
+  groupId     String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  group       CustomizationGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
 }
 
 model Order {
@@ -182,15 +213,16 @@ model Order {
 }
 
 model OrderItem {
-  id         String   @id @default(cuid())
-  quantity   Int
-  unitPrice  Float
-  totalPrice Float
-  notes      String?
-  orderId    String
-  menuItemId String
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  quantity       Int
+  unitPrice      Float
+  totalPrice     Float
+  notes          String?
+  customizations String?  // JSON string com as customizações escolhidas
+  orderId        String
+  menuItemId     String
+  menuItem       MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model Analytics {
