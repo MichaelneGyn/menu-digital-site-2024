@@ -92,7 +92,8 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
     borderRadius: '50px',
     width: 'calc(100vw - 32px)',
     maxWidth: 'none',
-    fontSize: '16px'
+    fontSize: '16px',
+    zIndex: 999999
   } : {
     ...baseStyle,
     // DESKTOP: Lado direito
@@ -103,11 +104,13 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
     borderRadius: '50px',
     minWidth: '280px',
     maxWidth: '350px',
-    fontSize: '16px'
+    fontSize: '16px',
+    zIndex: 999999
   };
 
   const cartButton = (
     <button 
+      id="cart-float-button"
       className={`cart-float ${isAnimating ? 'cart-animate' : ''}`}
       onClick={handleCartClick}
       type="button"
@@ -137,7 +140,7 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
   );
 
   // Usar Portal para garantir que aparece no topo do DOM
-  if (!mounted) return null;
+  if (!mounted || typeof document === 'undefined') return null;
   
   return createPortal(cartButton, document.body);
 }
