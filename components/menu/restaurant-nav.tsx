@@ -60,15 +60,16 @@ export default function RestaurantNav({
       style={{ 
         position: 'sticky',
         top: 0,
-        zIndex: 1000,
+        zIndex: 9999,
         background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #7c3aed 100%)',
         borderBottom: 'none',
         boxShadow: isScrolled ? '0 4px 16px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.1)',
-        transition: 'all 0.3s ease',
+        transition: 'box-shadow 0.3s ease',
         width: '100%',
-        minHeight: '56px',
+        minHeight: '64px',
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        padding: '0'
       }}
     >
       <div 
