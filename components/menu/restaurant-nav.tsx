@@ -61,12 +61,12 @@ export default function RestaurantNav({
         position: 'sticky',
         top: 0,
         zIndex: 1000,
-        background: 'white',
-        borderBottom: '2px solid #f3f4f6',
-        boxShadow: isScrolled ? '0 4px 12px rgba(0,0,0,0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
+        background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #7c3aed 100%)',
+        borderBottom: 'none',
+        boxShadow: isScrolled ? '0 4px 16px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.1)',
         transition: 'all 0.3s ease',
         width: '100%',
-        minHeight: '64px',
+        minHeight: '56px',
         display: 'flex',
         alignItems: 'center'
       }}
@@ -103,18 +103,18 @@ export default function RestaurantNav({
               onClick={() => onCategoryChange(category.id)}
               style={{ 
                 flexShrink: 0,
-                minWidth: '120px',
-                height: '44px',
-                padding: '0 20px',
-                borderRadius: '24px',
-                border: 'none',
+                minWidth: '140px',
+                height: '40px',
+                padding: '0 24px',
+                borderRadius: '8px',
+                border: isActive ? '2px solid rgba(255,255,255,0.8)' : '2px solid transparent',
                 background: isActive 
-                  ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' 
-                  : '#f9fafb',
-                color: isActive ? 'white' : '#4b5563',
-                fontWeight: isActive ? '600' : '500',
+                  ? 'rgba(255, 255, 255, 0.25)' 
+                  : 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                fontWeight: isActive ? '700' : '600',
                 fontSize: '14px',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -122,35 +122,33 @@ export default function RestaurantNav({
                 gap: '8px',
                 whiteSpace: 'nowrap',
                 boxShadow: isActive 
-                  ? '0 4px 12px rgba(239, 68, 68, 0.4), 0 2px 4px rgba(0,0,0,0.1)' 
-                  : '0 1px 3px rgba(0,0,0,0.1)',
-                transform: isActive ? 'translateY(-2px) scale(1.02)' : 'scale(1)',
+                  ? '0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1)' 
+                  : 'none',
+                transform: 'scale(1)',
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation',
                 outline: 'none',
-                userSelect: 'none'
+                userSelect: 'none',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)'
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = '#f3f4f6';
-                  e.currentTarget.style.transform = 'translateY(-1px) scale(1.01)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = '#f9fafb';
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                  e.currentTarget.style.borderColor = 'transparent';
                 }
               }}
               onMouseDown={(e) => {
-                e.currentTarget.style.transform = 'scale(0.98)';
+                e.currentTarget.style.transform = 'scale(0.97)';
               }}
               onMouseUp={(e) => {
-                e.currentTarget.style.transform = isActive 
-                  ? 'translateY(-2px) scale(1.02)' 
-                  : 'scale(1)';
+                e.currentTarget.style.transform = 'scale(1)';
               }}
             >
               <span style={{ 
