@@ -19,8 +19,7 @@ export async function userIsAdmin(email?: string) {
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma as any),
   secret: process.env.NEXTAUTH_SECRET,
-  // trustHost: true, // REMOVED: property not allowed in AuthOptions
-  debug: true, // Sempre ativar debug para ver logs
+  debug: process.env.NODE_ENV === 'development', // Debug apenas em desenvolvimento
   providers: [
     CredentialsProvider({
       name: 'credentials',

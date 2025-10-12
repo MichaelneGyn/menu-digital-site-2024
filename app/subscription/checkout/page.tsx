@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,7 +48,7 @@ type PaymentData = {
   status: string;
 };
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -59,7 +59,7 @@ export default function CheckoutPage() {
   const [checkingPayment, setCheckingPayment] = useState(false);
 
   useEffect(() => {
-    const plan = searchParams.get('plan') as Plan;
+    const plan = searchParams?.get('plan') as Plan;
     if (plan && (plan === 'basic' || plan === 'pro')) {
       setSelectedPlan(plan);
     }
@@ -248,7 +248,7 @@ export default function CheckoutPage() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-xl">{plan.name}</CardTitle>
-                    {plan.popular && (
+                    {(plan as any).popular && (
                       <Badge className="bg-red-500">Popular</Badge>
                     )}
                   </div>
@@ -300,6 +300,14 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Carregando...</div>}>
+      <CheckoutPageContent />
+    </Suspense>
   );
 }
 
