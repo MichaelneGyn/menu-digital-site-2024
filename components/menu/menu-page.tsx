@@ -63,8 +63,8 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
     const timer = setTimeout(() => {
       const observerOptions = {
         root: null,
-        rootMargin: '-20% 0px -50% 0px', // Detecta seções no topo da viewport
-        threshold: [0, 0.25, 0.5, 0.75, 1]
+        rootMargin: '-100px 0px -66% 0px', // Detecta quando seção entra no topo
+        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5]
       };
 
       // Armazena as seções visíveis
@@ -116,7 +116,7 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
           observer?.observe(ref);
         }
       });
-    }, 500); // Aumentei o delay para garantir que tudo está renderizado
+    }, 300); // Delay para garantir que os refs foram setados
 
     return () => {
       clearTimeout(timer);
@@ -129,7 +129,7 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
     console.log('🖱️ Clique na categoria:', categoryId);
     const element = categoryRefs.current[categoryId];
     if (element) {
-      const offset = 120; // Offset para compensar o header fixo + nav
+      const offset = 100; // Offset para compensar o menu sticky
       const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
       const offsetPosition = elementPosition - offset;
 
@@ -268,7 +268,7 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
             ref={(el) => { categoryRefs.current[category.id] = el; }}
             data-category-id={category.id}
             id={`category-${category.id}`}
-            style={{ scrollMarginTop: '120px' }}
+            style={{ scrollMarginTop: '100px' }}
           >
             <CategorySection
               category={category}
