@@ -18,6 +18,7 @@ import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
 import { EmojiIcon } from '@/components/EmojiIcon';
 import { PriceInput } from '@/components/PriceInput';
 import { CouponsModal } from '@/components/CouponsModal';
+import { generatePix } from '@/lib/pix';
 
 interface Restaurant {
   id: string;
@@ -1580,7 +1581,7 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
           <CardTitle>Editar Informações do Restaurante</CardTitle>
         </CardHeader>
         <CardContent className="overflow-y-auto flex-1">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <Label htmlFor="name">Nome do Restaurante</Label>
               <Input
@@ -1613,8 +1614,8 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
               />
             </div>
 
-            <div className="border-t pt-4">
-              <h3 className="font-semibold mb-3 text-lg">💳 Configurações PIX</h3>
+            <div className="border-t pt-3">
+              <h3 className="font-semibold mb-2 text-base">💳 Configurações PIX</h3>
               
               <div>
                 <Label htmlFor="pixKey">Chave PIX</Label>
@@ -1641,12 +1642,21 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      if (formData.pixKey) {
-                        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(formData.pixKey)}`;
-                        setFormData({...formData, pixQrCode: qrCodeUrl});
-                        toast.success('🎯 QR Code gerado automaticamente!');
+                      if (formData.pixKey && formData.name) {
+                        try {
+                          const { qrCodeUrl } = generatePix({
+                            pixKey: formData.pixKey,
+                            merchantName: formData.name,
+                            merchantCity: 'Cidade', // Pode extrair do endereço futuramente
+                            description: `Pagamento ${formData.name}`
+                          });
+                          setFormData({...formData, pixQrCode: qrCodeUrl});
+                          toast.success('🎯 QR Code PIX gerado! Agora funciona em apps bancários!');
+                        } catch (error) {
+                          toast.error('❌ Erro ao gerar QR Code');
+                        }
                       } else {
-                        toast.error('⚠️ Digite a chave PIX primeiro');
+                        toast.error('⚠️ Preencha o nome do restaurante e a chave PIX');
                       }
                     }}
                     className="whitespace-nowrap"
@@ -1659,15 +1669,15 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                 </p>
                 
                 {formData.pixQrCode && (
-                  <div className="mt-2 p-3 bg-gray-50 rounded border">
-                    <p className="text-xs font-medium text-gray-700 mb-2">Prévia do QR Code:</p>
+                  <div className="mt-2 p-2 bg-gray-50 rounded border">
+                    <p className="text-xs font-medium text-gray-700 mb-1">Prévia:</p>
                     <img 
                       src={formData.pixQrCode} 
                       alt="QR Code Preview" 
-                      className="w-32 h-32 mx-auto border-2 border-gray-300 rounded"
+                      className="w-24 h-24 mx-auto border border-gray-300 rounded"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
-                        e.currentTarget.parentElement!.innerHTML += '<p class="text-xs text-red-600 text-center">❌ URL inválida ou QR Code não carregou</p>';
+                        e.currentTarget.parentElement!.innerHTML += '<p class="text-xs text-red-600 text-center">❌ Erro ao carregar</p>';
                       }}
                     />
                   </div>
@@ -1675,8 +1685,8 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
               </div>
             </div>
 
-            <div className="border-t pt-4">
-              <h3 className="font-semibold mb-3 text-lg">⏰ Horário de Funcionamento</h3>
+            <div className="border-t pt-3">
+              <h3 className="font-semibold mb-2 text-base">⏰ Horário de Funcionamento</h3>
               
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div>
