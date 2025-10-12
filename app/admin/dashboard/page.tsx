@@ -18,7 +18,6 @@ import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
 import { EmojiIcon } from '@/components/EmojiIcon';
 import { PriceInput } from '@/components/PriceInput';
 import { CouponsModal } from '@/components/CouponsModal';
-import { generatePix } from '@/lib/pix';
 
 interface Restaurant {
   id: string;
@@ -30,7 +29,6 @@ interface Restaurant {
   workingDays?: string | null;
   slug?: string;
   pixKey?: string | null;
-  pixQrCode?: string | null;
   categories?: Category[];
   menuItems?: MenuItem[];
 }
@@ -1508,8 +1506,7 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
     openTime: restaurant.openTime || '08:00',
     closeTime: restaurant.closeTime || '22:00',
     workingDays: restaurant.workingDays || '0,1,2,3,4,5,6', // Todos os dias
-    pixKey: restaurant.pixKey || '',
-    pixQrCode: restaurant.pixQrCode || ''
+    pixKey: restaurant.pixKey || ''
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -1556,7 +1553,6 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
           closeTime: formData.closeTime,
           workingDays: formData.workingDays,
           pixKey: formData.pixKey,
-          pixQrCode: formData.pixQrCode,
         }),
       });
 
@@ -1628,64 +1624,9 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                 <p className="text-xs text-gray-500 mt-1">Digite apenas a chave PIX (não o código copia e cola)</p>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="pixQrCode">QR Code PIX (URL da imagem)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="pixQrCode"
-                    value={formData.pixQrCode}
-                    onChange={(e) => setFormData({...formData, pixQrCode: e.target.value})}
-                    placeholder="https://exemplo.com/qrcode.png"
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      if (formData.pixKey && formData.name) {
-                        try {
-                          // Gera código PIX dinâmico (SEM valor fixo)
-                          // O valor será preenchido automaticamente no checkout
-                          const { qrCodeUrl } = generatePix({
-                            pixKey: formData.pixKey,
-                            merchantName: formData.name.substring(0, 25),
-                            merchantCity: formData.address ? formData.address.split(',').pop()?.trim().substring(0, 15) || 'Cidade' : 'Cidade',
-                            description: `Pedido ${formData.name}`.substring(0, 72)
-                          });
-                          setFormData({...formData, pixQrCode: qrCodeUrl});
-                          toast.success('✅ QR Code PIX gerado! Valor será definido no checkout.');
-                        } catch (error) {
-                          console.error('Erro ao gerar PIX:', error);
-                          toast.error('❌ Erro ao gerar QR Code. Verifique os dados.');
-                        }
-                      } else {
-                        toast.error('⚠️ Preencha o nome do restaurante e a chave PIX');
-                      }
-                    }}
-                    className="whitespace-nowrap"
-                  >
-                    🔄 Gerar QR Code
-                  </Button>
-                </div>
-                <p className="text-xs text-gray-500">
-                  Cole a URL de uma imagem QR Code ou clique em "Gerar QR Code" para criar automaticamente
-                </p>
-                
-                {formData.pixQrCode && (
-                  <div className="mt-2 p-2 bg-gray-50 rounded border">
-                    <p className="text-xs font-medium text-gray-700 mb-1">Prévia:</p>
-                    <img 
-                      src={formData.pixQrCode} 
-                      alt="QR Code Preview" 
-                      className="w-24 h-24 mx-auto border border-gray-300 rounded"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.parentElement!.innerHTML += '<p class="text-xs text-red-600 text-center">❌ Erro ao carregar</p>';
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
+              <p className="text-xs text-green-600 mt-2">
+                ✅ O QR Code será gerado automaticamente no checkout com o valor do pedido!
+              </p>
             </div>
 
             <div className="border-t pt-3">
