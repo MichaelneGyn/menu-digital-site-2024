@@ -2,24 +2,24 @@
  * Biblioteca para geração de códigos PIX (BR Code / EMVCo)
  */
 
-// CRC16-CCITT para validação do código PIX
+// CRC16-CCITT-FALSE (usado pelo padrão PIX)
 function crc16(str: string): string {
   let crc = 0xFFFF;
+  const polynomial = 0x1021;
   
   for (let i = 0; i < str.length; i++) {
-    crc ^= str.charCodeAt(i) << 8;
+    crc ^= (str.charCodeAt(i) << 8);
     
     for (let j = 0; j < 8; j++) {
-      if (crc & 0x8000) {
-        crc = (crc << 1) ^ 0x1021;
+      if ((crc & 0x8000) !== 0) {
+        crc = ((crc << 1) ^ polynomial) & 0xFFFF;
       } else {
-        crc = crc << 1;
+        crc = (crc << 1) & 0xFFFF;
       }
     }
   }
   
-  const result = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-  return result;
+  return crc.toString(16).toUpperCase().padStart(4, '0');
 }
 
 // Formata um campo EMV

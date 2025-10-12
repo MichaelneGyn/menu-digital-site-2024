@@ -1642,14 +1642,24 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      if (formData.pixKey) {
-                        // Gera QR Code simples apenas com a chave PIX
-                        // Funciona em todos os apps bancários
-                        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(formData.pixKey)}`;
-                        setFormData({...formData, pixQrCode: qrCodeUrl});
-                        toast.success('🎯 QR Code gerado automaticamente!');
+                      if (formData.pixKey && formData.name) {
+                        try {
+                          // Gera código PIX dinâmico (SEM valor fixo)
+                          // O valor será preenchido automaticamente no checkout
+                          const { qrCodeUrl } = generatePix({
+                            pixKey: formData.pixKey,
+                            merchantName: formData.name.substring(0, 25),
+                            merchantCity: formData.address ? formData.address.split(',').pop()?.trim().substring(0, 15) || 'Cidade' : 'Cidade',
+                            description: `Pedido ${formData.name}`.substring(0, 72)
+                          });
+                          setFormData({...formData, pixQrCode: qrCodeUrl});
+                          toast.success('✅ QR Code PIX gerado! Valor será definido no checkout.');
+                        } catch (error) {
+                          console.error('Erro ao gerar PIX:', error);
+                          toast.error('❌ Erro ao gerar QR Code. Verifique os dados.');
+                        }
                       } else {
-                        toast.error('⚠️ Digite a chave PIX primeiro');
+                        toast.error('⚠️ Preencha o nome do restaurante e a chave PIX');
                       }
                     }}
                     className="whitespace-nowrap"
