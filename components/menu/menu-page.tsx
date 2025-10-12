@@ -63,12 +63,12 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
     const timer = setTimeout(() => {
       const observerOptions = {
         root: null,
-        rootMargin: '-100px 0px -66% 0px', // Detecta quando seção entra no topo
-        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5]
+        rootMargin: '-120px 0px -50% 0px', // Ajustado para melhor detecção
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0]
       };
 
-      // Armazena as seções visíveis
-      const visibleSections = new Map<string, number>();
+      // Armazena as seções visíveis com suas posições
+      const visibleSections = new Map<string, { ratio: number; top: number }>();
 
       const observerCallback = (entries: IntersectionObserverEntry[]) => {
         entries.forEach((entry) => {
@@ -76,29 +76,38 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
           if (!categoryId) return;
 
           if (entry.isIntersecting) {
-            // Armazena a seção e sua visibilidade
-            visibleSections.set(categoryId, entry.intersectionRatio);
+            // Armazena a seção, sua visibilidade e posição
+            const rect = entry.boundingClientRect;
+            visibleSections.set(categoryId, {
+              ratio: entry.intersectionRatio,
+              top: rect.top
+            });
           } else {
             // Remove se não está mais visível
             visibleSections.delete(categoryId);
           }
         });
 
-        // Encontra a seção mais visível
+        // Encontra a seção mais apropriada
         if (visibleSections.size > 0) {
-          let maxRatio = 0;
-          let mostVisible = '';
+          let bestCategory = '';
+          let bestScore = -1;
 
-          visibleSections.forEach((ratio, id) => {
-            if (ratio > maxRatio) {
-              maxRatio = ratio;
-              mostVisible = id;
+          visibleSections.forEach((data, id) => {
+            // Prioriza seções que estão mais próximas do topo e mais visíveis
+            const topScore = Math.max(0, 1 - Math.abs(data.top) / 200);
+            const visibilityScore = data.ratio;
+            const combinedScore = (topScore * 0.6) + (visibilityScore * 0.4);
+
+            if (combinedScore > bestScore) {
+              bestScore = combinedScore;
+              bestCategory = id;
             }
           });
 
-          if (mostVisible) {
-            console.log('🎯 Categoria ativa:', mostVisible, '(ratio:', maxRatio.toFixed(2), ')');
-            setActiveCategory(mostVisible);
+          if (bestCategory && bestCategory !== activeCategory) {
+            console.log('🎯 Categoria ativa:', bestCategory, '(score:', bestScore.toFixed(2), ')');
+            setActiveCategory(bestCategory);
           }
         }
       };
@@ -116,20 +125,20 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
           observer?.observe(ref);
         }
       });
-    }, 300); // Delay para garantir que os refs foram setados
+    }, 500); // Aumentado o delay para garantir que tudo foi renderizado
 
     return () => {
       clearTimeout(timer);
       observer?.disconnect();
     };
-  }, [restaurant?.categories]);
+  }, [restaurant?.categories, activeCategory]);
 
   // Função para fazer scroll suave ao clicar na categoria
   const handleCategoryChange = (categoryId: string) => {
     console.log('🖱️ Clique na categoria:', categoryId);
     const element = categoryRefs.current[categoryId];
     if (element) {
-      const offset = 100; // Offset para compensar o menu sticky
+      const offset = 120; // Offset ajustado para compensar o menu sticky
       const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
       const offsetPosition = elementPosition - offset;
 
@@ -268,7 +277,11 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
             ref={(el) => { categoryRefs.current[category.id] = el; }}
             data-category-id={category.id}
             id={`category-${category.id}`}
-            style={{ scrollMarginTop: '100px' }}
+            style={{ 
+              scrollMarginTop: '120px',
+              minHeight: '300px', // Garante altura mínima para melhor detecção
+              paddingTop: '20px'
+            }}
           >
             <CategorySection
               category={category}

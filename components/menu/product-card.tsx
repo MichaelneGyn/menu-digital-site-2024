@@ -55,7 +55,7 @@ export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
         )}
         
         {item?.image && (
-          <div style={{ position: 'relative', width: '100%', height: '180px' }}>
+          <div className="product-image-container">
             <Image
               src={
                 item.image?.startsWith('/') 
