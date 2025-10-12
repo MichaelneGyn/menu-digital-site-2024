@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
-  const response = NextResponse.redirect(new URL('/auth/login', process.env.NEXTAUTH_URL || 'http://localhost:3001'));
+export async function GET(request: NextRequest) {
+  // Usar a URL da request atual ao invés da variável de ambiente
+  const origin = request.nextUrl.origin;
+  const loginUrl = `${origin}/auth/login`;
+  
+  const response = NextResponse.redirect(loginUrl);
   
   // Clear NextAuth cookies
   response.cookies.delete('next-auth.session-token');
@@ -14,6 +18,6 @@ export async function GET() {
   return response;
 }
 
-export async function POST() {
-  return GET();
+export async function POST(request: NextRequest) {
+  return GET(request);
 }
