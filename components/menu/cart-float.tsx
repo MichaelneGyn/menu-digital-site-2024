@@ -39,22 +39,24 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
     onOpenCart();
   };
 
+  // Sempre mostrar o carrinho, mesmo quando vazio
   return (
-    <div 
+    <button 
       className={`cart-float ${isAnimating ? 'cart-animate' : ''}`}
       onClick={handleCartClick}
+      type="button"
     >
       <div className="cart-float-content">
         <div className="cart-icon-wrapper">
           <ShoppingCart size={22} strokeWidth={2.5} />
-          <span>Carrinho</span>
-          <span className="cart-badge">{totalItems}</span>
+          <span className="cart-text">Carrinho</span>
+          {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
         </div>
         
         <div className="cart-total">
           {formatPrice(totalPrice)}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
