@@ -183,6 +183,27 @@ export default function CartModal({
     );
   }
 
+  if (!items || items.length === 0) {
+    return (
+      <div className="cart-modal-overlay" onClick={onClose}>
+        <div className="cart-modal" onClick={e => e.stopPropagation()}>
+          <div className="modal-header">
+            <div className="header-info">
+              <ShoppingCart size={24} />
+              <h3>Carrinho Vazio</h3>
+            </div>
+            <button className="close-button" onClick={onClose}>
+              <X size={24} />
+            </button>
+          </div>
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <p>Seu carrinho está vazio</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="cart-modal-overlay" onClick={onClose}>
       <div className="cart-modal" onClick={e => e.stopPropagation()}>
@@ -197,22 +218,25 @@ export default function CartModal({
         </div>
 
         <div className="cart-items">
-          {items.map((item) => (
-            <div key={item.cartId} className="cart-item">
-              <div className="item-image">
-                <img 
-                  src={
-                    item.image?.startsWith('/') 
-                      ? item.image 
-                      : item.image?.startsWith('http') 
+          {items.map((item) => {
+            if (!item || !item.cartId) return null;
+            
+            return (
+              <div key={item.cartId} className="cart-item">
+                <div className="item-image">
+                  <img 
+                    src={
+                      item.image?.startsWith('/') 
                         ? item.image 
-                        : item.image
-                          ? `/api/image?key=${encodeURIComponent(item.image)}`
-                          : 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'
-                  }
-                  alt={item.name}
-                />
-              </div>
+                        : item.image?.startsWith('http') 
+                          ? item.image 
+                          : item.image
+                            ? `/api/image?key=${encodeURIComponent(item.image)}`
+                            : 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'
+                    }
+                    alt={item.name || 'Produto'}
+                  />
+                </div>
               
               <div className="item-details">
                 <h4>{item.name}</h4>
@@ -265,7 +289,8 @@ export default function CartModal({
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="cart-footer">
