@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/db';
 
 // GET - Buscar customizações de um produto (público - para o cliente)
 export async function GET(
