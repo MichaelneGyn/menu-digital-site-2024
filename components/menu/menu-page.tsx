@@ -251,7 +251,10 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
           {/* Toggle para admin */}
           {adminEmail && (
             <AdminBypassToggle 
-              adminEmail={adminEmail}
+              onBypassActivated={(email) => {
+                console.log('Admin bypass activated for:', email);
+                // Aqui você pode implementar a lógica de bypass se necessário
+              }}
             />
           )}
         </div>
