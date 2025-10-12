@@ -227,7 +227,7 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
       <RestaurantHeader restaurant={restaurant} />
       <RestaurantNav
         categories={restaurant?.categories || []}
@@ -235,9 +235,9 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
         onCategoryChange={handleCategoryChange}
       />
 
-      <main className="main-content">
+      <main className="main-content" style={{ width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
         {/* Status de horário de funcionamento */}
-        <div className="max-w-6xl mx-auto px-4 mb-6">
+        <div className="max-w-6xl mx-auto px-4 mb-6" style={{ width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
           <BusinessHoursAlert 
             restaurant={{ 
               name: restaurant.name,
@@ -248,18 +248,10 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
             adminEmail={adminEmail}
           />
           
-          {/* Mostrar toggle de admin apenas quando fechado e não há bypass ativo */}
-          {!isRestaurantOpen({
-            openTime: restaurant.openTime || null,
-            closeTime: restaurant.closeTime || null,
-            workingDays: restaurant.workingDays || null
-          }, adminEmail).isOpen && !adminEmail && (
+          {/* Toggle para admin */}
+          {adminEmail && (
             <AdminBypassToggle 
-              onBypassActivated={(email) => {
-                setAdminEmail(email);
-                setNotificationMessage('🔓 Modo Admin ativado! Você pode fazer pedidos agora.');
-                setShowNotification(true);
-              }} 
+              adminEmail={adminEmail}
             />
           )}
         </div>
@@ -280,7 +272,10 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
             style={{ 
               scrollMarginTop: '120px',
               minHeight: '300px', // Garante altura mínima para melhor detecção
-              paddingTop: '20px'
+              paddingTop: '20px',
+              width: '100%',
+              maxWidth: '100vw',
+              overflowX: 'hidden'
             }}
           >
             <CategorySection
