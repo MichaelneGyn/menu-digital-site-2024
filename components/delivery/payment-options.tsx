@@ -9,7 +9,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CreditCard, Smartphone, Banknote, QrCode, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ClientRestaurant } from '@/lib/restaurant';
-import { generatePix } from '@/lib/pix';
 
 export type PaymentMethod = 'pix' | 'card_on_delivery' | 'cash_on_delivery';
 
@@ -33,28 +32,17 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
   const [needsChange, setNeedsChange] = useState(false);
   const [pixKeyCopied, setPixKeyCopied] = useState(false);
 
-  // Gera QR Code PIX dinâmico com valor usando biblioteca validada
+  // QR Code PIX simples e seguro (apenas chave PIX)
   const pixDynamicQrCode = useMemo(() => {
-    if (!restaurant.pixKey || !restaurant.name || totalAmount <= 0) {
+    if (!restaurant.pixKey) {
       return null;
     }
 
-    try {
-      // Usa biblioteca emv-qrcps (validada pela comunidade)
-      const { qrCodeUrl } = generatePix({
-        pixKey: restaurant.pixKey,
-        merchantName: restaurant.name,
-        merchantCity: restaurant.address?.split(',').pop()?.trim() || 'Cidade',
-        description: `Pedido ${restaurant.name}`,
-        amount: totalAmount // ✅ VALOR AUTOMÁTICO!
-      });
-      return qrCodeUrl;
-    } catch (error) {
-      console.error('Erro ao gerar QR Code PIX:', error);
-      // Fallback: QR Code simples se der erro
-      return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(restaurant.pixKey)}`;
-    }
-  }, [restaurant.pixKey, restaurant.name, restaurant.address, totalAmount]);
+    // QR Code com apenas a chave PIX
+    // Método mais seguro e compatível com 100% dos apps bancários
+    // Sem dependências externas ou bibliotecas de terceiros
+    return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(restaurant.pixKey)}`;
+  }, [restaurant.pixKey]);
 
   const copyPixKey = async () => {
     if (restaurant.pixKey) {
@@ -181,13 +169,6 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                 {(pixDynamicQrCode || restaurant.pixQrCode) && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-green-700">Ou escaneie o QR Code:</p>
-                    {pixDynamicQrCode && restaurant.pixKey && restaurant.name && (
-                      <div className="p-2 bg-blue-50 border border-blue-200 rounded">
-                        <p className="text-xs text-blue-700 font-medium">
-                          ✅ Valor de R$ {totalAmount.toFixed(2)} já incluído no QR Code!
-                        </p>
-                      </div>
-                    )}
                     <div className="bg-white p-4 rounded border flex justify-center">
                       <img 
                         src={pixDynamicQrCode || restaurant.pixQrCode || ''} 
@@ -198,6 +179,11 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                           e.currentTarget.style.display = 'none';
                         }}
                       />
+                    </div>
+                    <div className="p-2 bg-yellow-50 border border-yellow-200 rounded">
+                      <p className="text-xs text-yellow-800 font-medium">
+                        ⚠️ Após escanear, digite o valor: <strong>R$ {totalAmount.toFixed(2)}</strong>
+                      </p>
                     </div>
                   </div>
                 )}
