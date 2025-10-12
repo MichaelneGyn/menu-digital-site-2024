@@ -1642,21 +1642,14 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      if (formData.pixKey && formData.name) {
-                        try {
-                          const { qrCodeUrl } = generatePix({
-                            pixKey: formData.pixKey,
-                            merchantName: formData.name,
-                            merchantCity: 'Cidade', // Pode extrair do endereço futuramente
-                            description: `Pagamento ${formData.name}`
-                          });
-                          setFormData({...formData, pixQrCode: qrCodeUrl});
-                          toast.success('🎯 QR Code PIX gerado! Agora funciona em apps bancários!');
-                        } catch (error) {
-                          toast.error('❌ Erro ao gerar QR Code');
-                        }
+                      if (formData.pixKey) {
+                        // Gera QR Code simples apenas com a chave PIX
+                        // Funciona em todos os apps bancários
+                        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(formData.pixKey)}`;
+                        setFormData({...formData, pixQrCode: qrCodeUrl});
+                        toast.success('🎯 QR Code gerado automaticamente!');
                       } else {
-                        toast.error('⚠️ Preencha o nome do restaurante e a chave PIX');
+                        toast.error('⚠️ Digite a chave PIX primeiro');
                       }
                     }}
                     className="whitespace-nowrap"
