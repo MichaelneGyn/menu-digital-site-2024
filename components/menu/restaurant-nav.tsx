@@ -61,14 +61,11 @@ export default function RestaurantNav({
         position: 'sticky',
         top: 0,
         zIndex: 9999,
-        background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #7c3aed 100%)',
+        background: 'linear-gradient(90deg, #3b0d6b 0%, #4a148c 25%, #6a1b9a 50%, #7b1fa2 75%, #8e24aa 100%)',
         borderBottom: 'none',
-        boxShadow: isScrolled ? '0 4px 16px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.1)',
+        boxShadow: isScrolled ? '0 4px 16px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.15)',
         transition: 'box-shadow 0.3s ease',
         width: '100%',
-        minHeight: '64px',
-        display: 'flex',
-        alignItems: 'center',
         padding: '0'
       }}
     >
@@ -76,17 +73,18 @@ export default function RestaurantNav({
         ref={navContainerRef}
         className="category-menu-container"
         style={{ 
-          maxWidth: '1200px',
-          margin: '0 auto',
+          maxWidth: '100%',
+          margin: '0',
           width: '100%',
-          padding: '12px 16px',
+          padding: '16px 20px',
           display: 'flex',
-          gap: '12px',
+          gap: '16px',
           overflowX: 'auto',
           overflowY: 'hidden',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
-          WebkitOverflowScrolling: 'touch'
+          WebkitOverflowScrolling: 'touch',
+          position: 'relative'
         }}
       >
         <style jsx>{`
@@ -94,6 +92,23 @@ export default function RestaurantNav({
             display: none;
           }
         `}</style>
+        
+        {/* Progress bar de scroll */}
+        <div style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '3px',
+          background: 'rgba(255,255,255,0.2)'
+        }}>
+          <div style={{
+            height: '100%',
+            background: 'linear-gradient(90deg, #fbbf24, #f59e0b, #ef4444)',
+            width: '30%',
+            transition: 'width 0.3s ease'
+          }} />
+        </div>
         
         {categories.map((category) => {
           const isActive = activeCategory === category.id;
@@ -104,49 +119,45 @@ export default function RestaurantNav({
               onClick={() => onCategoryChange(category.id)}
               style={{ 
                 flexShrink: 0,
-                minWidth: '140px',
-                height: '40px',
-                padding: '0 24px',
-                borderRadius: '8px',
-                border: isActive ? '2px solid rgba(255,255,255,0.8)' : '2px solid transparent',
+                minWidth: '150px',
+                height: '44px',
+                padding: '0 20px',
+                borderRadius: '6px',
+                border: 'none',
                 background: isActive 
-                  ? 'rgba(255, 255, 255, 0.25)' 
-                  : 'rgba(255, 255, 255, 0.1)',
-                color: 'white',
+                  ? 'rgba(255, 255, 255, 0.95)' 
+                  : 'transparent',
+                color: isActive ? '#6a1b9a' : 'white',
                 fontWeight: isActive ? '700' : '600',
-                fontSize: '14px',
-                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                fontSize: '15px',
+                transition: 'all 0.2s ease',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
+                justifyContent: 'flex-start',
+                gap: '10px',
                 whiteSpace: 'nowrap',
                 boxShadow: isActive 
-                  ? '0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1)' 
+                  ? '0 3px 12px rgba(0,0,0,0.2)' 
                   : 'none',
                 transform: 'scale(1)',
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation',
                 outline: 'none',
-                userSelect: 'none',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)'
+                userSelect: 'none'
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.background = 'transparent';
                 }
               }}
               onMouseDown={(e) => {
-                e.currentTarget.style.transform = 'scale(0.97)';
+                e.currentTarget.style.transform = 'scale(0.98)';
               }}
               onMouseUp={(e) => {
                 e.currentTarget.style.transform = 'scale(1)';
