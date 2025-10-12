@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { CartItem } from './menu-page';
 import { ShoppingCart } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -16,6 +17,11 @@ interface CartFloatProps {
 export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }: CartFloatProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -100,7 +106,7 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
     fontSize: '16px'
   };
 
-  return (
+  const cartButton = (
     <button 
       className={`cart-float ${isAnimating ? 'cart-animate' : ''}`}
       onClick={handleCartClick}
@@ -129,4 +135,9 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
       </div>
     </button>
   );
+
+  // Usar Portal para garantir que aparece no topo do DOM
+  if (!mounted) return null;
+  
+  return createPortal(cartButton, document.body);
 }
