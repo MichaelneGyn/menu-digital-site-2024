@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { CartItem } from './menu-page';
 import { ShoppingCart } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -17,28 +16,17 @@ interface CartFloatProps {
 export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }: CartFloatProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
-      console.log('🛒 CartFloat - Detecção:', { 
-        width: window.innerWidth, 
-        isMobile: mobile,
-        totalItems,
-        totalPrice 
-      });
     };
     
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, [totalItems, totalPrice]);
+  }, []);
 
   useEffect(() => {
     if (totalItems > 0) {
@@ -47,9 +35,6 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
       return () => clearTimeout(timer);
     }
   }, [totalItems]);
-
-  // LOG para debug
-  console.log('🛒 CartFloat RENDERIZANDO:', { isMobile, totalItems, totalPrice });
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -108,7 +93,7 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
     zIndex: 999999
   };
 
-  const cartButton = (
+  return (
     <button 
       id="cart-float-button"
       className={`cart-float ${isAnimating ? 'cart-animate' : ''}`}
@@ -138,9 +123,4 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
       </div>
     </button>
   );
-
-  // Usar Portal para garantir que aparece no topo do DOM
-  if (!mounted || typeof document === 'undefined') return null;
-  
-  return createPortal(cartButton, document.body);
 }
