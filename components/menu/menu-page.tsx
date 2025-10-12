@@ -286,12 +286,14 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
         ))}
       </main>
 
-      <CartFloat 
-        items={cartItems} 
-        totalItems={getTotalItems()}
-        totalPrice={getTotalPrice()}
-        onOpenCart={() => setShowCartModal(true)}
-      />
+      {!showCartModal && (
+        <CartFloat 
+          items={cartItems} 
+          totalItems={getTotalItems()}
+          totalPrice={getTotalPrice()}
+          onOpenCart={() => setShowCartModal(true)}
+        />
+      )}
 
       {showCartModal && (
         <CartModal
