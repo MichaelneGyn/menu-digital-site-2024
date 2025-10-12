@@ -1,32 +1,10 @@
 /**
  * Biblioteca para geração de códigos PIX (BR Code / EMVCo)
+ * Usando biblioteca emv-qrcps validada pela comunidade
  */
 
-// CRC16-CCITT-FALSE (usado pelo padrão PIX)
-function crc16(str: string): string {
-  let crc = 0xFFFF;
-  const polynomial = 0x1021;
-  
-  for (let i = 0; i < str.length; i++) {
-    crc ^= (str.charCodeAt(i) << 8);
-    
-    for (let j = 0; j < 8; j++) {
-      if ((crc & 0x8000) !== 0) {
-        crc = ((crc << 1) ^ polynomial) & 0xFFFF;
-      } else {
-        crc = (crc << 1) & 0xFFFF;
-      }
-    }
-  }
-  
-  return crc.toString(16).toUpperCase().padStart(4, '0');
-}
-
-// Formata um campo EMV
-function emvField(id: string, value: string): string {
-  const length = value.length.toString().padStart(2, '0');
-  return `${id}${length}${value}`;
-}
+// @ts-ignore
+import EMVQR from 'emv-qrcps';
 
 interface PixPayloadOptions {
   pixKey: string;
@@ -38,7 +16,7 @@ interface PixPayloadOptions {
 }
 
 /**
- * Gera o payload PIX (BR Code) no formato EMVCo
+ * Gera o payload PIX (BR Code) no formato EMVCo usando biblioteca validada
  * 
  * @param options Opções para geração do código PIX
  * @returns Código PIX completo (Copia e Cola)
@@ -50,7 +28,6 @@ export function generatePixPayload(options: PixPayloadOptions): string {
     merchantCity,
     amount,
     description,
-    txid
   } = options;
 
   // Validações
@@ -58,57 +35,44 @@ export function generatePixPayload(options: PixPayloadOptions): string {
     throw new Error('pixKey, merchantName e merchantCity são obrigatórios');
   }
 
-  let payload = '';
+  try {
+    const emvqr = new EMVQR();
 
-  // [00] Payload Format Indicator
-  payload += emvField('00', '01');
+    // Configuração do payload
+    emvqr.setPayloadFormatIndicator('01');
+    
+    // Merchant Account Information (PIX)
+    emvqr.addMerchantAccountInformation('26', {
+      globalUniqueIdentifier: 'br.gov.bcb.pix',
+      pixKey: pixKey,
+    });
 
-  // [26] Merchant Account Information
-  let merchantAccount = '';
-  merchantAccount += emvField('00', 'br.gov.bcb.pix'); // GUI
-  merchantAccount += emvField('01', pixKey); // Chave PIX
-  
-  if (description) {
-    merchantAccount += emvField('02', description.substring(0, 72));
+    emvqr.setMerchantCategoryCode('0000');
+    emvqr.setTransactionCurrency('986'); // BRL
+
+    // Adiciona valor se fornecido
+    if (amount && amount > 0) {
+      emvqr.setTransactionAmount(amount.toFixed(2));
+    }
+
+    emvqr.setCountryCode('BR');
+    emvqr.setMerchantName(merchantName.substring(0, 25));
+    emvqr.setMerchantCity(merchantCity.substring(0, 15));
+
+    // Adiciona descrição se fornecida
+    if (description) {
+      emvqr.addAdditionalDataFieldTemplate({
+        referenceLabel: description.substring(0, 25)
+      });
+    }
+
+    // Gera o payload com CRC
+    const payload = emvqr.generatePayload();
+    return payload;
+  } catch (error) {
+    console.error('Erro ao gerar payload PIX:', error);
+    throw new Error('Falha ao gerar código PIX. Verifique os dados fornecidos.');
   }
-
-  payload += emvField('26', merchantAccount);
-
-  // [52] Merchant Category Code
-  payload += emvField('52', '0000');
-
-  // [53] Transaction Currency (986 = BRL)
-  payload += emvField('53', '986');
-
-  // [54] Transaction Amount (opcional)
-  if (amount && amount > 0) {
-    payload += emvField('54', amount.toFixed(2));
-  }
-
-  // [58] Country Code
-  payload += emvField('58', 'BR');
-
-  // [59] Merchant Name
-  payload += emvField('59', merchantName.substring(0, 25));
-
-  // [60] Merchant City
-  payload += emvField('60', merchantCity.substring(0, 15));
-
-  // [62] Additional Data Field Template (opcional)
-  if (txid) {
-    let additionalData = '';
-    additionalData += emvField('05', txid.substring(0, 25)); // Reference Label
-    payload += emvField('62', additionalData);
-  }
-
-  // [63] CRC16
-  payload += '6304'; // ID 63, tamanho 04
-  
-  // Calcula CRC16 do payload completo
-  const crcValue = crc16(payload);
-  payload += crcValue;
-
-  return payload;
 }
 
 /**
