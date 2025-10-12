@@ -152,16 +152,15 @@ export default function RestaurantNav({
               }}
             >
               <span style={{ 
-                fontSize: '20px',
-                lineHeight: 1,
-                filter: isActive ? 'brightness(1.2)' : 'none'
+                fontSize: '18px',
+                lineHeight: 1
               }}>
                 {category.icon}
               </span>
               <span style={{ 
-                fontSize: '14px',
-                fontWeight: isActive ? '600' : '500',
-                letterSpacing: '0.01em'
+                fontSize: '15px',
+                fontWeight: isActive ? '700' : '600',
+                letterSpacing: '0.02em'
               }}>
                 {category.name}
               </span>
