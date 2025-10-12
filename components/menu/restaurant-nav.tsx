@@ -61,9 +61,9 @@ export default function RestaurantNav({
         position: 'sticky',
         top: 0,
         zIndex: 9999,
-        background: 'linear-gradient(90deg, #3b0d6b 0%, #4a148c 25%, #6a1b9a 50%, #7b1fa2 75%, #8e24aa 100%)',
-        borderBottom: 'none',
-        boxShadow: isScrolled ? '0 4px 16px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.15)',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: isScrolled ? '0 8px 32px rgba(0,0,0,0.3)' : '0 4px 16px rgba(0,0,0,0.2)',
         transition: 'box-shadow 0.3s ease',
         width: '100%',
         minHeight: '80px',
@@ -96,23 +96,7 @@ export default function RestaurantNav({
           }
         `}</style>
         
-        {/* Progress bar de scroll */}
-        <div style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '4px',
-          background: 'rgba(255,255,255,0.15)'
-        }}>
-          <div style={{
-            height: '100%',
-            background: 'linear-gradient(90deg, #fbbf24 0%, #f59e0b 50%, #ef4444 100%)',
-            width: '33%',
-            transition: 'width 0.3s ease',
-            boxShadow: '0 0 8px rgba(251, 191, 36, 0.5)'
-          }} />
-        </div>
+        {/* Remover progress bar */}
         
         {categories.map((category) => {
           const isActive = activeCategory === category.id;
@@ -123,27 +107,27 @@ export default function RestaurantNav({
               onClick={() => onCategoryChange(category.id)}
               style={{ 
                 flexShrink: 0,
-                minWidth: '180px',
-                height: '52px',
-                padding: '0 28px',
-                borderRadius: '8px',
-                border: 'none',
+                minWidth: '120px',
+                height: '40px',
+                padding: '0 16px',
+                borderRadius: '20px',
+                border: isActive ? '2px solid #ef4444' : '1px solid #e5e7eb',
                 background: isActive 
-                  ? 'rgba(255, 255, 255, 0.95)' 
-                  : 'transparent',
-                color: isActive ? '#6a1b9a' : 'white',
-                fontWeight: isActive ? '700' : '600',
-                fontSize: '16px',
+                  ? '#fef2f2' 
+                  : 'white',
+                color: isActive ? '#ef4444' : '#6b7280',
+                fontWeight: isActive ? '600' : '500',
+                fontSize: '14px',
                 transition: 'all 0.2s ease',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                justifyContent: 'flex-start',
-                gap: '10px',
+                justifyContent: 'center',
+                gap: '6px',
                 whiteSpace: 'nowrap',
                 boxShadow: isActive 
-                  ? '0 3px 12px rgba(0,0,0,0.2)' 
-                  : 'none',
+                  ? '0 2px 8px rgba(239, 68, 68, 0.2)' 
+                  : '0 1px 3px rgba(0,0,0,0.1)',
                 transform: 'scale(1)',
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation',
@@ -152,12 +136,14 @@ export default function RestaurantNav({
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                  e.currentTarget.style.background = '#f9fafb';
+                  e.currentTarget.style.borderColor = '#d1d5db';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.background = 'white';
+                  e.currentTarget.style.borderColor = '#e5e7eb';
                 }
               }}
               onMouseDown={(e) => {
@@ -168,7 +154,7 @@ export default function RestaurantNav({
               }}
             >
               <span style={{ 
-                fontSize: '22px',
+                fontSize: '16px',
                 lineHeight: 1,
                 display: 'flex',
                 alignItems: 'center'
@@ -176,9 +162,9 @@ export default function RestaurantNav({
                 {category.icon}
               </span>
               <span style={{ 
-                fontSize: '16px',
-                fontWeight: isActive ? '700' : '600',
-                letterSpacing: '0.03em',
+                fontSize: '14px',
+                fontWeight: isActive ? '600' : '500',
+                letterSpacing: '0.01em',
                 lineHeight: 1
               }}>
                 {category.name}
