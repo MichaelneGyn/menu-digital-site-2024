@@ -1,0 +1,14 @@
+# Database
+DATABASE_URL="postgresql://postgres.vppvfgmkfrycktsulahd:Mcqs%40%40250%21@aws-1-sa-east-1.pooler.supabase.com:6543/postgres"
+
+# NextAuth (local)
+NEXTAUTH_URL="http://localhost:3001"
+# Para produção no Vercel, configure NEXTAUTH_URL com sua URL do Vercel
+# Exemplo: NEXTAUTH_URL="https://seu-site.vercel.app"
+NEXTAUTH_SECRET="33cbd296f38c21eb822a6645a922fe43926e458712cccf22927ce16fc7f6fe1"
+
+# AWS Configuration
+AWS_PROFILE=default
+AWS_REGION=us-west-2
+AWS_BUCKET_NAME=menu-digital-uploads
+AWS_FOLDER_PREFIX=uploads/
