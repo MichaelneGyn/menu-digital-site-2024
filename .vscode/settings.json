@@ -15,5 +15,6 @@
   "editor.quickSuggestions": {
     "strings": true
   },
-  "css.lint.unknownAtRules": "ignore"
+  "css.lint.unknownAtRules": "ignore",
+  "json.schemaDownload.enable": false
 }
