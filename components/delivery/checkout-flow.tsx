@@ -243,7 +243,7 @@ export default function CheckoutFlow({
       const message = generateOrderSummary();
       const encodedMessage = encodeURIComponent(message);
       const phone = restaurant.whatsapp || '5562999999999';
-      const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone.replace(/\D/g, '')}&text=${encodedMessage}`;
+      const whatsappUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodedMessage}`;
 
       toast.success('✅ Pedido ' + order.code + ' criado com sucesso!', {
         duration: 3000,
