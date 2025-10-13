@@ -198,6 +198,8 @@ export default function AddItemWithCustomizationsModal({
         }
 
         // Create groups and link to item
+        const createdGroupIds = [];
+        
         for (const groupData of groups) {
           const groupResponse = await fetch(`/api/restaurants/${restaurantId}/customizations`, {
             method: 'POST',
@@ -207,16 +209,19 @@ export default function AddItemWithCustomizationsModal({
 
           if (groupResponse.ok) {
             const createdGroup = await groupResponse.json();
-            
-            // Link group to item
-            await fetch(`/api/menu-items/${createdItem.id}/link-customizations`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                groupIds: [createdGroup.id]
-              }),
-            });
+            createdGroupIds.push(createdGroup.id);
           }
+        }
+        
+        // Link ALL groups to item at once
+        if (createdGroupIds.length > 0) {
+          await fetch(`/api/menu-items/${createdItem.id}/link-customizations`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              groupIds: createdGroupIds
+            }),
+          });
         }
       }
 
