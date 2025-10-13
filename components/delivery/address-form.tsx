@@ -107,13 +107,17 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
     setIsSearching(true);
     
     try {
+      // Usar API route proxy ao invés de chamar OpenStreetMap direto
+      // Isso evita erros de CORS
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=br&limit=5&addressdetails=1`
+        `/api/geocode?q=${encodeURIComponent(query)}`
       );
       const data = await response.json();
       setSuggestions(data);
     } catch (error) {
-      toast.error('Erro ao buscar endereços');
+      console.error('Erro ao buscar endereços:', error);
+      // Não mostra erro ao usuário, apenas falha silenciosamente
+      setSuggestions([]);
     }
     
     setIsSearching(false);
