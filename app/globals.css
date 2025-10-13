@@ -1281,6 +1281,7 @@
   .checkout-modal {
     max-height: 100vh;
     border-radius: 0;
+    padding-top: 1rem;
     padding-bottom: 1rem;
     margin: 0;
     width: 100vw;
@@ -1290,6 +1291,7 @@
   /* Melhorar espaçamento interno do checkout */
   .checkout-modal .space-y-6 {
     padding: 1rem !important;
+    padding-top: 0.5rem !important;
     padding-bottom: 4rem !important;
   }
   
