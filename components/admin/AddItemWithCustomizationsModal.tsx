@@ -200,18 +200,32 @@ export default function AddItemWithCustomizationsModal({
         // Create groups and link to item
         const createdGroupIds = [];
         
+        console.log('🚀 [MODAL] Creating customization groups...');
+        console.log('📋 [MODAL] Groups to create:', groups.length);
+        
         for (const groupData of groups) {
+          console.log('📦 [MODAL] Sending group:', groupData);
+          console.log('🔗 [MODAL] URL:', `/api/restaurants/${restaurantId}/customizations`);
+          
           const groupResponse = await fetch(`/api/restaurants/${restaurantId}/customizations`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(groupData),
           });
 
+          console.log('📡 [MODAL] Response status:', groupResponse.status);
+
           if (groupResponse.ok) {
             const createdGroup = await groupResponse.json();
+            console.log('✅ [MODAL] Group created:', createdGroup.id, createdGroup.name);
             createdGroupIds.push(createdGroup.id);
+          } else {
+            const errorData = await groupResponse.json();
+            console.error('❌ [MODAL] Failed to create group:', errorData);
           }
         }
+        
+        console.log('✅ [MODAL] All groups created. IDs:', createdGroupIds);
         
         // Link ALL groups to item at once
         if (createdGroupIds.length > 0) {
