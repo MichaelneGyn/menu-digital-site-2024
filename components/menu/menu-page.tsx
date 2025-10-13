@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useSession } from 'next-auth/react';
 import { ClientRestaurant, ClientMenuItem } from '@/lib/restaurant';
 import { ProductCustomization } from './product-card';
 import RestaurantHeader from './restaurant-header';
@@ -36,6 +37,7 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
     hasPixQrCode: !!restaurant.pixQrCode,
   });
 
+  const { data: session } = useSession();
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showNotification, setShowNotification] = useState(false);
@@ -44,6 +46,31 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [adminEmail, setAdminEmail] = useState<string | undefined>(undefined);
   const categoryRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+
+  // Verifica se o usuário logado é o dono do restaurante
+  useEffect(() => {
+    const checkIfOwner = async () => {
+      if (session?.user?.email) {
+        try {
+          const response = await fetch('/api/restaurant');
+          if (response.ok) {
+            const data = await response.json();
+            // Se o email da sessão corresponde ao dono do restaurante, ativa modo admin
+            if (data.id === restaurant.id) {
+              setAdminEmail(session.user.email);
+              console.log('🔑 Modo Admin ativado para:', session.user.email);
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao verificar dono:', error);
+        }
+      } else {
+        setAdminEmail(undefined);
+      }
+    };
+    
+    checkIfOwner();
+  }, [session, restaurant.id]);
 
   // Set first category as active on load
   useEffect(() => {
