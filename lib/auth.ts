@@ -28,10 +28,14 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        console.log('🔐 Tentativa de login:', { email: credentials?.email });
+        const isDev = process.env.NODE_ENV === 'development';
+        
+        if (isDev) {
+          console.log('🔐 Tentativa de login:', { email: credentials?.email });
+        }
         
         if (!credentials?.email || !credentials?.password) {
-          console.log('❌ Credenciais inválidas');
+          if (isDev) console.log('❌ Credenciais inválidas');
           return null;
         }
 
@@ -41,10 +45,12 @@ export const authOptions: NextAuthOptions = {
             include: { restaurants: true }
           });
 
-          console.log('👤 Usuário encontrado:', user ? 'Sim' : 'Não');
+          if (isDev) {
+            console.log('👤 Usuário encontrado:', user ? 'Sim' : 'Não');
+          }
 
           if (!user?.password) {
-            console.log('❌ Usuário não tem senha');
+            if (isDev) console.log('❌ Usuário não tem senha');
             return null;
           }
 
@@ -53,20 +59,30 @@ export const authOptions: NextAuthOptions = {
             user.password
           );
 
-          console.log('🔑 Senha válida:', isPasswordValid ? 'Sim' : 'Não');
+          if (isDev) {
+            console.log('🔑 Senha válida:', isPasswordValid ? 'Sim' : 'Não');
+          }
 
           if (!isPasswordValid) {
             return null;
           }
 
-          console.log('✅ Login bem-sucedido para:', user.email);
+          if (isDev) {
+            console.log('✅ Login bem-sucedido para:', user.email);
+          }
+          
           return {
             id: user.id,
             email: user.email,
             name: user.name,
           };
         } catch (error) {
-          console.error('❌ Erro na autenticação:', error);
+          // Log erro sempre, mas sem detalhes sensíveis em produção
+          if (isDev) {
+            console.error('❌ Erro na autenticação:', error);
+          } else {
+            console.error('❌ Erro na autenticação (detalhes omitidos por segurança)');
+          }
           return null;
         }
       }
