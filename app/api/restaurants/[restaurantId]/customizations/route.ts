@@ -78,6 +78,39 @@ export async function POST(
     }
 
     console.log('📝 [API] Creating customization group...');
+    
+    // Validar e limpar options
+    let optionsData = undefined;
+    if (body.options && Array.isArray(body.options)) {
+      console.log('🔍 [API] Validating options:', body.options);
+      
+      // Filtrar options undefined/null e criar dados limpos
+      const cleanOptions = body.options
+        .filter((opt: any) => opt && opt.name) // Remove undefined/null e sem nome
+        .map((opt: any, index: number) => {
+          const cleanOpt: any = {
+            name: String(opt.name),
+            price: typeof opt.price === 'number' ? opt.price : parseFloat(opt.price || '0'),
+            isActive: opt.isActive !== false, // default true se não especificado
+            sortOrder: typeof opt.sortOrder === 'number' ? opt.sortOrder : index
+          };
+          
+          // Só adiciona image se existir
+          if (opt.image) {
+            cleanOpt.image = String(opt.image);
+          }
+          
+          console.log('✅ [API] Clean option:', cleanOpt);
+          return cleanOpt;
+        });
+      
+      if (cleanOptions.length > 0) {
+        optionsData = { create: cleanOptions };
+      }
+      
+      console.log('📦 [API] Options data:', optionsData);
+    }
+    
     const group = await prisma.customizationGroup.create({
       data: {
         name: body.name,
@@ -88,17 +121,7 @@ export async function POST(
         sortOrder: body.sortOrder ?? 0,
         isActive: body.isActive ?? true,
         restaurantId,
-        options: body.options
-          ? {
-              create: body.options.map((opt: any, index: number) => ({
-                name: opt.name,
-                price: opt.price ?? 0,
-                image: opt.image,
-                isActive: opt.isActive ?? true,
-                sortOrder: opt.sortOrder ?? index
-              }))
-            }
-          : undefined
+        options: optionsData
       },
       include: {
         options: true
