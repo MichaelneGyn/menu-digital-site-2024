@@ -30,13 +30,17 @@ export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
   const checkForCustomizations = async () => {
     try {
       setCheckingCustomizations(true);
+      console.log('🔍 Checking customizations for item:', item.id, item.name);
       const response = await fetch(`/api/menu-items/${item.id}/customizations`);
+      console.log('📡 Response status:', response.status);
       if (response.ok) {
         const customizations = await response.json();
+        console.log('📦 Customizations received:', customizations);
+        console.log('✅ Has customizations?', customizations.length > 0);
         setHasCustomizations(customizations.length > 0);
       }
     } catch (error) {
-      console.error('Error checking customizations:', error);
+      console.error('❌ Error checking customizations:', error);
     } finally {
       setCheckingCustomizations(false);
     }
