@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { uploadFile } from '@/lib/s3';
+import { apiRateLimiter } from '@/lib/rate-limit';
 import fs from 'fs';
 import path from 'path';
 
@@ -12,6 +13,17 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const isDev = process.env.NODE_ENV !== 'production';
+    
+    // Rate limiting (60 uploads por minuto por IP)
+    if (!isDev) {
+      const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+      const limitResult = apiRateLimiter(ip);
+      
+      if (!limitResult.success) {
+        return limitResult.response!;
+      }
+    }
+    
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email && !isDev) {
