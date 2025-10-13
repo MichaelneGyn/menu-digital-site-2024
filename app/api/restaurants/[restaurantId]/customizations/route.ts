@@ -43,13 +43,21 @@ export async function POST(
   { params }: { params: { restaurantId: string } }
 ) {
   try {
+    console.log('🔵 [API] POST /api/restaurants/[restaurantId]/customizations');
+    
     const session = await getServerSession(authOptions);
+    console.log('🔑 [API] Session:', session?.user?.email);
+    
     if (!session?.user?.email) {
+      console.log('❌ [API] Unauthorized - no session');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { restaurantId } = params;
+    console.log('🏪 [API] Restaurant ID:', restaurantId);
+    
     const body = await request.json();
+    console.log('📦 [API] Body received:', JSON.stringify(body, null, 2));
 
     // Verificar se o usuário é dono do restaurante
     const restaurant = await prisma.restaurant.findFirst({
@@ -59,13 +67,17 @@ export async function POST(
       }
     });
 
+    console.log('✅ [API] Restaurant found:', restaurant?.name);
+
     if (!restaurant) {
+      console.log('❌ [API] Restaurant not found or unauthorized');
       return NextResponse.json(
         { error: 'Restaurant not found or unauthorized' },
         { status: 404 }
       );
     }
 
+    console.log('📝 [API] Creating customization group...');
     const group = await prisma.customizationGroup.create({
       data: {
         name: body.name,
@@ -93,11 +105,13 @@ export async function POST(
       }
     });
 
+    console.log('✅ [API] Group created:', group.id, group.name);
     return NextResponse.json(group, { status: 201 });
   } catch (error) {
-    console.error('Error creating customization group:', error);
+    console.error('❌ [API] Error creating customization group:', error);
+    console.error('❌ [API] Error details:', JSON.stringify(error, null, 2));
     return NextResponse.json(
-      { error: 'Failed to create customization group' },
+      { error: 'Failed to create customization group', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
