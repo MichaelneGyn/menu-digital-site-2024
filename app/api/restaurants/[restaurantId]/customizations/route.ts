@@ -54,7 +54,20 @@ export async function POST(
     }
 
     const { restaurantId } = params;
-    console.log('🏪 [API] Restaurant ID:', restaurantId);
+    console.log('🏪 [API] Restaurant ID from params:', restaurantId);
+    console.log('🏪 [API] Restaurant ID type:', typeof restaurantId);
+    console.log('🏪 [API] Restaurant ID is null?', restaurantId === null);
+    console.log('🏪 [API] Restaurant ID is undefined?', restaurantId === undefined);
+    console.log('🏪 [API] Restaurant ID is empty string?', restaurantId === '');
+    
+    // Validar restaurantId
+    if (!restaurantId || restaurantId === '' || restaurantId === 'undefined' || restaurantId === 'null') {
+      console.log('❌ [API] Invalid restaurantId!');
+      return NextResponse.json(
+        { error: 'Invalid restaurant ID', receivedId: restaurantId },
+        { status: 400 }
+      );
+    }
     
     const body = await request.json();
     console.log('📦 [API] Body received:', JSON.stringify(body, null, 2));
@@ -71,8 +84,10 @@ export async function POST(
 
     if (!restaurant) {
       console.log('❌ [API] Restaurant not found or unauthorized');
+      console.log('❌ [API] Searched for restaurant with ID:', restaurantId);
+      console.log('❌ [API] User email:', session.user.email);
       return NextResponse.json(
-        { error: 'Restaurant not found or unauthorized' },
+        { error: 'Restaurant not found or unauthorized', searchedId: restaurantId },
         { status: 404 }
       );
     }
