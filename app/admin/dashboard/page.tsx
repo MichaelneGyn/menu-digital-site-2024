@@ -385,7 +385,7 @@ function AdminDashboard() {
                         <label className="text-sm font-medium text-gray-600">WhatsApp</label>
                         <p>
                           <a
-                            href={`https://api.whatsapp.com/send?phone=${onlyDigits(restaurant.whatsapp)}`}
+                            href={`https://wa.me/${onlyDigits(restaurant.whatsapp)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-green-600 hover:underline"
