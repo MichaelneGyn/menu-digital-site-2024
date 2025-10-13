@@ -578,7 +578,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                           <div className="space-y-1">
                                             {item.borders.map((b, i) => (
                                               <div key={i} className="flex justify-between bg-white p-2 rounded text-sm">
-                                                <span>{b.name} - +R$ {(parseFloat(b.price) / 100).toFixed(2)}</span>
+                                                <span>{b.name} - +R$ {parseFloat(b.price || '0').toFixed(2)}</span>
                                                 <button
                                                   type="button"
                                                   onClick={() => updateItem(item.id, 'borders', item.borders.filter((_, idx) => idx !== i))}
@@ -655,7 +655,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                           <div className="space-y-1">
                                             {item.extras.map((e, i) => (
                                               <div key={i} className="flex justify-between bg-white p-2 rounded text-sm">
-                                                <span>{e.name} - +R$ {(parseFloat(e.price) / 100).toFixed(2)}</span>
+                                                <span>{e.name} - +R$ {parseFloat(e.price || '0').toFixed(2)}</span>
                                                 <button
                                                   type="button"
                                                   onClick={() => updateItem(item.id, 'extras', item.extras.filter((_, idx) => idx !== i))}

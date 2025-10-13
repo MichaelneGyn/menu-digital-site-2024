@@ -425,7 +425,7 @@ export default function AddItemWithCustomizationsModal({
                           <div className="space-y-1">
                             {borders.map((border, i) => (
                               <div key={i} className="flex items-center justify-between bg-white p-2 rounded">
-                                <span>{border.name} - +R$ {(parseFloat(border.price) / 100).toFixed(2)}</span>
+                                <span>{border.name} - +R$ {parseFloat(border.price || '0').toFixed(2)}</span>
                                 <button type="button" onClick={() => setBorders(borders.filter((_, idx) => idx !== i))}>
                                   <Trash2 size={14} className="text-red-500" />
                                 </button>
@@ -476,7 +476,7 @@ export default function AddItemWithCustomizationsModal({
                           <div className="space-y-1">
                             {extras.map((extra, i) => (
                               <div key={i} className="flex items-center justify-between bg-white p-2 rounded">
-                                <span>{extra.name} - +R$ {(parseFloat(extra.price) / 100).toFixed(2)}</span>
+                                <span>{extra.name} - +R$ {parseFloat(extra.price || '0').toFixed(2)}</span>
                                 <button type="button" onClick={() => setExtras(extras.filter((_, idx) => idx !== i))}>
                                   <Trash2 size={14} className="text-red-500" />
                                 </button>
