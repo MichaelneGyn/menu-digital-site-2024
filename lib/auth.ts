@@ -77,12 +77,13 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
           };
         } catch (error) {
-          // Log erro sempre, mas sem detalhes sensíveis em produção
-          if (isDev) {
-            console.error('❌ Erro na autenticação:', error);
-          } else {
-            console.error('❌ Erro na autenticação (detalhes omitidos por segurança)');
-          }
+          // Log erro sempre para debug
+          console.error('❌ Erro na autenticação:', {
+            message: error instanceof Error ? error.message : 'Erro desconhecido',
+            code: (error as any)?.code,
+            // Não loga stack trace em produção por segurança
+            ...(isDev && { stack: error instanceof Error ? error.stack : undefined })
+          });
           return null;
         }
       }
