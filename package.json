@@ -7,7 +7,9 @@
     "postinstall": "prisma generate",
     "start": "next start -p 3001",
     "lint": "next lint",
-    "db:push": "prisma db push --accept-data-loss"
+    "db:push": "prisma db push --accept-data-loss",
+    "pre-deploy": "node scripts/utils/verificar-arquivos-criticos.js",
+    "check": "npm run pre-deploy && npm run lint"
   },
   "prisma": {
     "seed": "tsx --require dotenv/config scripts/seed.ts"
