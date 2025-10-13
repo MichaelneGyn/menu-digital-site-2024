@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { apiRateLimiter } from '@/lib/rate-limit';
 
-// Configurar CORS
+// Configurar CORS (APENAS para seu domínio)
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Origin': process.env.NEXTAUTH_URL || 'https://menu-digital-site-2024-8773d37d6064-git-main-michaeldouglasqueiroz.vercel.app',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Credentials': 'true',
 };
 
 export async function OPTIONS(request: NextRequest) {
@@ -33,6 +35,14 @@ const createFullOrderSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting (60 pedidos por minuto por IP)
+    const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+    const limitResult = apiRateLimiter(ip);
+    
+    if (!limitResult.success) {
+      return limitResult.response!;
+    }
+    
     const body = await req.json();
     console.log('Dados recebidos:', body);
     

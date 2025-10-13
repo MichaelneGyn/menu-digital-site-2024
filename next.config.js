@@ -12,11 +12,15 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: '*.amazonaws.com', // AWS S3
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co', // Supabase Storage
       },
       {
         protocol: 'http',
-        hostname: '**',
+        hostname: 'localhost', // Dev local
       },
     ],
   },
