@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ClientMenuItem } from '@/lib/restaurant';
 import ProductCustomizationModalDynamic from './product-customization-modal-dynamic';
-import ProductCustomizationModal from './product-customization-modal';
 
 interface ProductCardProps {
   item: ClientMenuItem;
@@ -51,22 +50,14 @@ export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
   };
 
   const handleAddToCart = () => {
-    // Se tem customizações vinculadas, sempre abre o modal
+    // SEMPRE abre modal se tiver customizações no banco (prioridade máxima)
     if (hasCustomizations) {
       setShowCustomizationModal(true);
-    } else {
-      // Fallback: verificar por palavras-chave (comportamento antigo)
-      const needsCustomization = ['pizza', 'massa', 'lanche'].some(type => 
-        item.name?.toLowerCase().includes(type) || 
-        item.description?.toLowerCase().includes(type)
-      );
-
-      if (needsCustomization) {
-        setShowCustomizationModal(true);
-      } else {
-        onAddToCart(item);
-      }
+      return;
     }
+    
+    // Se não tem customizações no banco, adiciona direto ao carrinho
+    onAddToCart(item);
   };
 
   const handleCustomizedAdd = (customization: ProductCustomization) => {
@@ -126,22 +117,12 @@ export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
         </div>
       </div>
 
-      {showCustomizationModal && (
-        <>
-          {hasCustomizations ? (
-            <ProductCustomizationModalDynamic
-              item={item}
-              onAdd={handleCustomizedAdd}
-              onClose={() => setShowCustomizationModal(false)}
-            />
-          ) : (
-            <ProductCustomizationModal
-              item={item}
-              onAdd={handleCustomizedAdd}
-              onClose={() => setShowCustomizationModal(false)}
-            />
-          )}
-        </>
+      {showCustomizationModal && hasCustomizations && (
+        <ProductCustomizationModalDynamic
+          item={item}
+          onAdd={handleCustomizedAdd}
+          onClose={() => setShowCustomizationModal(false)}
+        />
       )}
     </>
   );
