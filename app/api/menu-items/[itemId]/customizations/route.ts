@@ -38,8 +38,15 @@ export async function GET(
     return NextResponse.json(menuItem.customizationGroups);
   } catch (error) {
     console.error('❌ [API] Error fetching menu item customizations:', error);
+    
+    // Se for erro de Prisma, retorna detalhes
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch customizations';
+    
     return NextResponse.json(
-      { error: 'Failed to fetch customizations' },
+      { 
+        error: 'Failed to fetch customizations',
+        details: errorMessage 
+      },
       { status: 500 }
     );
   }
