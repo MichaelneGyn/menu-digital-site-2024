@@ -1,10 +1,11 @@
 import { PrismaClient } from '@prisma/client'
-import { withAccelerate } from '@prisma/extension-accelerate'
+// import { withAccelerate } from '@prisma/extension-accelerate'
 
 const prismaClientSingleton = () => {
   return new PrismaClient({
     log: ['query'],
-  }).$extends(withAccelerate())
+  })
+  // .$extends(withAccelerate())
 }
 
 declare const globalThis: {
