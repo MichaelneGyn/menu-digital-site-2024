@@ -30,6 +30,15 @@ type ItemForm = {
   imagePreview: string;
   isPromo: boolean;
   originalPrice: string;
+  // Customizations
+  hasCustomizations: boolean;
+  hasFlavors: boolean;
+  flavors: string[];
+  maxFlavors: string;
+  hasBorders: boolean;
+  borders: Array<{name: string; price: string}>;
+  hasExtras: boolean;
+  extras: Array<{name: string; price: string}>;
 };
 
 type Category = {
@@ -72,6 +81,15 @@ export default function ImportMenuPage() {
       imagePreview: '',
       isPromo: false,
       originalPrice: '',
+      // Customizations
+      hasCustomizations: false,
+      hasFlavors: false,
+      flavors: [],
+      maxFlavors: '2',
+      hasBorders: false,
+      borders: [],
+      hasExtras: false,
+      extras: [],
     };
   }
 
@@ -159,6 +177,21 @@ export default function ImportMenuPage() {
         }
         if (item.image) {
           formData.append(`items[${index}][image]`, item.image);
+        }
+        
+        // Customizations
+        if (item.hasCustomizations) {
+          formData.append(`items[${index}][hasCustomizations]`, 'true');
+          if (item.hasFlavors && item.flavors.length > 0) {
+            formData.append(`items[${index}][flavors]`, JSON.stringify(item.flavors));
+            formData.append(`items[${index}][maxFlavors]`, item.maxFlavors);
+          }
+          if (item.hasBorders && item.borders.length > 0) {
+            formData.append(`items[${index}][borders]`, JSON.stringify(item.borders));
+          }
+          if (item.hasExtras && item.extras.length > 0) {
+            formData.append(`items[${index}][extras]`, JSON.stringify(item.extras));
+          }
         }
       });
 
@@ -409,6 +442,196 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                     onChange={(val) => updateItem(item.id, 'originalPrice', val)}
                                     placeholder="Digite: 5590 = R$ 55,90"
                                   />
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Customizações */}
+                            <div className="border-t-2 border-dashed pt-4 mt-4">
+                              <label className="flex items-center gap-2 mb-4">
+                                <input
+                                  type="checkbox"
+                                  checked={item.hasCustomizations}
+                                  onChange={(e) => updateItem(item.id, 'hasCustomizations', e.target.checked)}
+                                  className="w-5 h-5"
+                                />
+                                <span className="text-base font-semibold">🍕 Este produto tem opções de personalização?</span>
+                              </label>
+
+                              {item.hasCustomizations && (
+                                <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
+                                  {/* Sabores */}
+                                  <div className="border-b pb-3">
+                                    <label className="flex items-center gap-2 mb-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={item.hasFlavors}
+                                        onChange={(e) => updateItem(item.id, 'hasFlavors', e.target.checked)}
+                                        className="w-4 h-4"
+                                      />
+                                      <span className="text-sm font-semibold">Cliente pode escolher sabores</span>
+                                    </label>
+                                    {item.hasFlavors && (
+                                      <div className="ml-6 space-y-2">
+                                        <div className="flex gap-2">
+                                          <Input
+                                            placeholder="Ex: Calabresa"
+                                            onKeyPress={(e: any) => {
+                                              if (e.key === 'Enter' && e.target.value.trim()) {
+                                                e.preventDefault();
+                                                updateItem(item.id, 'flavors', [...item.flavors, e.target.value.trim()]);
+                                                e.target.value = '';
+                                              }
+                                            }}
+                                            className="flex-1"
+                                          />
+                                          <Input
+                                            type="number"
+                                            placeholder="Máx"
+                                            value={item.maxFlavors}
+                                            onChange={(e) => updateItem(item.id, 'maxFlavors', e.target.value)}
+                                            className="w-20"
+                                          />
+                                        </div>
+                                        {item.flavors.length > 0 && (
+                                          <div className="space-y-1">
+                                            {item.flavors.map((f, i) => (
+                                              <div key={i} className="flex justify-between bg-white p-2 rounded text-sm">
+                                                <span>{f}</span>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => updateItem(item.id, 'flavors', item.flavors.filter((_, idx) => idx !== i))}
+                                                  className="text-red-500 hover:text-red-700"
+                                                >
+                                                  ✕
+                                                </button>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Bordas */}
+                                  <div className="border-b pb-3">
+                                    <label className="flex items-center gap-2 mb-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={item.hasBorders}
+                                        onChange={(e) => updateItem(item.id, 'hasBorders', e.target.checked)}
+                                        className="w-4 h-4"
+                                      />
+                                      <span className="text-sm font-semibold">Cliente pode escolher borda</span>
+                                    </label>
+                                    {item.hasBorders && (
+                                      <div className="ml-6 space-y-2">
+                                        <div className="flex gap-2">
+                                          <Input
+                                            placeholder="Ex: Catupiry"
+                                            id={`border-name-${item.id}`}
+                                            className="flex-1"
+                                          />
+                                          <PriceInput
+                                            value=""
+                                            onChange={() => {}}
+                                            placeholder="Preço"
+                                          />
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            onClick={() => {
+                                              const nameInput = document.getElementById(`border-name-${item.id}`) as HTMLInputElement;
+                                              const priceInput = document.getElementById(`border-price-${item.id}`) as HTMLInputElement;
+                                              if (nameInput?.value.trim()) {
+                                                updateItem(item.id, 'borders', [...item.borders, {name: nameInput.value, price: priceInput?.value || '0'}]);
+                                                nameInput.value = '';
+                                                if (priceInput) priceInput.value = '';
+                                              }
+                                            }}
+                                          >
+                                            +
+                                          </Button>
+                                        </div>
+                                        {item.borders.length > 0 && (
+                                          <div className="space-y-1">
+                                            {item.borders.map((b, i) => (
+                                              <div key={i} className="flex justify-between bg-white p-2 rounded text-sm">
+                                                <span>{b.name} - +R$ {(parseFloat(b.price) / 100).toFixed(2)}</span>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => updateItem(item.id, 'borders', item.borders.filter((_, idx) => idx !== i))}
+                                                  className="text-red-500 hover:text-red-700"
+                                                >
+                                                  ✕
+                                                </button>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Extras */}
+                                  <div>
+                                    <label className="flex items-center gap-2 mb-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={item.hasExtras}
+                                        onChange={(e) => updateItem(item.id, 'hasExtras', e.target.checked)}
+                                        className="w-4 h-4"
+                                      />
+                                      <span className="text-sm font-semibold">Cliente pode adicionar extras</span>
+                                    </label>
+                                    {item.hasExtras && (
+                                      <div className="ml-6 space-y-2">
+                                        <div className="flex gap-2">
+                                          <Input
+                                            placeholder="Ex: Bacon Extra"
+                                            id={`extra-name-${item.id}`}
+                                            className="flex-1"
+                                          />
+                                          <PriceInput
+                                            value=""
+                                            onChange={() => {}}
+                                            placeholder="Preço"
+                                          />
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            onClick={() => {
+                                              const nameInput = document.getElementById(`extra-name-${item.id}`) as HTMLInputElement;
+                                              const priceInput = document.getElementById(`extra-price-${item.id}`) as HTMLInputElement;
+                                              if (nameInput?.value.trim()) {
+                                                updateItem(item.id, 'extras', [...item.extras, {name: nameInput.value, price: priceInput?.value || '0'}]);
+                                                nameInput.value = '';
+                                                if (priceInput) priceInput.value = '';
+                                              }
+                                            }}
+                                          >
+                                            +
+                                          </Button>
+                                        </div>
+                                        {item.extras.length > 0 && (
+                                          <div className="space-y-1">
+                                            {item.extras.map((e, i) => (
+                                              <div key={i} className="flex justify-between bg-white p-2 rounded text-sm">
+                                                <span>{e.name} - +R$ {(parseFloat(e.price) / 100).toFixed(2)}</span>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => updateItem(item.id, 'extras', item.extras.filter((_, idx) => idx !== i))}
+                                                  className="text-red-500 hover:text-red-700"
+                                                >
+                                                  ✕
+                                                </button>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               )}
                             </div>
