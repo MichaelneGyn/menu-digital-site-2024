@@ -1,0 +1,145 @@
+═══════════════════════════════════════════════════════════
+  🧪 TESTAR SEM AFETAR CLIENTES - GUIA RÁPIDO
+═══════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────┐
+│ ✅ REGRA DE OURO:                                       │
+│                                                         │
+│  🟡 develop  = Você testa (STAGING)                    │
+│  🟢 master   = Clientes usam (PRODUÇÃO)                │
+│                                                         │
+│  NUNCA faça push direto para master!                   │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════
+  📋 PASSO A PASSO
+═══════════════════════════════════════════════════════════
+
+🔧 FAZER MUDANÇAS (SEMPRE NO DEVELOP):
+
+  1. git checkout develop
+  2. git pull origin develop
+  3. (faz alterações nos arquivos)
+  4. npm run pre-deploy
+  5. git add .
+  6. git commit -m "descreva o que fez"
+  7. git push origin develop
+  8. Aguarda 2-3 minutos
+
+─────────────────────────────────────────────────────────
+
+🧪 TESTAR NO STAGING:
+
+  URL: https://...git-develop...vercel.app
+  
+  ✅ Login funciona?
+  ✅ Dashboard abre?
+  ✅ Cardápio funciona?
+  ✅ Sua mudança funcionou?
+  ✅ Sem erros no console? (aperte F12)
+  
+  SE TUDO OK ✅ → Vai pro próximo passo
+  SE ALGO FALHOU ❌ → Volta e corrige
+
+─────────────────────────────────────────────────────────
+
+🚀 LIBERAR PARA CLIENTES (SÓ DEPOIS DE TESTAR!):
+
+  1. git checkout master
+  2. git pull origin master
+  3. git merge develop
+  4. git push origin master
+  5. Aguarda 2-3 minutos
+  6. Testa DE NOVO em: https://...git-main...vercel.app
+  7. Se OK → Clientes podem usar! 🎉
+
+═══════════════════════════════════════════════════════════
+  🚨 EMERGÊNCIA - ROLLBACK
+═══════════════════════════════════════════════════════════
+
+Se algo quebrou em produção:
+
+  1. Acesse: https://vercel.com/dashboard
+  2. Deployments
+  3. Encontra deploy anterior (que funcionava)
+  4. ... → Promote to Production
+  5. PRONTO! Voltou!
+
+═══════════════════════════════════════════════════════════
+  ⚡ COMANDOS MAIS USADOS
+═══════════════════════════════════════════════════════════
+
+Ver onde estou:           git branch
+Ir para testes:           git checkout develop
+Ir para produção:         git checkout master
+Ver mudanças:             git status
+Verificar arquivos:       npm run pre-deploy
+Descartar mudanças:       git checkout .
+
+═══════════════════════════════════════════════════════════
+  🌐 URLs IMPORTANTES
+═══════════════════════════════════════════════════════════
+
+🟡 STAGING (testes):
+https://menu-digital-site-2024-8773d37d6064-git-develop-michaeldouglasqueiroz.vercel.app
+
+🟢 PRODUÇÃO (clientes):
+https://menu-digital-site-2024-8773d37d6064-git-main-michaeldouglasqueiroz.vercel.app
+
+📦 Vercel Dashboard:
+https://vercel.com/dashboard
+
+🗄️ Supabase:
+https://supabase.com/dashboard
+
+═══════════════════════════════════════════════════════════
+  📊 FLUXO VISUAL
+═══════════════════════════════════════════════════════════
+
+  💻 Você desenvolve
+      ↓
+  📝 git push origin develop
+      ↓
+  🟡 STAGING - Você testa aqui!
+      ↓
+  ✅ Tudo OK?
+      ↓
+  📝 git merge develop
+      ↓
+  🟢 PRODUÇÃO - Clientes usam
+
+═══════════════════════════════════════════════════════════
+  ✅ CHECKLIST MÍNIMO
+═══════════════════════════════════════════════════════════
+
+Antes de fazer merge para master:
+
+  ☐ Testei no staging
+  ☐ Login funciona
+  ☐ Cardápio abre
+  ☐ Sem erros (F12)
+  ☐ Minha mudança funciona
+
+Só faça merge se TODOS estiverem ✅!
+
+═══════════════════════════════════════════════════════════
+  💡 LEMBRE-SE
+═══════════════════════════════════════════════════════════
+
+  ✅ SEMPRE teste no develop PRIMEIRO
+  ✅ SEMPRE execute o checklist
+  ✅ SÓ libere se TUDO estiver OK
+
+  ❌ NUNCA faça push direto para master
+  ❌ NUNCA pule os testes
+  ❌ NUNCA teste direto em produção
+
+═══════════════════════════════════════════════════════════
+
+💾 COPIE ESTE ARQUIVO PARA SEU DESKTOP!
+
+🎯 Consulte SEMPRE antes de fazer deploy!
+
+🛡️ Seguindo isso, você NUNCA vai quebrar produção!
+
+═══════════════════════════════════════════════════════════
