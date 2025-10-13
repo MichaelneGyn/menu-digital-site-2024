@@ -8,6 +8,7 @@ export async function GET(
 ) {
   try {
     const { itemId } = params;
+    console.log('🔍 [API] Fetching customizations for itemId:', itemId);
 
     const menuItem = await prisma.menuItem.findUnique({
       where: { id: itemId },
@@ -26,12 +27,17 @@ export async function GET(
     });
 
     if (!menuItem) {
+      console.log('❌ [API] Menu item not found:', itemId);
       return NextResponse.json({ error: 'Menu item not found' }, { status: 404 });
     }
 
+    console.log('✅ [API] Found menu item:', menuItem.name);
+    console.log('📦 [API] Customization groups:', menuItem.customizationGroups.length);
+    console.log('📋 [API] Groups:', menuItem.customizationGroups.map(g => ({ id: g.id, name: g.name, options: g.options.length })));
+
     return NextResponse.json(menuItem.customizationGroups);
   } catch (error) {
-    console.error('Error fetching menu item customizations:', error);
+    console.error('❌ [API] Error fetching menu item customizations:', error);
     return NextResponse.json(
       { error: 'Failed to fetch customizations' },
       { status: 500 }
