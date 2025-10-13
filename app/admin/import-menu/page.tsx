@@ -61,6 +61,10 @@ export default function ImportMenuPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  
+  // Estados temporários para inputs de customização
+  const [tempBorderInputs, setTempBorderInputs] = useState<Record<string, {name: string; price: string}>>({});
+  const [tempExtraInputs, setTempExtraInputs] = useState<Record<string, {name: string; price: string}>>({});
 
   // Carrega categorias ao montar
   useEffect(() => {
@@ -529,24 +533,41 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                         <div className="flex gap-2">
                                           <Input
                                             placeholder="Ex: Catupiry"
-                                            id={`border-name-${item.id}`}
+                                            value={tempBorderInputs[item.id]?.name || ''}
+                                            onChange={(e) => setTempBorderInputs({
+                                              ...tempBorderInputs,
+                                              [item.id]: { 
+                                                name: e.target.value, 
+                                                price: tempBorderInputs[item.id]?.price || '' 
+                                              }
+                                            })}
                                             className="flex-1"
                                           />
                                           <PriceInput
-                                            value=""
-                                            onChange={() => {}}
+                                            value={tempBorderInputs[item.id]?.price || ''}
+                                            onChange={(val) => setTempBorderInputs({
+                                              ...tempBorderInputs,
+                                              [item.id]: { 
+                                                name: tempBorderInputs[item.id]?.name || '', 
+                                                price: val 
+                                              }
+                                            })}
                                             placeholder="Preço"
                                           />
                                           <Button
                                             type="button"
                                             size="sm"
                                             onClick={() => {
-                                              const nameInput = document.getElementById(`border-name-${item.id}`) as HTMLInputElement;
-                                              const priceInput = document.getElementById(`border-price-${item.id}`) as HTMLInputElement;
-                                              if (nameInput?.value.trim()) {
-                                                updateItem(item.id, 'borders', [...item.borders, {name: nameInput.value, price: priceInput?.value || '0'}]);
-                                                nameInput.value = '';
-                                                if (priceInput) priceInput.value = '';
+                                              const temp = tempBorderInputs[item.id];
+                                              if (temp?.name.trim()) {
+                                                updateItem(item.id, 'borders', [...item.borders, {
+                                                  name: temp.name, 
+                                                  price: temp.price || '0'
+                                                }]);
+                                                setTempBorderInputs({
+                                                  ...tempBorderInputs,
+                                                  [item.id]: { name: '', price: '' }
+                                                });
                                               }
                                             }}
                                           >
@@ -589,24 +610,41 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                         <div className="flex gap-2">
                                           <Input
                                             placeholder="Ex: Bacon Extra"
-                                            id={`extra-name-${item.id}`}
+                                            value={tempExtraInputs[item.id]?.name || ''}
+                                            onChange={(e) => setTempExtraInputs({
+                                              ...tempExtraInputs,
+                                              [item.id]: { 
+                                                name: e.target.value, 
+                                                price: tempExtraInputs[item.id]?.price || '' 
+                                              }
+                                            })}
                                             className="flex-1"
                                           />
                                           <PriceInput
-                                            value=""
-                                            onChange={() => {}}
+                                            value={tempExtraInputs[item.id]?.price || ''}
+                                            onChange={(val) => setTempExtraInputs({
+                                              ...tempExtraInputs,
+                                              [item.id]: { 
+                                                name: tempExtraInputs[item.id]?.name || '', 
+                                                price: val 
+                                              }
+                                            })}
                                             placeholder="Preço"
                                           />
                                           <Button
                                             type="button"
                                             size="sm"
                                             onClick={() => {
-                                              const nameInput = document.getElementById(`extra-name-${item.id}`) as HTMLInputElement;
-                                              const priceInput = document.getElementById(`extra-price-${item.id}`) as HTMLInputElement;
-                                              if (nameInput?.value.trim()) {
-                                                updateItem(item.id, 'extras', [...item.extras, {name: nameInput.value, price: priceInput?.value || '0'}]);
-                                                nameInput.value = '';
-                                                if (priceInput) priceInput.value = '';
+                                              const temp = tempExtraInputs[item.id];
+                                              if (temp?.name.trim()) {
+                                                updateItem(item.id, 'extras', [...item.extras, {
+                                                  name: temp.name, 
+                                                  price: temp.price || '0'
+                                                }]);
+                                                setTempExtraInputs({
+                                                  ...tempExtraInputs,
+                                                  [item.id]: { name: '', price: '' }
+                                                });
                                               }
                                             }}
                                           >
