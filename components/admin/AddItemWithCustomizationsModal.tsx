@@ -202,6 +202,9 @@ export default function AddItemWithCustomizationsModal({
         
         console.log('🚀 [MODAL] Creating customization groups...');
         console.log('📋 [MODAL] Groups to create:', groups.length);
+        console.log('🏪 [MODAL] Restaurant ID:', restaurantId);
+        console.log('🏪 [MODAL] Restaurant ID type:', typeof restaurantId);
+        console.log('🏪 [MODAL] Restaurant ID length:', restaurantId?.length);
         
         for (const groupData of groups) {
           console.log('📦 [MODAL] Sending group:', groupData);
