@@ -1,3 +1,4 @@
+// Prisma Schema with Accelerate support
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["multiSchema"]
