@@ -100,17 +100,31 @@ export default function AddItemWithCustomizationsModal({
 
       // Upload image if selected
       if (selectedImage) {
-        const uploadData = new FormData();
-        uploadData.append('file', selectedImage);
+        try {
+          const uploadData = new FormData();
+          uploadData.append('file', selectedImage);
 
-        const uploadResponse = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadData
-        });
+          console.log('📸 Uploading image...', selectedImage.name, selectedImage.size, 'bytes');
 
-        if (uploadResponse.ok) {
-          const uploadResult = await uploadResponse.json();
-          imageUrl = uploadResult.image_url;
+          const uploadResponse = await fetch('/api/upload', {
+            method: 'POST',
+            body: uploadData
+          });
+
+          if (uploadResponse.ok) {
+            const uploadResult = await uploadResponse.json();
+            imageUrl = uploadResult.image_url;
+            console.log('✅ Image uploaded:', imageUrl);
+          } else {
+            const errorData = await uploadResponse.json();
+            console.error('❌ Upload failed:', errorData);
+            toast.error(`Erro no upload: ${errorData.error || 'Desconhecido'}`);
+            // Continue com imagem padrão ao invés de falhar
+          }
+        } catch (uploadError) {
+          console.error('❌ Upload exception:', uploadError);
+          toast.error('Erro ao fazer upload da imagem');
+          // Continue com imagem padrão
         }
       }
 
