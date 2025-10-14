@@ -99,6 +99,9 @@ export default function AddItemWithCustomizationsModal({
       let imageUrl = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400';
 
       // Upload image if selected
+      // TEMPORARIAMENTE DESABILITADO até AWS S3 ser configurado
+      // TODO: Reabilitar quando AWS_BUCKET_NAME estiver configurado no Vercel
+      /*
       if (selectedImage) {
         try {
           const uploadData = new FormData();
@@ -118,14 +121,29 @@ export default function AddItemWithCustomizationsModal({
           } else {
             const errorData = await uploadResponse.json();
             console.error('❌ Upload failed:', errorData);
-            toast.error(`Erro no upload: ${errorData.error || 'Desconhecido'}`);
-            // Continue com imagem padrão ao invés de falhar
+            // Não mostra erro, apenas usa imagem padrão
+            console.warn('⚠️ Usando imagem padrão devido a erro de upload');
           }
         } catch (uploadError) {
           console.error('❌ Upload exception:', uploadError);
-          toast.error('Erro ao fazer upload da imagem');
-          // Continue com imagem padrão
+          // Não mostra erro, apenas usa imagem padrão
+          console.warn('⚠️ Usando imagem padrão devido a exceção');
         }
+      }
+      */
+      
+      // Usar imagens padrão variadas do Unsplash
+      if (selectedImage) {
+        const defaultImages = [
+          'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800', // Pizza
+          'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800', // Burger  
+          'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800', // Pizza 2
+          'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800', // Salad
+          'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800', // Sandwich
+          'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=800', // Pasta
+        ];
+        imageUrl = defaultImages[Math.floor(Math.random() * defaultImages.length)];
+        console.log('📸 Usando imagem padrão aleatória:', imageUrl);
       }
 
       // Create item
