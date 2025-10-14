@@ -96,18 +96,25 @@ export default function AddItemWithCustomizationsModal({
     setIsLoading(true);
 
     try {
-      let imageUrl = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400';
+      // Imagens padrão variadas
+      const defaultImages = [
+        'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800', // Pizza
+        'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800', // Burger  
+        'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800', // Pizza 2
+        'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800', // Salad
+        'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800', // Sandwich
+        'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=800', // Pasta
+      ];
+      
+      let imageUrl = defaultImages[Math.floor(Math.random() * defaultImages.length)];
 
-      // Upload image if selected
-      // TEMPORARIAMENTE DESABILITADO até AWS S3 ser configurado
-      // TODO: Reabilitar quando AWS_BUCKET_NAME estiver configurado no Vercel
-      /*
+      // Tentar upload da imagem (falha silenciosamente se S3 não configurado)
       if (selectedImage) {
         try {
           const uploadData = new FormData();
           uploadData.append('file', selectedImage);
 
-          console.log('📸 Uploading image...', selectedImage.name, selectedImage.size, 'bytes');
+          console.log('📸 Tentando upload...', selectedImage.name);
 
           const uploadResponse = await fetch('/api/upload', {
             method: 'POST',
@@ -117,33 +124,15 @@ export default function AddItemWithCustomizationsModal({
           if (uploadResponse.ok) {
             const uploadResult = await uploadResponse.json();
             imageUrl = uploadResult.image_url;
-            console.log('✅ Image uploaded:', imageUrl);
+            console.log('✅ Upload bem-sucedido:', imageUrl);
           } else {
-            const errorData = await uploadResponse.json();
-            console.error('❌ Upload failed:', errorData);
-            // Não mostra erro, apenas usa imagem padrão
-            console.warn('⚠️ Usando imagem padrão devido a erro de upload');
+            // Falha no upload - usa imagem padrão SEM mostrar erro
+            console.warn('⚠️ Upload falhou, usando imagem padrão');
           }
         } catch (uploadError) {
-          console.error('❌ Upload exception:', uploadError);
-          // Não mostra erro, apenas usa imagem padrão
-          console.warn('⚠️ Usando imagem padrão devido a exceção');
+          // Exceção no upload - usa imagem padrão SEM mostrar erro
+          console.warn('⚠️ Erro no upload, usando imagem padrão');
         }
-      }
-      */
-      
-      // Usar imagens padrão variadas do Unsplash
-      if (selectedImage) {
-        const defaultImages = [
-          'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800', // Pizza
-          'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800', // Burger  
-          'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800', // Pizza 2
-          'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800', // Salad
-          'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800', // Sandwich
-          'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=800', // Pasta
-        ];
-        imageUrl = defaultImages[Math.floor(Math.random() * defaultImages.length)];
-        console.log('📸 Usando imagem padrão aleatória:', imageUrl);
       }
 
       // Create item
