@@ -27,6 +27,17 @@ export async function uploadFileToSupabase(buffer: Buffer, fileName: string): Pr
   const supabase = getSupabaseClient();
   const bucketName = 'menu-images'; // Nome do bucket criado no Supabase
 
+  // DEBUG: Listar buckets disponíveis
+  try {
+    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+    console.log('📦 [Supabase] Buckets disponíveis:', buckets?.map(b => b.name));
+    if (listError) {
+      console.error('❌ [Supabase] Erro ao listar buckets:', listError);
+    }
+  } catch (e) {
+    console.error('❌ [Supabase] Exceção ao listar buckets:', e);
+  }
+
   // Gerar nome único para evitar conflitos
   const timestamp = Date.now();
   const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -34,6 +45,7 @@ export async function uploadFileToSupabase(buffer: Buffer, fileName: string): Pr
   const filePath = `uploads/${uniqueFileName}`;
 
   console.log('📸 [Supabase] Uploading file:', filePath);
+  console.log('📸 [Supabase] Bucket name:', bucketName);
 
   // Upload do arquivo
   const { data, error } = await supabase.storage
