@@ -108,7 +108,7 @@ export default function AddItemWithCustomizationsModal({
       
       let imageUrl = defaultImages[Math.floor(Math.random() * defaultImages.length)];
 
-      // Tentar upload da imagem (falha silenciosamente se S3 não configurado)
+      // Tentar upload da imagem (falha silenciosamente)
       if (selectedImage) {
         try {
           const uploadData = new FormData();
@@ -123,15 +123,17 @@ export default function AddItemWithCustomizationsModal({
 
           if (uploadResponse.ok) {
             const uploadResult = await uploadResponse.json();
-            imageUrl = uploadResult.image_url;
-            console.log('✅ Upload bem-sucedido:', imageUrl);
+            if (uploadResult.image_url) {
+              imageUrl = uploadResult.image_url;
+              console.log('✅ Upload bem-sucedido:', imageUrl);
+            }
           } else {
-            // Falha no upload - usa imagem padrão SEM mostrar erro
-            console.warn('⚠️ Upload falhou, usando imagem padrão');
+            // Falha no upload - continua com imagem padrão
+            console.warn('⚠️ Upload falhou (status:', uploadResponse.status, '), usando imagem padrão');
           }
         } catch (uploadError) {
-          // Exceção no upload - usa imagem padrão SEM mostrar erro
-          console.warn('⚠️ Erro no upload, usando imagem padrão');
+          // Exceção no upload - continua com imagem padrão
+          console.warn('⚠️ Erro no upload, usando imagem padrão:', uploadError);
         }
       }
 
