@@ -75,24 +75,7 @@ export async function POST(request: NextRequest) {
     let imageUrl: string | undefined;
     let cloud_storage_path: string | undefined;
 
-    // PRIORIDADE 1: ImgBB (100% grátis e FUNCIONA!)
-    try {
-      const { uploadBufferToImgBB } = await import('@/lib/uploadthing');
-      console.log('📸 [Upload] Usando ImgBB...');
-      imageUrl = await uploadBufferToImgBB(buffer, file.name);
-      console.log('✅ [Upload] ImgBB upload bem-sucedido:', imageUrl);
-      
-      return NextResponse.json({ 
-        success: true, 
-        image_url: imageUrl,
-        message: 'Imagem enviada com sucesso!' 
-      });
-    } catch (imgbbError: any) {
-      console.error('❌ [Upload] ImgBB falhou:', imgbbError.message);
-      // Continua para próximas opções
-    }
-
-    // PRIORIDADE 2: Supabase Storage (se ImgBB falhar)
+    // PRIORIDADE 1: Supabase Storage (agora funcionando após recriar bucket!)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const useSupabase = supabaseUrl && supabaseKey;
