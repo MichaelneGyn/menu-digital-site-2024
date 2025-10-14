@@ -75,30 +75,7 @@ export async function POST(request: NextRequest) {
     let imageUrl: string | undefined;
     let cloud_storage_path: string | undefined;
 
-    // PRIORIDADE 1: Cloudinary (melhor para imagens - 25 GB grátis + otimização)
-    const cloudinaryName = process.env.CLOUDINARY_CLOUD_NAME;
-    const cloudinaryKey = process.env.CLOUDINARY_API_KEY;
-    const cloudinarySecret = process.env.CLOUDINARY_API_SECRET;
-    const useCloudinary = cloudinaryName && cloudinaryKey && cloudinarySecret;
-
-    if (useCloudinary) {
-      console.log('📸 [Upload] Usando Cloudinary...');
-      try {
-        imageUrl = await uploadFileToCloudinary(buffer, file.name);
-        console.log('✅ [Upload] Cloudinary upload bem-sucedido:', imageUrl);
-        
-        return NextResponse.json({ 
-          success: true, 
-          image_url: imageUrl,
-          message: 'Imagem enviada com sucesso via Cloudinary!' 
-        });
-      } catch (cloudinaryError: any) {
-        console.error('❌ [Upload] Cloudinary falhou:', cloudinaryError);
-        // Continua para próximas opções
-      }
-    }
-
-    // PRIORIDADE 2: Supabase Storage (bom backup)
+    // PRIORIDADE 1: Supabase Storage (mais confiável - você já tem!)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const useSupabase = supabaseUrl && supabaseKey;
@@ -115,14 +92,37 @@ export async function POST(request: NextRequest) {
           message: 'Imagem enviada com sucesso via Supabase!' 
         });
       } catch (supabaseError: any) {
-        console.error('❌ [Upload] Supabase falhou:', supabaseError);
+        console.error('❌ [Upload] Supabase falhou:', supabaseError.message);
+        // Continua para próximas opções
+      }
+    }
+
+    // PRIORIDADE 2: Cloudinary (se Supabase falhar)
+    const cloudinaryName = process.env.CLOUDINARY_CLOUD_NAME;
+    const cloudinaryKey = process.env.CLOUDINARY_API_KEY;
+    const cloudinarySecret = process.env.CLOUDINARY_API_SECRET;
+    const useCloudinary = cloudinaryName && cloudinaryKey && cloudinarySecret;
+
+    if (useCloudinary) {
+      console.log('📸 [Upload] Tentando Cloudinary...');
+      try {
+        imageUrl = await uploadFileToCloudinary(buffer, file.name);
+        console.log('✅ [Upload] Cloudinary upload bem-sucedido:', imageUrl);
+        
+        return NextResponse.json({ 
+          success: true, 
+          image_url: imageUrl,
+          message: 'Imagem enviada com sucesso via Cloudinary!' 
+        });
+      } catch (cloudinaryError: any) {
+        console.error('❌ [Upload] Cloudinary falhou:', cloudinaryError.message);
         // Continua para próximas opções
       }
     }
 
     // PRIORIDADE 3: AWS S3 (se configurado)
     const awsBucket = process.env.AWS_BUCKET_NAME;
-    const shouldUseLocal = isDev && !awsBucket && !useSupabase;
+    const shouldUseLocal = isDev && !awsBucket && !useSupabase && !useCloudinary;
 
     if (shouldUseLocal) {
       // Grava localmente sem tentar S3
