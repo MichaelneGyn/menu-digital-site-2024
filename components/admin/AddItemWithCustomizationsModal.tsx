@@ -78,16 +78,24 @@ export default function AddItemWithCustomizationsModal({
   };
 
   const addBorder = () => {
-    if (newBorder.name.trim()) {
+    if (newBorder.name.trim() && newBorder.price && parseFloat(newBorder.price) > 0) {
       setBorders([...borders, newBorder]);
       setNewBorder({name: '', price: ''});
+    } else if (newBorder.name.trim() && (!newBorder.price || parseFloat(newBorder.price) === 0)) {
+      toast.error('Por favor, digite o preço da borda');
+    } else if (!newBorder.name.trim()) {
+      toast.error('Por favor, digite o nome da borda');
     }
   };
 
   const addExtra = () => {
-    if (newExtra.name.trim()) {
+    if (newExtra.name.trim() && newExtra.price && parseFloat(newExtra.price) > 0) {
       setExtras([...extras, newExtra]);
       setNewExtra({name: '', price: ''});
+    } else if (newExtra.name.trim() && (!newExtra.price || parseFloat(newExtra.price) === 0)) {
+      toast.error('Por favor, digite o preço do extra');
+    } else if (!newExtra.name.trim()) {
+      toast.error('Por favor, digite o nome do extra');
     }
   };
 
@@ -459,7 +467,7 @@ export default function AddItemWithCustomizationsModal({
                           <PriceInput
                             value={newBorder.price}
                             onChange={(val) => setNewBorder({...newBorder, price: val})}
-                            placeholder="Preço"
+                            placeholder="Ex: 1000 = R$ 10,00"
                           />
                           <Button type="button" onClick={addBorder} size="sm">
                             <Plus size={16} />
@@ -510,7 +518,7 @@ export default function AddItemWithCustomizationsModal({
                           <PriceInput
                             value={newExtra.price}
                             onChange={(val) => setNewExtra({...newExtra, price: val})}
-                            placeholder="Preço"
+                            placeholder="Ex: 200 = R$ 2,00"
                           />
                           <Button type="button" onClick={addExtra} size="sm">
                             <Plus size={16} />
