@@ -1152,8 +1152,10 @@
 
 @media (max-width: 768px) {
   .add-to-cart-button {
-    padding: 1rem 1.25rem;
-    font-size: 1rem;
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+    gap: 0.5rem;
+    min-height: 54px;
   }
 }
 
@@ -1167,6 +1169,19 @@
   background-color: rgba(0, 0, 0, 0.15);
   padding: 4px 12px;
   border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .total-price {
+    font-size: 1.05rem;
+    padding: 3px 10px;
+  }
+  
+  .add-to-cart-button {
+    font-size: 0.9rem;
+  }
 }
 
 /* Cart Modal */

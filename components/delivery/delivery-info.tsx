@@ -23,15 +23,15 @@ export default function DeliveryInfo({
       {/* Card Principal - Estilo iFood/Uber Eats */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="p-4">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-4 flex-wrap md:flex-nowrap">
             {/* Tempo de Entrega */}
-            <div className="flex items-center gap-3 flex-1">
+            <div className="flex items-center gap-3 flex-1 min-w-[120px]">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Clock className="w-5 h-5 text-blue-600" />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <div className="text-xs text-gray-500 mb-0.5">Entrega</div>
-                <div className="text-base font-semibold text-gray-900">{deliveryTime}</div>
+                <div className="text-base font-semibold text-gray-900 truncate">{deliveryTime}</div>
               </div>
             </div>
 
@@ -39,13 +39,13 @@ export default function DeliveryInfo({
             <div className="h-10 w-px bg-gray-200"></div>
 
             {/* Taxa de Entrega */}
-            <div className="flex items-center gap-3 flex-1">
+            <div className="flex items-center gap-3 flex-1 min-w-[100px]">
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Truck className="w-5 h-5 text-orange-600" />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <div className="text-xs text-gray-500 mb-0.5">Taxa</div>
-                <div className="text-base font-semibold text-gray-900">
+                <div className="text-base font-semibold text-gray-900 truncate">
                   {deliveryFee === 0 ? (
                     <span className="text-green-600">Grátis</span>
                   ) : (
@@ -58,14 +58,14 @@ export default function DeliveryInfo({
             {/* Pedido Mínimo */}
             {minOrderValue > 0 && (
               <>
-                <div className="h-10 w-px bg-gray-200"></div>
-                <div className="flex items-center gap-3 flex-1">
+                <div className="h-10 w-px bg-gray-200 hidden md:block"></div>
+                <div className="flex items-center gap-3 flex-1 min-w-[100px]">
                   <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     <DollarSign className="w-5 h-5 text-green-600" />
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <div className="text-xs text-gray-500 mb-0.5">Mínimo</div>
-                    <div className="text-base font-semibold text-gray-900">R$ {minOrderValue.toFixed(2)}</div>
+                    <div className="text-base font-semibold text-gray-900 truncate">R$ {minOrderValue.toFixed(2)}</div>
                   </div>
                 </div>
               </>
@@ -76,9 +76,9 @@ export default function DeliveryInfo({
         {/* Endereço - Integrado */}
         {address && (
           <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-red-600 flex-shrink-0" />
-              <span className="text-sm text-gray-700">{address}</span>
+            <div className="flex items-start gap-2">
+              <MapPin className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+              <span className="text-sm text-gray-700 flex-1 break-words leading-relaxed">{address}</span>
             </div>
           </div>
         )}
