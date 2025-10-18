@@ -77,7 +77,16 @@ export async function POST(request: NextRequest) {
 
     // PRIORIDADE 1: Supabase Storage (agora funcionando após recriar bucket!)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    // 🔒 SEGURANÇA: Usar APENAS SERVICE_ROLE_KEY, nunca ANON_KEY para uploads
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (!supabaseKey) {
+      console.error('❌ [SECURITY] SUPABASE_SERVICE_ROLE_KEY não configurada!');
+      return NextResponse.json(
+        { error: 'Configuração de storage incorreta. Contate o administrador.' },
+        { status: 500 }
+      );
+    }
     const useSupabase = supabaseUrl && supabaseKey;
 
     if (useSupabase) {
