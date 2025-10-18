@@ -58,7 +58,7 @@ export async function GET(
     const formattedOrder = {
       id: order.id,
       order_number: order.code,
-      status: order.status,
+      status: order.status.toLowerCase(), // Normalizar para minúsculas
       customer_name: order.customerName || 'Cliente',
       customer_phone: order.customerPhone || '',
       delivery_address: order.deliveryAddress || order.customerAddress || 'Não informado',

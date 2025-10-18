@@ -54,6 +54,7 @@ export default function TrackOrderPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Supabase client
   const supabase = createClient(
@@ -67,34 +68,26 @@ export default function TrackOrderPage() {
     // Buscar pedido inicial
     fetchOrder();
 
-    // Subscrever para atualizações em tempo real
-    const subscription = supabase
-      .channel(`order-${orderId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'orders',
-          filter: `id=eq.${orderId}`
-        },
-        (payload) => {
-          console.log('🔔 Order updated in real-time:', payload);
-          if (payload.new) {
-            fetchOrder(); // Recarregar dados completos
-          }
-        }
-      )
-      .subscribe();
+    // Polling: Atualizar automaticamente a cada 5 segundos
+    // (funciona com qualquer banco de dados - GRÁTIS!)
+    const pollInterval = setInterval(() => {
+      fetchOrder(true); // true = auto-refresh silencioso
+      console.log('🔄 Atualizando status do pedido...');
+    }, 5000); // 5 segundos
 
     return () => {
-      subscription.unsubscribe();
+      clearInterval(pollInterval);
     };
   }, [orderId]);
 
-  const fetchOrder = async () => {
+  const fetchOrder = async (isAutoRefresh = false) => {
     try {
-      setLoading(true);
+      if (isAutoRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      
       const response = await fetch(`/api/orders/${orderId}`);
       
       if (!response.ok) {
@@ -108,10 +101,14 @@ export default function TrackOrderPage() {
       setError(err.message);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
   const getStatusConfig = (status: OrderStatus) => {
+    // Normalizar status para minúsculas (banco pode salvar em MAIÚSCULAS)
+    const normalizedStatus = status?.toLowerCase().trim() as OrderStatus;
+    
     const configs = {
       pending: {
         label: 'Aguardando Confirmação',
@@ -157,7 +154,7 @@ export default function TrackOrderPage() {
       }
     };
 
-    return configs[status] || configs.pending;
+    return configs[normalizedStatus] || configs.pending;
   };
 
   const getPaymentMethodLabel = (method: string) => {
@@ -211,8 +208,18 @@ export default function TrackOrderPage() {
         {/* Header */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl">Pedido #{order.order_number}</CardTitle>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-3">
+                <CardTitle className="text-xl">Pedido #{order.order_number}</CardTitle>
+                {/* Indicador AO VIVO */}
+                <div className="flex items-center gap-2 px-3 py-1 bg-red-50 border border-red-200 rounded-full">
+                  <div className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </div>
+                  <span className="text-xs font-semibold text-red-600">AO VIVO</span>
+                </div>
+              </div>
               <Badge className={`${statusConfig.color} border`}>
                 <StatusIcon className="w-4 h-4 mr-1" />
                 {statusConfig.label}
@@ -339,9 +346,20 @@ export default function TrackOrderPage() {
         </div>
 
         {/* Auto-refresh indicator */}
-        <p className="text-center text-sm text-gray-500">
-          ✨ Esta página atualiza automaticamente em tempo real
-        </p>
+        <div className="text-center space-y-2 py-4">
+          <div className="flex items-center justify-center gap-2">
+            <div className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </div>
+            <p className="text-sm font-medium text-gray-700">
+              Atualizando automaticamente a cada 5 segundos
+            </p>
+          </div>
+          <p className="text-xs text-gray-500">
+            ✨ Sem precisar recarregar a página - igual ao iFood!
+          </p>
+        </div>
       </div>
     </div>
   );
