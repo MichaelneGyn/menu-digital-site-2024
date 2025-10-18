@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, MapPin, CreditCard, MessageCircle, Check } from 'lucide-react';
+import { ShoppingCart, MapPin, CreditCard, MessageCircle, Check, CheckCircle2, Package } from 'lucide-react';
 import AddressForm from './address-form';
 import PaymentOptions, { PaymentMethod } from './payment-options';
 import DeliveryInfo from './delivery-info';
@@ -48,7 +48,7 @@ interface CheckoutFlowProps {
   onClose: () => void;
 }
 
-type CheckoutStep = 'cart' | 'address' | 'payment' | 'confirmation';
+type CheckoutStep = 'cart' | 'address' | 'payment' | 'confirmation' | 'success';
 
 export default function CheckoutFlow({ 
   items, 
@@ -63,6 +63,8 @@ export default function CheckoutFlow({
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{code: string; discount: number; type: 'percent' | 'fixed'} | null>(null);
   const [couponError, setCouponError] = useState('');
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+  const [createdOrderCode, setCreatedOrderCode] = useState<string | null>(null);
 
   // Configurações de entrega (podem vir de uma API)
   const deliveryConfig = {
@@ -239,26 +241,21 @@ export default function CheckoutFlow({
       const order = await orderResponse.json();
       console.log('✅ Pedido criado com sucesso:', order);
 
-      // Gerar mensagem para WhatsApp
-      const message = generateOrderSummary();
-      const encodedMessage = encodeURIComponent(message);
-      const phone = restaurant.whatsapp || '5562999999999';
-      const whatsappUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodedMessage}`;
+      // Salvar ID e código do pedido para mostrar tela de sucesso
+      setCreatedOrderId(order.id);
+      setCreatedOrderCode(order.code);
 
-      toast.success('✅ Pedido ' + order.code + ' criado com sucesso!', {
-        duration: 3000,
+      toast.success('✅ Pedido criado com sucesso!', {
+        duration: 2000,
         style: {
           background: '#10B981',
           color: 'white',
           fontWeight: 'bold',
         },
       });
-      
-      // Redirecionar para WhatsApp após um breve delay
-      setTimeout(() => {
-        window.open(whatsappUrl, '_blank');
-        onClose(); // Fechar modal após redirecionar
-      }, 1500);
+
+      // Mudar para step 'success' (vamos adicionar)
+      setCurrentStep('success' as CheckoutStep);
 
     } catch (error: any) {
       console.error('❌ Erro ao processar pedido:', error);
@@ -592,6 +589,116 @@ export default function CheckoutFlow({
               </Button>
             </div>
           </div>
+        </Card>
+      )}
+
+      {/* Success Screen */}
+      {currentStep === 'success' && createdOrderId && createdOrderCode && (
+        <Card className="w-full max-w-2xl mx-auto">
+          <CardContent className="p-8 text-center space-y-6">
+            {/* Success Icon */}
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-12 h-12 text-green-600" />
+            </div>
+
+            {/* Success Message */}
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Pedido Realizado com Sucesso!
+              </h2>
+              <p className="text-lg text-gray-600">
+                Pedido <span className="font-bold text-green-600">#{createdOrderCode}</span>
+              </p>
+            </div>
+
+            {/* Tracking Link */}
+            <div className="p-6 bg-blue-50 border-2 border-blue-200 rounded-xl space-y-4">
+              <div className="flex items-center justify-center gap-2">
+                <Package className="w-5 h-5 text-blue-600" />
+                <h3 className="font-semibold text-blue-900">Acompanhe seu Pedido em Tempo Real</h3>
+              </div>
+              
+              <p className="text-sm text-blue-700">
+                Clique no botão abaixo para acompanhar o status do seu pedido em tempo real
+              </p>
+
+              <Button
+                onClick={() => window.open(`/pedido/${createdOrderId}`, '_blank')}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-base font-semibold"
+              >
+                <Package className="w-5 h-5 mr-2" />
+                🔴 Acompanhar Pedido ao Vivo
+              </Button>
+
+              <p className="text-xs text-blue-600">
+                ✨ Atualizações em tempo real - sem precisar recarregar!
+              </p>
+            </div>
+
+            {/* WhatsApp Section */}
+            <div className="p-6 bg-green-50 border-2 border-green-200 rounded-xl space-y-4">
+              <div className="flex items-center justify-center gap-2">
+                <MessageCircle className="w-5 h-5 text-green-600" />
+                <h3 className="font-semibold text-green-900">Confirme no WhatsApp</h3>
+              </div>
+              
+              <p className="text-sm text-green-700">
+                Envie os detalhes do pedido para o restaurante via WhatsApp
+              </p>
+
+              <Button
+                onClick={() => {
+                  const message = generateOrderSummary() + `\n\n📱 *Acompanhar pedido:*\n${window.location.origin}/pedido/${createdOrderId}`;
+                  const encodedMessage = encodeURIComponent(message);
+                  const phone = restaurant.whatsapp || '5562999999999';
+                  window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${encodedMessage}`, '_blank');
+                }}
+                className="w-full bg-green-600 hover:bg-green-700 text-white h-12 text-base font-semibold"
+              >
+                <MessageCircle className="w-5 h-5 mr-2" />
+                Enviar para WhatsApp
+              </Button>
+            </div>
+
+            {/* Summary */}
+            <div className="pt-4 border-t space-y-3 text-left">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Subtotal:</span>
+                <span className="font-medium">R$ {subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Taxa de entrega:</span>
+                <span className="font-medium">R$ {deliveryConfig.deliveryFee.toFixed(2)}</span>
+              </div>
+              {appliedCoupon && (
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>Desconto ({appliedCoupon.code}):</span>
+                  <span>- R$ {discount.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                <span>Total Pago:</span>
+                <span className="text-green-600">R$ {total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                onClick={onClose}
+                variant="outline"
+                className="flex-1 h-12"
+              >
+                Voltar ao Cardápio
+              </Button>
+              <Button
+                onClick={() => window.open(`/pedido/${createdOrderId}`, '_blank')}
+                className="flex-1 h-12 bg-red-600 hover:bg-red-700"
+              >
+                Ver Status
+              </Button>
+            </div>
+          </CardContent>
         </Card>
       )}
     </div>
