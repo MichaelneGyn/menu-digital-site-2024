@@ -54,14 +54,30 @@ export async function GET(
     const deliveryFee = 4.00; // Valor fixo ou buscar das configurações do restaurante
     const total = parseFloat(order.total.toString());
 
-    // Formatar resposta
+    // 🔒 SEGURANÇA: Mascarar dados sensíveis (LGPD)
+    const maskPhone = (phone: string) => {
+      if (!phone || phone.length < 4) return '***';
+      return phone.slice(0, 2) + '***' + phone.slice(-2);
+    };
+
+    const maskAddress = (address: string) => {
+      if (!address || address.length < 10) return 'Endereço cadastrado';
+      // Mostrar apenas bairro/cidade, ocultar número
+      const parts = address.split(',');
+      if (parts.length > 2) {
+        return parts.slice(2).join(',').trim();
+      }
+      return 'Endereço cadastrado';
+    };
+
+    // Formatar resposta (dados sensíveis mascarados)
     const formattedOrder = {
       id: order.id,
       order_number: order.code,
       status: order.status.toLowerCase(), // Normalizar para minúsculas
-      customer_name: order.customerName || 'Cliente',
-      customer_phone: order.customerPhone || '',
-      delivery_address: order.deliveryAddress || order.customerAddress || 'Não informado',
+      customer_name: order.customerName ? order.customerName.split(' ')[0] : 'Cliente', // Apenas primeiro nome
+      customer_phone: maskPhone(order.customerPhone || ''), // 🔒 Telefone mascarado
+      delivery_address: maskAddress(order.deliveryAddress || order.customerAddress || ''), // 🔒 Endereço parcial
       items: orderData.orderItems.map((item: any) => ({
         id: item.id,
         name: item.menuItem.name,
@@ -91,13 +107,30 @@ export async function GET(
 
 /**
  * PATCH /api/orders/[id]
- * Atualiza status do pedido (admin)
+ * Atualiza status do pedido (ADMIN APENAS)
+ * 🔒 PROTEGIDO: Requer autenticação
  */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // 🔒 SEGURANÇA: Verificar autenticação
+    const authHeader = request.headers.get('authorization');
+    const apiKey = request.headers.get('x-api-key');
+    
+    // Validar API key ou session (você deve configurar isso)
+    // Por enquanto, vamos exigir uma chave secreta
+    const SECRET_API_KEY = process.env.ADMIN_API_KEY || 'your-secret-key-change-this';
+    
+    if (!apiKey || apiKey !== SECRET_API_KEY) {
+      console.warn('🚨 [SECURITY] Unauthorized PATCH attempt to order:', params.id);
+      return NextResponse.json(
+        { error: 'Não autorizado. Esta ação requer autenticação de administrador.' },
+        { status: 401 }
+      );
+    }
+
     const orderId = params.id;
     const body = await request.json();
     const { status } = body;
@@ -127,7 +160,7 @@ export async function PATCH(
       'cancelled'
     ];
 
-    if (!validStatuses.includes(status)) {
+    if (!validStatuses.includes(status.toLowerCase())) {
       return NextResponse.json(
         { error: 'Status inválido' },
         { status: 400 }
@@ -138,12 +171,12 @@ export async function PATCH(
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
       data: {
-        status,
+        status: status.toUpperCase(),
         updatedAt: new Date()
       }
     });
 
-    console.log(`✅ [API] Order ${orderId} status updated to: ${status}`);
+    console.log(`✅ [API] Order ${orderId} status updated to: ${status} (authenticated)`);
 
     return NextResponse.json({
       success: true,
@@ -153,7 +186,7 @@ export async function PATCH(
   } catch (error: any) {
     console.error('❌ [API] Error updating order:', error);
     return NextResponse.json(
-      { error: 'Erro ao atualizar pedido', details: error.message },
+      { error: 'Erro ao atualizar pedido' },
       { status: 500 }
     );
   }
