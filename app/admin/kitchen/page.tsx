@@ -17,6 +17,7 @@ import {
   RefreshCw,
   Bell
 } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 
 type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'DELIVERED' | 'CANCELLED';
 
@@ -94,6 +95,15 @@ export default function KitchenDisplayPage() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<OrderStatus | 'ALL'>('ALL');
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [isRealtime, setIsRealtime] = useState(false);
+
+  // 🔥 Inicializar Supabase Realtime
+  const supabase = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      )
+    : null;
 
   // Busca pedidos
   const fetchOrders = async () => {
@@ -110,15 +120,108 @@ export default function KitchenDisplayPage() {
     }
   };
 
-  // Auto-refresh a cada 30 segundos
+  // 🔔 Notificação sonora para novos pedidos
+  const playNotificationSound = () => {
+    try {
+      const audio = new Audio('/notification.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(() => {
+        // Fallback: beep do sistema
+        if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+          navigator.vibrate([200, 100, 200]);
+        }
+      });
+    } catch (error) {
+      console.log('Som não disponível');
+    }
+  };
+
+  // 🔥 TEMPO REAL: Supabase Realtime (Atualização INSTANTÂNEA!)
+  useEffect(() => {
+    if (!supabase) return;
+
+    // Inscrever em mudanças na tabela Order
+    const channel = supabase
+      .channel('kitchen-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'Order'
+        },
+        (payload) => {
+          console.log('🔥 Mudança detectada:', payload);
+          
+          // Atualiza lista imediatamente
+          fetchOrders();
+          
+          // Se for INSERT (novo pedido), toca som!
+          if (payload.eventType === 'INSERT') {
+            playNotificationSound();
+            
+            // Badge piscando
+            let count = 0;
+            const blink = setInterval(() => {
+              document.title = count % 2 === 0 
+                ? '🔴 NOVO PEDIDO!' 
+                : 'Painel de Comandos';
+              count++;
+              if (count > 10) {
+                clearInterval(blink);
+                document.title = 'Painel de Comandos';
+              }
+            }, 500);
+          }
+          
+          setIsRealtime(true);
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Realtime ativo! Atualizações instantâneas.');
+          setIsRealtime(true);
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+      setIsRealtime(false);
+    };
+  }, [supabase]);
+
+  // 🔄 Auto-refresh RÁPIDO a cada 10 segundos (Fallback se Realtime falhar)
   useEffect(() => {
     fetchOrders();
     
     if (autoRefresh) {
-      const interval = setInterval(fetchOrders, 30000);
+      const interval = setInterval(async () => {
+        const oldOrdersCount = orders.length;
+        await fetchOrders();
+        
+        // 🔔 Se tem pedido novo E não está em realtime, toca som!
+        const newOrdersCount = orders.length;
+        if (!isRealtime && newOrdersCount > oldOrdersCount) {
+          playNotificationSound();
+          
+          // Badge piscando na aba
+          let count = 0;
+          const blink = setInterval(() => {
+            document.title = count % 2 === 0 
+              ? '🔴 NOVO PEDIDO!' 
+              : 'Painel de Comandos';
+            count++;
+            if (count > 10) {
+              clearInterval(blink);
+              document.title = 'Painel de Comandos';
+            }
+          }, 500);
+        }
+      }, 10000); // 10 segundos (3x mais rápido que antes!)
+      
       return () => clearInterval(interval);
     }
-  }, [autoRefresh]);
+  }, [autoRefresh, orders.length, isRealtime]);
 
   // Atualiza status do pedido
   const updateOrderStatus = async (orderId: string, newStatus: OrderStatus, estimatedTime?: number) => {
@@ -212,9 +315,17 @@ export default function KitchenDisplayPage() {
               <h1 className="text-2xl font-bold flex items-center gap-2">
                 <ChefHat className="w-6 h-6" />
                 Painel de Comandos
+                {isRealtime && (
+                  <span className="flex items-center gap-1 text-xs font-normal bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    Tempo Real
+                  </span>
+                )}
               </h1>
               <p className="text-sm text-gray-600">
-                Gerencie pedidos em tempo real
+                {isRealtime 
+                  ? '🔥 Atualizações instantâneas ativas!' 
+                  : 'Atualiza a cada 10 segundos'}
               </p>
             </div>
           </div>
@@ -233,8 +344,10 @@ export default function KitchenDisplayPage() {
               variant="outline"
               size="sm"
               onClick={fetchOrders}
+              disabled={isRealtime}
+              title={isRealtime ? 'Realtime ativo - atualização automática' : 'Atualizar manualmente'}
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRealtime ? 'animate-pulse' : ''}`} />
               Atualizar
             </Button>
           </div>
