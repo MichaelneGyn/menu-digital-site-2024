@@ -28,7 +28,7 @@ let failedTests = 0;
 
 // 🔧 Configuração (EDITE AQUI!)
 const config = {
-  siteUrl: 'https://menu-digital-site-2024-8773d37d6064-git-main-michaeldouglasqueiroz.vercel.app',
+  siteUrl: 'https://menu-digital-site-2024-8773d37d6064.vercel.app',
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || 'SEU_SUPABASE_URL',
   anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'SUA_ANON_KEY'
 };
