@@ -87,42 +87,72 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
       <CardContent className="space-y-6">
         <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}>
           {/* PIX */}
-          <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50">
-            <RadioGroupItem value="pix" id="pix" />
+          <div className={`flex items-center space-x-2 p-4 border-2 rounded-lg transition-all cursor-pointer ${
+            paymentMethod === 'pix' 
+              ? 'border-green-500 bg-green-50 shadow-md' 
+              : 'border-gray-200 hover:bg-gray-50'
+          }`}>
+            <RadioGroupItem value="pix" id="pix" className="border-2" />
             <Label htmlFor="pix" className="flex items-center gap-3 cursor-pointer flex-1">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <QrCode className="w-5 h-5 text-green-600" />
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                paymentMethod === 'pix' ? 'bg-green-500' : 'bg-green-100'
+              }`}>
+                <QrCode className={`w-5 h-5 ${
+                  paymentMethod === 'pix' ? 'text-white' : 'text-green-600'
+                }`} />
               </div>
               <div>
-                <div className="font-medium">PIX</div>
+                <div className={`font-medium ${
+                  paymentMethod === 'pix' ? 'text-green-700' : 'text-gray-900'
+                }`}>PIX</div>
                 <div className="text-sm text-gray-500">Pagamento instantâneo</div>
               </div>
             </Label>
           </div>
 
           {/* Cartão na Entrega */}
-          <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50">
-            <RadioGroupItem value="card_on_delivery" id="card_on_delivery" />
+          <div className={`flex items-center space-x-2 p-4 border-2 rounded-lg transition-all cursor-pointer ${
+            paymentMethod === 'card_on_delivery' 
+              ? 'border-blue-500 bg-blue-50 shadow-md' 
+              : 'border-gray-200 hover:bg-gray-50'
+          }`}>
+            <RadioGroupItem value="card_on_delivery" id="card_on_delivery" className="border-2" />
             <Label htmlFor="card_on_delivery" className="flex items-center gap-3 cursor-pointer flex-1">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <CreditCard className="w-5 h-5 text-blue-600" />
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                paymentMethod === 'card_on_delivery' ? 'bg-blue-500' : 'bg-blue-100'
+              }`}>
+                <CreditCard className={`w-5 h-5 ${
+                  paymentMethod === 'card_on_delivery' ? 'text-white' : 'text-blue-600'
+                }`} />
               </div>
               <div>
-                <div className="font-medium">Cartão na Entrega</div>
+                <div className={`font-medium ${
+                  paymentMethod === 'card_on_delivery' ? 'text-blue-700' : 'text-gray-900'
+                }`}>Cartão na Entrega</div>
                 <div className="text-sm text-gray-500">Crédito ou Débito na entrega</div>
               </div>
             </Label>
           </div>
 
           {/* Dinheiro na Entrega */}
-          <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50">
-            <RadioGroupItem value="cash_on_delivery" id="cash_on_delivery" />
+          <div className={`flex items-center space-x-2 p-4 border-2 rounded-lg transition-all cursor-pointer ${
+            paymentMethod === 'cash_on_delivery' 
+              ? 'border-yellow-500 bg-yellow-50 shadow-md' 
+              : 'border-gray-200 hover:bg-gray-50'
+          }`}>
+            <RadioGroupItem value="cash_on_delivery" id="cash_on_delivery" className="border-2" />
             <Label htmlFor="cash_on_delivery" className="flex items-center gap-3 cursor-pointer flex-1">
-              <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                <Banknote className="w-5 h-5 text-yellow-600" />
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                paymentMethod === 'cash_on_delivery' ? 'bg-yellow-500' : 'bg-yellow-100'
+              }`}>
+                <Banknote className={`w-5 h-5 ${
+                  paymentMethod === 'cash_on_delivery' ? 'text-white' : 'text-yellow-600'
+                }`} />
               </div>
               <div>
-                <div className="font-medium">Dinheiro na Entrega</div>
+                <div className={`font-medium ${
+                  paymentMethod === 'cash_on_delivery' ? 'text-yellow-700' : 'text-gray-900'
+                }`}>Dinheiro na Entrega</div>
                 <div className="text-sm text-gray-500">Pagamento na hora da entrega</div>
               </div>
             </Label>
