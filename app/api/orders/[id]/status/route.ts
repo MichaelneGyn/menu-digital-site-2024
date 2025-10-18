@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import prisma from '@/lib/prisma';
 
 const STATUS_MESSAGES = {
   PENDING: 'Pedido recebido e aguardando confirmação',
@@ -26,7 +26,7 @@ const STATUS_EMOJIS = {
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -38,7 +38,7 @@ export async function PATCH(
       );
     }
 
-    const { orderId } = params;
+    const { id } = params;
     const body = await req.json();
     const { status, estimatedTime } = body;
 
@@ -51,7 +51,7 @@ export async function PATCH(
 
     // Busca o pedido
     const order = await prisma.order.findUnique({
-      where: { id: orderId },
+      where: { id },
       include: {
         restaurant: true,
         orderItems: {
@@ -100,7 +100,7 @@ export async function PATCH(
 
     // Atualiza o pedido
     const updatedOrder = await prisma.order.update({
-      where: { id: orderId },
+      where: { id },
       data: updateData,
     });
 
