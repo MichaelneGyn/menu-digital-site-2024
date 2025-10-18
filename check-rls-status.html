@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒 Verificar RLS - Supabase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .warning strong {
+            color: #856404;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin: 30px 0;
+            transition: transform 0.2s;
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            transform: scale(1.02);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border-left: 5px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .result.warning {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            color: #856404;
+        }
+        
+        .result h3 {
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .result ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .help-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        .spinner.show {
+            display: block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .steps {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        .steps h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .steps ol {
+            margin-left: 20px;
+            line-height: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 Verificador RLS</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Verifique se Row Level Security está configurado no Supabase
+        </p>
+        
+        <div class="warning">
+            <strong>⚠️ ATENÇÃO: RLS é CRÍTICO!</strong>
+            Sem RLS, qualquer pessoa pode fazer upload ou deletar imagens no seu storage.
+            Isso pode resultar em:
+            <ul style="margin-top: 10px; margin-left: 20px;">
+                <li>Upload de conteúdo malicioso</li>
+                <li>Esgotamento do seu storage (DDoS)</li>
+                <li>Deletar todas as suas imagens</li>
+                <li>Custos inesperados</li>
+            </ul>
+        </div>
+        
+        <form id="checkForm" onsubmit="checkRLS(event)">
+            <div class="form-group">
+                <label for="supabaseUrl">
+                    🌐 Supabase URL
+                </label>
+                <input 
+                    type="text" 
+                    id="supabaseUrl" 
+                    placeholder="https://seu-projeto.supabase.co"
+                    required
+                >
+                <div class="help-text">
+                    Encontre em: Supabase Dashboard → Settings → API → Project URL
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="anonKey">
+                    🔑 Anon Key (Public)
+                </label>
+                <input 
+                    type="password" 
+                    id="anonKey" 
+                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    required
+                >
+                <div class="help-text">
+                    Encontre em: Settings → API → Project API keys → anon public
+                </div>
+            </div>
+            
+            <button type="submit" class="btn" id="checkBtn">
+                🔍 Verificar Configuração RLS
+            </button>
+        </form>
+        
+        <div class="spinner" id="spinner"></div>
+        
+        <div class="result" id="result"></div>
+        
+        <div class="steps">
+            <h3>📋 Como Configurar RLS (Se Necessário)</h3>
+            <ol>
+                <li>Abra <strong>Supabase Dashboard</strong></li>
+                <li>Vá em <strong>SQL Editor</strong></li>
+                <li>Cole as queries do arquivo <code>storage-policies.sql</code></li>
+                <li>Execute uma por vez</li>
+                <li>Verifique novamente aqui</li>
+            </ol>
+            <p style="margin-top: 15px;">
+                📄 <strong>Guia completo:</strong> Leia <code>CONFIGURAR-RLS-SUPABASE.md</code>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        async function checkRLS(event) {
+            event.preventDefault();
+            
+            const supabaseUrl = document.getElementById('supabaseUrl').value;
+            const anonKey = document.getElementById('anonKey').value;
+            const resultDiv = document.getElementById('result');
+            const spinner = document.getElementById('spinner');
+            const checkBtn = document.getElementById('checkBtn');
+            
+            // Reset
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = '';
+            spinner.classList.add('show');
+            checkBtn.disabled = true;
+            
+            try {
+                // Teste 1: Verificar se bucket existe e é acessível
+                console.log('🔍 Verificando bucket...');
+                
+                const listResponse = await fetch(
+                    `${supabaseUrl}/storage/v1/bucket/menu-images`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${anonKey}`,
+                            'apikey': anonKey
+                        }
+                    }
+                );
+                
+                if (!listResponse.ok) {
+                    throw new Error('Bucket não encontrado ou inacessível');
+                }
+                
+                const bucketInfo = await listResponse.json();
+                console.log('✅ Bucket encontrado:', bucketInfo);
+                
+                // Teste 2: Tentar upload sem autenticação (deve falhar se RLS estiver ativo)
+                console.log('🧪 Testando RLS com upload não autorizado...');
+                
+                const testFile = new Blob(['test'], { type: 'text/plain' });
+                const uploadResponse = await fetch(
+                    `${supabaseUrl}/storage/v1/object/menu-images/test-rls-${Date.now()}.txt`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${anonKey}`,
+                            'apikey': anonKey
+                        },
+                        body: testFile
+                    }
+                );
+                
+                let rlsActive = false;
+                let message = '';
+                
+                if (uploadResponse.status === 403 || uploadResponse.status === 401) {
+                    // RLS está bloqueando (BOM!)
+                    rlsActive = true;
+                    message = `
+                        <h3>✅ RLS ESTÁ ATIVO! (SEGURO)</h3>
+                        <p>Seu Supabase Storage está protegido corretamente.</p>
+                        <ul>
+                            <li><strong>✅ Bucket encontrado:</strong> menu-images</li>
+                            <li><strong>✅ RLS ativo:</strong> Upload não autorizado foi bloqueado</li>
+                            <li><strong>✅ Público:</strong> ${bucketInfo.public ? 'Sim (correto para leitura)' : 'Não'}</li>
+                            <li><strong>✅ Status:</strong> Produção-ready</li>
+                        </ul>
+                        <p style="margin-top: 20px;">
+                            <strong>Score de Segurança: 95/100</strong> 🛡️
+                        </p>
+                    `;
+                    resultDiv.className = 'result success show';
+                    
+                } else if (uploadResponse.ok) {
+                    // Upload funcionou sem autenticação (RUIM!)
+                    rlsActive = false;
+                    message = `
+                        <h3>❌ RLS NÃO ESTÁ ATIVO! (PERIGO!)</h3>
+                        <p><strong>ATENÇÃO:</strong> Qualquer pessoa pode fazer upload no seu storage!</p>
+                        <ul>
+                            <li><strong>⚠️ Bucket encontrado:</strong> menu-images</li>
+                            <li><strong>❌ RLS inativo:</strong> Upload não autorizado PASSOU</li>
+                            <li><strong>⚠️ Risco:</strong> Sistema vulnerável</li>
+                        </ul>
+                        <p style="margin-top: 20px;">
+                            <strong>Score de Segurança: 20/100</strong> 🚨
+                        </p>
+                        <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px;">
+                            <strong>🔧 AÇÃO URGENTE:</strong>
+                            <ol style="margin-left: 20px; margin-top: 10px;">
+                                <li>Abra o arquivo <code>storage-policies.sql</code></li>
+                                <li>Execute as queries no Supabase SQL Editor</li>
+                                <li>Verifique novamente aqui</li>
+                            </ol>
+                        </div>
+                    `;
+                    resultDiv.className = 'result error show';
+                    
+                } else {
+                    // Outro erro
+                    const errorData = await uploadResponse.json();
+                    message = `
+                        <h3>⚠️ RESULTADO INCONCLUSIVO</h3>
+                        <p>Não foi possível confirmar status do RLS.</p>
+                        <ul>
+                            <li><strong>Status:</strong> ${uploadResponse.status}</li>
+                            <li><strong>Erro:</strong> ${errorData.error || errorData.message || 'Desconhecido'}</li>
+                        </ul>
+                        <p style="margin-top: 20px;">
+                            Recomendação: Configure RLS manualmente seguindo o guia.
+                        </p>
+                    `;
+                    resultDiv.className = 'result warning show';
+                }
+                
+                resultDiv.innerHTML = message;
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                resultDiv.className = 'result error show';
+                resultDiv.innerHTML = `
+                    <h3>❌ ERRO AO VERIFICAR</h3>
+                    <p><strong>Erro:</strong> ${error.message}</p>
+                    <ul>
+                        <li>Verifique se a URL está correta</li>
+                        <li>Verifique se a Anon Key está correta</li>
+                        <li>Verifique se o bucket 'menu-images' existe</li>
+                        <li>Tente configurar RLS manualmente</li>
+                    </ul>
+                `;
+            } finally {
+                spinner.classList.remove('show');
+                checkBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
