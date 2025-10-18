@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Validar magic numbers (assinaturas de arquivo) para garantir que é realmente uma imagem
+    // 🔒 SEGURANÇA 1: Validar magic numbers (assinaturas de arquivo)
+    // Garante que é REALMENTE uma imagem, não um executável renomeado!
     const magicNumbers: { [key: string]: number[] } = {
       jpg: [0xFF, 0xD8, 0xFF],
       jpeg: [0xFF, 0xD8, 0xFF],
@@ -70,7 +71,43 @@ export async function POST(request: NextRequest) {
 
     const signature = magicNumbers[fileExtension];
     if (signature && !signature.every((byte, index) => buffer[index] === byte)) {
-      return NextResponse.json({ error: 'Arquivo corrompido ou tipo inválido.' }, { status: 400 });
+      return NextResponse.json({ 
+        error: '🚨 Arquivo corrompido ou tipo inválido. Possível tentativa de ataque detectada.' 
+      }, { status: 400 });
+    }
+
+    // 🔒 SEGURANÇA 2: Validar dimensões da imagem (previne DoS com imagens gigantes)
+    // Usa sharp (se disponível) ou fallback para validação básica
+    try {
+      // Tenta importar sharp (biblioteca de processamento de imagem)
+      const sharp = require('sharp');
+      const metadata = await sharp(buffer).metadata();
+      
+      // Limites razoáveis: máx 8000x8000 pixels (previne DoS)
+      const MAX_WIDTH = 8000;
+      const MAX_HEIGHT = 8000;
+      const MAX_PIXELS = 50_000_000; // 50 megapixels (previne bomba de descompressão)
+      
+      if (metadata.width && metadata.height) {
+        if (metadata.width > MAX_WIDTH || metadata.height > MAX_HEIGHT) {
+          return NextResponse.json({ 
+            error: `🚨 Imagem muito grande! Máximo: ${MAX_WIDTH}x${MAX_HEIGHT} pixels. Sua imagem: ${metadata.width}x${metadata.height}` 
+          }, { status: 400 });
+        }
+        
+        const totalPixels = metadata.width * metadata.height;
+        if (totalPixels > MAX_PIXELS) {
+          return NextResponse.json({ 
+            error: `🚨 Imagem com muitos pixels! Possível ataque DoS detectado.` 
+          }, { status: 400 });
+        }
+        
+        console.log(`✅ [Security] Image validated: ${metadata.width}x${metadata.height} (${metadata.format})`);
+      }
+    } catch (sharpError) {
+      // Sharp não disponível ou erro ao processar
+      // Continua sem validação de dimensões (fallback)
+      console.warn('⚠️ [Security] Sharp não disponível - dimensões não validadas:', sharpError);
     }
     let imageUrl: string | undefined;
     let cloud_storage_path: string | undefined;
