@@ -399,19 +399,19 @@ export default function CheckoutFlow({
             {!appliedCoupon && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Cupom de desconto</label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full">
                   <input
                     type="text"
                     placeholder="Digite o cupom"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                    className="flex-1 px-3 py-2 border rounded-lg text-sm min-w-0"
                   />
                   <Button
                     onClick={applyCoupon}
                     disabled={!couponCode.trim()}
                     variant="outline"
-                    className="px-4"
+                    className="px-3 sm:px-4 whitespace-nowrap text-sm"
                   >
                     Aplicar
                   </Button>
@@ -431,18 +431,18 @@ export default function CheckoutFlow({
               </div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3 w-full">
               <Button
                 variant="outline"
                 onClick={onBack}
-                className="flex-1 h-12 text-base font-semibold"
+                className="flex-1 h-12 text-sm sm:text-base font-semibold whitespace-nowrap px-2 sm:px-4"
               >
                 Voltar ao Cardápio
               </Button>
               <Button
                 onClick={() => setCurrentStep('address')}
                 disabled={subtotal < deliveryConfig.minOrderValue}
-                className="flex-1 bg-red-600 hover:bg-red-700 h-12 text-base font-semibold"
+                className="flex-1 bg-red-600 hover:bg-red-700 h-12 text-sm sm:text-base font-semibold whitespace-nowrap px-2 sm:px-4"
               >
                 Continuar
               </Button>
@@ -575,18 +575,18 @@ export default function CheckoutFlow({
           
           {/* Footer fixo com botões */}
           <div className="flex-shrink-0 border-t bg-white p-4 sticky bottom-0 z-10 shadow-lg rounded-b-lg">
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3 w-full">
               <Button
                 variant="outline"
                 onClick={() => setCurrentStep('payment')}
-                className="flex-1 h-12 text-base font-semibold"
+                className="flex-1 h-12 text-sm sm:text-base font-semibold whitespace-nowrap px-2 sm:px-4"
               >
                 Voltar
               </Button>
               <Button
                 onClick={handleFinishOrder}
                 disabled={isProcessing}
-                className="flex-1 h-12 text-base font-semibold bg-green-600 hover:bg-green-700"
+                className="flex-1 h-12 text-sm sm:text-base font-semibold bg-green-600 hover:bg-green-700 whitespace-nowrap px-2 sm:px-4"
               >
                 {isProcessing ? 'Processando...' : '✅ Finalizar Pedido'}
               </Button>
