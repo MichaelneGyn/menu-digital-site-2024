@@ -47,6 +47,23 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           // Permissions Policy
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          // 🛡️ Content-Security-Policy (PROTEÇÃO MÁXIMA CONTRA XSS!)
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'", // Padrão: apenas origem própria
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com", // Scripts: próprio + inline (Next.js precisa)
+              "style-src 'self' 'unsafe-inline'", // Estilos: próprio + inline (Tailwind precisa)
+              "img-src 'self' data: https: blob:", // Imagens: qualquer HTTPS + data URLs + blobs
+              "font-src 'self' data:", // Fontes: próprio + data URLs
+              "connect-src 'self' https://*.supabase.co https://vercel.live wss://*.supabase.co", // APIs: próprio + Supabase + Vercel
+              "frame-src 'self' https://vercel.live", // iFrames: próprio + Vercel (analytics)
+              "object-src 'none'", // Sem plugins (Flash, etc) - SEGURANÇA
+              "base-uri 'self'", // Previne injeção de <base> tag
+              "form-action 'self'", // Forms só podem submeter para próprio domínio
+              "upgrade-insecure-requests", // Force HTTPS
+            ].join('; ')
+          },
         ],
       },
       // CORS para APIs
