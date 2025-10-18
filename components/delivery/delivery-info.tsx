@@ -23,15 +23,16 @@ export default function DeliveryInfo({
       {/* Card Principal - Estilo iFood/Uber Eats */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="p-4">
-          <div className="flex items-center justify-between gap-4 flex-wrap md:flex-nowrap">
+          {/* Layout Desktop - 3 colunas lado a lado */}
+          <div className="hidden md:flex items-center justify-between gap-4">
             {/* Tempo de Entrega */}
-            <div className="flex items-center gap-3 flex-1 min-w-[120px]">
+            <div className="flex items-center gap-3 flex-1">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Clock className="w-5 h-5 text-blue-600" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div>
                 <div className="text-xs text-gray-500 mb-0.5">Entrega</div>
-                <div className="text-base font-semibold text-gray-900 truncate">{deliveryTime}</div>
+                <div className="text-base font-semibold text-gray-900">{deliveryTime}</div>
               </div>
             </div>
 
@@ -39,13 +40,13 @@ export default function DeliveryInfo({
             <div className="h-10 w-px bg-gray-200"></div>
 
             {/* Taxa de Entrega */}
-            <div className="flex items-center gap-3 flex-1 min-w-[100px]">
+            <div className="flex items-center gap-3 flex-1">
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Truck className="w-5 h-5 text-orange-600" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div>
                 <div className="text-xs text-gray-500 mb-0.5">Taxa</div>
-                <div className="text-base font-semibold text-gray-900 truncate">
+                <div className="text-base font-semibold text-gray-900">
                   {deliveryFee === 0 ? (
                     <span className="text-green-600">Grátis</span>
                   ) : (
@@ -58,17 +59,55 @@ export default function DeliveryInfo({
             {/* Pedido Mínimo */}
             {minOrderValue > 0 && (
               <>
-                <div className="h-10 w-px bg-gray-200 hidden md:block"></div>
-                <div className="flex items-center gap-3 flex-1 min-w-[100px]">
+                <div className="h-10 w-px bg-gray-200"></div>
+                <div className="flex items-center gap-3 flex-1">
                   <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     <DollarSign className="w-5 h-5 text-green-600" />
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div>
                     <div className="text-xs text-gray-500 mb-0.5">Mínimo</div>
-                    <div className="text-base font-semibold text-gray-900 truncate">R$ {minOrderValue.toFixed(2)}</div>
+                    <div className="text-base font-semibold text-gray-900">R$ {minOrderValue.toFixed(2)}</div>
                   </div>
                 </div>
               </>
+            )}
+          </div>
+
+          {/* Layout Mobile - Grid 2x2 ou 3x1 */}
+          <div className="md:hidden grid grid-cols-3 gap-3">
+            {/* Tempo de Entrega */}
+            <div className="flex flex-col items-center text-center">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
+                <Clock className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="text-xs text-gray-500 mb-1">Entrega</div>
+              <div className="text-sm font-semibold text-gray-900">{deliveryTime}</div>
+            </div>
+
+            {/* Taxa de Entrega */}
+            <div className="flex flex-col items-center text-center">
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
+                <Truck className="w-5 h-5 text-orange-600" />
+              </div>
+              <div className="text-xs text-gray-500 mb-1">Taxa</div>
+              <div className="text-sm font-semibold text-gray-900">
+                {deliveryFee === 0 ? (
+                  <span className="text-green-600">Grátis</span>
+                ) : (
+                  `R$ ${deliveryFee.toFixed(2)}`
+                )}
+              </div>
+            </div>
+
+            {/* Pedido Mínimo */}
+            {minOrderValue > 0 && (
+              <div className="flex flex-col items-center text-center">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-2">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                </div>
+                <div className="text-xs text-gray-500 mb-1">Mínimo</div>
+                <div className="text-sm font-semibold text-gray-900">R$ {minOrderValue.toFixed(2)}</div>
+              </div>
             )}
           </div>
         </div>
