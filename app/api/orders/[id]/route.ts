@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { apiRateLimiter } from '@/lib/rate-limit';
 
@@ -118,25 +120,21 @@ export async function GET(
 /**
  * PATCH /api/orders/[id]
  * Atualiza status do pedido (ADMIN APENAS)
- * 🔒 PROTEGIDO: Requer autenticação
+ * 🔒 PROTEGIDO: Requer autenticação via NextAuth Session
  */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    // 🔒 SEGURANÇA: Verificar autenticação
-    const authHeader = request.headers.get('authorization');
-    const apiKey = request.headers.get('x-api-key');
+    // 🔒 SEGURANÇA: Verificar autenticação via NextAuth Session (SEGURO!)
+    // Session usa httpOnly cookies, não expõe credenciais no front-end
+    const session = await getServerSession(authOptions);
     
-    // Validar API key ou session (você deve configurar isso)
-    // Por enquanto, vamos exigir uma chave secreta
-    const SECRET_API_KEY = process.env.ADMIN_API_KEY || 'your-secret-key-change-this';
-    
-    if (!apiKey || apiKey !== SECRET_API_KEY) {
+    if (!session || !session.user) {
       console.warn('🚨 [SECURITY] Unauthorized PATCH attempt to order:', params.id);
       return NextResponse.json(
-        { error: 'Não autorizado. Esta ação requer autenticação de administrador.' },
+        { error: 'Não autorizado. Faça login como administrador.' },
         { status: 401 }
       );
     }
