@@ -8,10 +8,16 @@ import { createClient } from '@supabase/supabase-js';
 // Cliente Supabase para Storage
 const getSupabaseClient = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // 🔒 SEGURANÇA: Usar APENAS SERVICE_ROLE_KEY para operações de storage
+  // NUNCA usar ANON_KEY que é pública!
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Supabase não configurado. Verifique NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY');
+  if (!supabaseUrl) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL não configurada');
+  }
+  
+  if (!supabaseKey) {
+    throw new Error('🔒 SUPABASE_SERVICE_ROLE_KEY não configurada! Esta chave é OBRIGATÓRIA para operações de storage.');
   }
 
   return createClient(supabaseUrl, supabaseKey);
