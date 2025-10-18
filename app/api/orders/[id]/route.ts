@@ -1,15 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { apiRateLimiter } from '@/lib/rate-limit';
 
 /**
  * GET /api/orders/[id]
  * Busca detalhes de um pedido específico (público)
+ * 🔒 Com rate limiting para prevenir scraping
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // 🔒 SEGURANÇA: Rate limiting (60 req/min por IP)
+    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    const limitResult = apiRateLimiter(ip);
+    
+    if (!limitResult.success) {
+      return limitResult.response!;
+    }
+    
     const orderId = params.id;
 
     if (!orderId) {
