@@ -651,8 +651,21 @@ export default function CheckoutFlow({
                   const message = generateOrderSummary() + `\n\n📱 *Acompanhar pedido:*\n${window.location.origin}/pedido/${createdOrderId}`;
                   const encodedMessage = encodeURIComponent(message);
                   const phone = restaurant.whatsapp || '5562999999999';
-                  // 🔥 Usar web.whatsapp.com para abrir DIRETO no WhatsApp Web (sem página intermediária!)
-                  window.open(`https://web.whatsapp.com/send?phone=${phone.replace(/\D/g, '')}&text=${encodedMessage}`, '_blank');
+                  const cleanPhone = phone.replace(/\D/g, '');
+                  
+                  // 🔥 Detectar se é mobile e usar URL apropriada
+                  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                  
+                  let whatsappUrl;
+                  if (isMobile) {
+                    // Mobile: Usa api.whatsapp.com que abre o APP direto!
+                    whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedMessage}`;
+                  } else {
+                    // Desktop: Usa web.whatsapp.com para WhatsApp Web
+                    whatsappUrl = `https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encodedMessage}`;
+                  }
+                  
+                  window.open(whatsappUrl, '_blank');
                 }}
                 className="w-full bg-green-600 hover:bg-green-700 text-white h-12 text-base font-semibold"
               >
