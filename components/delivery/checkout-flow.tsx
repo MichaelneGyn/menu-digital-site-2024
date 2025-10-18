@@ -651,7 +651,8 @@ export default function CheckoutFlow({
                   const message = generateOrderSummary() + `\n\n📱 *Acompanhar pedido:*\n${window.location.origin}/pedido/${createdOrderId}`;
                   const encodedMessage = encodeURIComponent(message);
                   const phone = restaurant.whatsapp || '5562999999999';
-                  window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${encodedMessage}`, '_blank');
+                  // 🔥 Usar web.whatsapp.com para abrir DIRETO no WhatsApp Web (sem página intermediária!)
+                  window.open(`https://web.whatsapp.com/send?phone=${phone.replace(/\D/g, '')}&text=${encodedMessage}`, '_blank');
                 }}
                 className="w-full bg-green-600 hover:bg-green-700 text-white h-12 text-base font-semibold"
               >
