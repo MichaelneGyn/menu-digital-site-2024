@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -98,13 +98,17 @@ export default function KitchenDisplayPage() {
   const [isRealtime, setIsRealtime] = useState(false);
   const [countdown, setCountdown] = useState(10); // ⏱️ Contador regressivo
 
-  // 🔥 Inicializar Supabase Realtime
-  const supabase = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SUPABASE_URL
-    ? createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-      )
-    : null;
+  // 🔥 Inicializar Supabase Realtime (useMemo para criar APENAS 1 vez!)
+  const supabase = useMemo(() => {
+    if (typeof window === 'undefined' || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      return null;
+    }
+    
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    );
+  }, []); // Array vazio = cria apenas 1 vez!
 
   // Busca pedidos
   const fetchOrders = async () => {
@@ -127,13 +131,13 @@ export default function KitchenDisplayPage() {
       const audio = new Audio('/notification.mp3');
       audio.volume = 0.5;
       audio.play().catch(() => {
-        // Fallback: beep do sistema
+        // Fallback: vibração (mobile)
         if (typeof window !== 'undefined' && 'vibrate' in navigator) {
           navigator.vibrate([200, 100, 200]);
         }
       });
     } catch (error) {
-      console.log('Som não disponível');
+      // Som não disponível, sem problemas
     }
   };
 
@@ -152,8 +156,6 @@ export default function KitchenDisplayPage() {
           table: 'Order'
         },
         (payload) => {
-          console.log('🔥 Mudança detectada:', payload);
-          
           // Atualiza lista imediatamente
           fetchOrders();
           
@@ -174,13 +176,10 @@ export default function KitchenDisplayPage() {
               }
             }, 500);
           }
-          
-          setIsRealtime(true);
         }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Realtime ativo! Atualizações instantâneas.');
           setIsRealtime(true);
         }
       });
