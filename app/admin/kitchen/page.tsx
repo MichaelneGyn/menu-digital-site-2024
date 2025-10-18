@@ -96,6 +96,7 @@ export default function KitchenDisplayPage() {
   const [activeFilter, setActiveFilter] = useState<OrderStatus | 'ALL'>('ALL');
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [isRealtime, setIsRealtime] = useState(false);
+  const [countdown, setCountdown] = useState(10); // ⏱️ Contador regressivo
 
   // 🔥 Inicializar Supabase Realtime
   const supabase = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -190,6 +191,20 @@ export default function KitchenDisplayPage() {
     };
   }, [supabase]);
 
+  // ⏱️ Contador regressivo visual (atualiza a cada 1 segundo)
+  useEffect(() => {
+    if (!autoRefresh || isRealtime) return;
+
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) return 10; // Reinicia
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdownInterval);
+  }, [autoRefresh, isRealtime]);
+
   // 🔄 Auto-refresh RÁPIDO a cada 10 segundos (Fallback se Realtime falhar)
   useEffect(() => {
     fetchOrders();
@@ -198,6 +213,9 @@ export default function KitchenDisplayPage() {
       const interval = setInterval(async () => {
         const oldOrdersCount = orders.length;
         await fetchOrders();
+        
+        // Reset countdown quando atualiza
+        setCountdown(10);
         
         // 🔔 Se tem pedido novo E não está em realtime, toca som!
         const newOrdersCount = orders.length;
@@ -321,11 +339,19 @@ export default function KitchenDisplayPage() {
                     Tempo Real
                   </span>
                 )}
+                {!isRealtime && autoRefresh && (
+                  <span className="flex items-center gap-1 text-xs font-normal bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                    <Clock className="w-3 h-3" />
+                    {countdown}s
+                  </span>
+                )}
               </h1>
               <p className="text-sm text-gray-600">
                 {isRealtime 
                   ? '🔥 Atualizações instantâneas ativas!' 
-                  : 'Atualiza a cada 10 segundos'}
+                  : autoRefresh
+                    ? `⏱️ Próxima atualização em ${countdown} segundo${countdown !== 1 ? 's' : ''}`
+                    : 'Auto-refresh desativado'}
               </p>
             </div>
           </div>
