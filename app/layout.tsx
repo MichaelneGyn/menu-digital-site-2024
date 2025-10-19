@@ -5,6 +5,7 @@ import Providers from "@/components/providers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { Toaster } from "sonner";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,6 +39,7 @@ export default async function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <Providers session={session}>
           {children}
+          <WhatsAppButton />
           <Toaster 
             position="top-right" 
             richColors 
