@@ -2,11 +2,30 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function HomePage() {
   const [orders, setOrders] = useState(100);
   const [avgTicket, setAvgTicket] = useState(50);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [loading, setLoading] = useState(true);
+  
+  const PROMO_LIMIT = 50; // Limite de usuários para promoção
+  const spotsLeft = Math.max(0, PROMO_LIMIT - totalUsers);
+  const isPromoActive = totalUsers < PROMO_LIMIT;
+  
+  useEffect(() => {
+    // Buscar total de usuários
+    fetch('/api/users/count')
+      .then(res => res.json())
+      .then(data => {
+        setTotalUsers(data.count || 0);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  }, []);
   
   const monthlyRevenue = orders * avgTicket;
   const ifoodCommission = monthlyRevenue * 0.262; // 23% comissão + 3.2% pagamento online
@@ -20,22 +39,66 @@ export default function HomePage() {
     <div className="min-h-screen flex items-center justify-center page-transition">
       <div className="max-w-4xl mx-auto text-center p-8">
         <div className="hero-section-landing">
+          {/* Badge Promocional */}
+          {isPromoActive && !loading && (
+            <div className="inline-block mb-6 animate-bounce">
+              <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg">
+                🔥 LANÇAMENTO: 15 DIAS GRÁTIS • Primeiros 50!
+              </div>
+            </div>
+          )}
+          
           <h1 className="landing-main-title">
             Cardápio Digital para Restaurantes
           </h1>
           <p className="landing-main-subtitle">
-            Cardápio digital completo com gestão inteligente de pedidos para seu restaurante
+            Sistema completo: QR Code para Mesas + Delivery sem comissão
           </p>
           
           <div className="flex flex-col items-center gap-4 mb-8">
+            {/* Contador de Vagas */}
+            {isPromoActive && !loading && (
+              <div className="bg-white border-2 border-orange-500 rounded-lg p-4 shadow-lg mb-2 w-full max-w-md">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-1">⏰ Oferta por tempo limitado</p>
+                  <div className="flex items-center justify-center gap-2 text-2xl font-bold text-orange-600">
+                    <span className="text-4xl">{spotsLeft}</span>
+                    <div className="text-left text-sm">
+                      <div>vagas</div>
+                      <div>restantes</div>
+                    </div>
+                  </div>
+                  <div className="mt-2 bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div 
+                      className="bg-gradient-to-r from-orange-500 to-red-500 h-full transition-all duration-500"
+                      style={{ width: `${((PROMO_LIMIT - spotsLeft) / PROMO_LIMIT) * 100}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{PROMO_LIMIT - spotsLeft} de {PROMO_LIMIT} vagas preenchidas</p>
+                </div>
+              </div>
+            )}
+            
             <Link href="/auth/login" className="w-full max-w-md">
-              <Button size="lg" className="cta-button-primary w-full text-lg py-6">
-                🚀 Começar Agora - 30 Dias Grátis
+              <Button size="lg" className="cta-button-primary w-full text-lg py-6 relative overflow-hidden group">
+                {isPromoActive ? (
+                  <>
+                    <span className="relative z-10">🚀 Começar Agora - 15 DIAS GRÁTIS</span>
+                    <span className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-400 opacity-0 group-hover:opacity-20 transition-opacity"></span>
+                  </>
+                ) : (
+                  '🚀 Começar Agora - 7 Dias Grátis'
+                )}
               </Button>
             </Link>
             <p className="text-sm text-gray-500">
               ✅ Sem cartão de crédito • ✅ Cancele quando quiser • ✅ Suporte incluído
             </p>
+            {isPromoActive && !loading && (
+              <p className="text-xs text-orange-600 font-semibold animate-pulse">
+                🎁 Bônus: Setup completo + Suporte prioritário
+              </p>
+            )}
           </div>
 
           {/* Benefícios Principais */}
@@ -61,21 +124,22 @@ export default function HomePage() {
 
           {/* Features Adicionais */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-12">
-            <div className="p-4 bg-white rounded-lg shadow-sm border">
+            <div className="p-4 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+              <div className="text-2xl mb-2">🍽️</div>
+              <p className="text-sm font-medium">QR Code para Mesas</p>
+              <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded mt-1 inline-block">NOVO</span>
+            </div>
+            <div className="p-4 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
               <div className="text-2xl mb-2">⚡</div>
               <p className="text-sm font-medium">Painel Kitchen Display</p>
             </div>
-            <div className="p-4 bg-white rounded-lg shadow-sm border">
+            <div className="p-4 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
               <div className="text-2xl mb-2">📊</div>
               <p className="text-sm font-medium">Cálculo de CMV</p>
             </div>
-            <div className="p-4 bg-white rounded-lg shadow-sm border">
+            <div className="p-4 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
               <div className="text-2xl mb-2">🎫</div>
               <p className="text-sm font-medium">Cupons de Desconto</p>
-            </div>
-            <div className="p-4 bg-white rounded-lg shadow-sm border">
-              <div className="text-2xl mb-2">📲</div>
-              <p className="text-sm font-medium">WhatsApp Integrado</p>
             </div>
           </div>
 
@@ -168,8 +232,8 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold mb-6 text-center">❓ Perguntas Frequentes</h2>
             <div className="space-y-4">
               <details className="p-4 bg-white rounded-lg shadow-sm border">
-                <summary className="font-semibold cursor-pointer">Como funciona o teste grátis de 30 dias?</summary>
-                <p className="mt-3 text-gray-600">Você cria sua conta e tem acesso completo ao sistema por 30 dias. Não pedimos cartão de crédito. Após o período, você decide se quer continuar.</p>
+                <summary className="font-semibold cursor-pointer">Como funciona o teste grátis?</summary>
+                <p className="mt-3 text-gray-600">🔥 <strong>Primeiros 50 clientes:</strong> 15 dias grátis! Depois: 7 dias grátis. Você cria sua conta e tem acesso completo ao sistema. Não pedimos cartão de crédito. Após o período, você decide se quer continuar.</p>
               </details>
               
               <details className="p-4 bg-white rounded-lg shadow-sm border">

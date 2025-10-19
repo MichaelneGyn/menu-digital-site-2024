@@ -53,9 +53,15 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Create 14-day trial subscription automatically
+      // Verificar quantos usuários já existem para definir período de trial
+      const totalUsers = await tx.user.count();
+      const PROMO_LIMIT = 50; // Primeiros 50 clientes
+      
+      // Se é um dos primeiros 50: 15 dias grátis, senão: 7 dias
+      const trialDays = totalUsers <= PROMO_LIMIT ? 15 : 7;
+      
       const trialEndsAt = new Date();
-      trialEndsAt.setDate(trialEndsAt.getDate() + 14); // 14 dias de trial
+      trialEndsAt.setDate(trialEndsAt.getDate() + trialDays);
 
       const subscription = await tx.subscription.create({
         data: {
