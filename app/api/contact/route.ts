@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Email de contato oficial
+// Email e WhatsApp de contato oficial
 const CONTACT_EMAIL = 'suportemenurapido@gmail.com';
-const CONTACT_WHATSAPP = '5511999999999'; // Atualizar com número real
+const CONTACT_WHATSAPP = '5562981105064'; // WhatsApp MenuRapido
 
 export async function POST(req: NextRequest) {
   try {
