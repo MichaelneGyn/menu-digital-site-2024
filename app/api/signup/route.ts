@@ -58,6 +58,9 @@ export async function POST(request: NextRequest) {
       const PROMO_LIMIT = 50; // Primeiros 50 clientes
       
       // Se é um dos primeiros 50: 15 dias grátis, senão: 7 dias
+      // totalUsers conta INCLUINDO o usuário recém-criado acima, então:
+      // Se totalUsers = 1-50 (<=  50): este é o usuário 1-50 → 15 dias
+      // Se totalUsers = 51+ (> 50): este é o usuário 51+ → 7 dias
       const trialDays = totalUsers <= PROMO_LIMIT ? 15 : 7;
       
       const trialEndsAt = new Date();
