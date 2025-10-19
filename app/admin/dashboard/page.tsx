@@ -348,6 +348,16 @@ function AdminDashboard() {
                     <span className="text-xs text-orange-600 font-semibold">NOVO</span>
                   </button>
 
+                  {/* Gestão de Mesas */}
+                  <button
+                    onClick={() => router.push('/admin/tables')}
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
+                  >
+                    <span className="text-xl sm:text-2xl">🍽️</span>
+                    <span className="text-xs sm:text-sm font-medium text-center">Gestão de Mesas</span>
+                    <span className="text-xs text-blue-600 font-semibold">NOVO</span>
+                  </button>
+
                   {/* Usuários & Assinaturas: somente para admin */}
                   {isAdmin && (
                     <button
