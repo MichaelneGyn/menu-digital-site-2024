@@ -380,7 +380,10 @@ export default function HomePage() {
               </Button>
               
               <p className="text-xs text-gray-500 text-center">
-                Ou responda direto: <a href="mailto:suportemenurapido@gmail.com" className="text-blue-600 underline">suportemenurapido@gmail.com</a>
+                Ou nos chame no WhatsApp: <a href="https://wa.me/5562981105064" className="text-green-600 underline font-semibold" target="_blank">(62) 98110-5064</a>
+              </p>
+              <p className="text-xs text-gray-400 text-center mt-1">
+                Email: <a href="mailto:suportemenurapido@gmail.com" className="text-blue-600 underline">suportemenurapido@gmail.com</a>
               </p>
             </form>
           </div>
