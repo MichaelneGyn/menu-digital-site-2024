@@ -104,14 +104,20 @@ export async function PATCH(
       data: updateData,
     });
 
-    // Envia notificação por WhatsApp (se telefone disponível)
-    if (order.customerPhone) {
+    // 🔔 Envia notificação por WhatsApp APENAS para status IMPORTANTES
+    // Evita spam de mensagens! Cliente acompanha pelo link.
+    const shouldNotify = ['CONFIRMED', 'READY'].includes(status);
+    
+    if (order.customerPhone && shouldNotify) {
       const whatsappMessage = generateWhatsAppMessage(order, status, estimatedTime);
 
       // Retorna URL do WhatsApp para envio automático
       const phoneNumber = order.customerPhone.replace(/\D/g, '');
-      // Usar web.whatsapp.com para abrir DIRETO sem página intermediária
-      const whatsappUrl = `https://web.whatsapp.com/send?phone=55${phoneNumber}&text=${encodeURIComponent(whatsappMessage)}`;
+      // Detecta se é mobile para usar URL apropriada
+      const isMobile = req.headers.get('user-agent')?.includes('Mobile') || false;
+      const whatsappUrl = isMobile
+        ? `https://api.whatsapp.com/send?phone=55${phoneNumber}&text=${encodeURIComponent(whatsappMessage)}`
+        : `https://web.whatsapp.com/send?phone=55${phoneNumber}&text=${encodeURIComponent(whatsappMessage)}`;
 
       return NextResponse.json({
         success: true,
@@ -147,29 +153,26 @@ function generateWhatsAppMessage(
   const emoji = STATUS_EMOJIS[status as keyof typeof STATUS_EMOJIS];
   const message = STATUS_MESSAGES[status as keyof typeof STATUS_MESSAGES];
   const restaurantName = order.restaurant?.name || 'Restaurante';
+  const trackingUrl = `${process.env.NEXTAUTH_URL || 'https://menu-digital-site-2024-8773d37d6064.vercel.app'}/pedido/${order.code}`;
 
   let text = `${emoji} *${restaurantName}*\n\n`;
   text += `*Pedido #${order.code}*\n`;
   text += `${message}\n\n`;
 
-  if (status === 'CONFIRMED' && estimatedTime) {
-    text += `⏱️ *Tempo estimado:* ${estimatedTime} minutos\n\n`;
-  }
-
-  if (status === 'PREPARING') {
-    text += `👨‍🍳 Nossa equipe está preparando seu pedido com muito carinho!\n\n`;
+  if (status === 'CONFIRMED') {
+    if (estimatedTime) {
+      text += `⏱️ *Tempo estimado:* ${estimatedTime} minutos\n\n`;
+    }
+    text += `👨‍🍳 Nossa equipe já está preparando tudo com muito carinho!\n\n`;
+    text += `📱 *Acompanhe em tempo real:*\n${trackingUrl}\n\n`;
   }
 
   if (status === 'READY') {
     text += `🚚 Seu pedido já saiu para entrega!\n`;
     if (estimatedTime) {
-      text += `⏱️ *Previsão de chegada:* ${estimatedTime} minutos\n\n`;
+      text += `⏱️ *Previsão de chegada:* ${estimatedTime} minutos\n`;
     }
-  }
-
-  if (status === 'DELIVERED') {
-    text += `🎉 Esperamos que aproveite!\n`;
-    text += `⭐ Deixe sua avaliação e nos ajude a melhorar!\n\n`;
+    text += `\n📱 *Acompanhe a entrega:*\n${trackingUrl}\n\n`;
   }
 
   text += `_Obrigado por escolher ${restaurantName}!_`;
