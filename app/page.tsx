@@ -3,12 +3,21 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 export default function HomePage() {
   const [orders, setOrders] = useState(100);
   const [avgTicket, setAvgTicket] = useState(50);
   const [totalUsers, setTotalUsers] = useState(0);
   const [loading, setLoading] = useState(true);
+  
+  // Form states
+  const [restaurantName, setRestaurantName] = useState('');
+  const [name, setName] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
   
   const PROMO_LIMIT = 50; // Limite de usuários para promoção
   const spotsLeft = Math.max(0, PROMO_LIMIT - totalUsers);
@@ -26,6 +35,44 @@ export default function HomePage() {
         setLoading(false);
       });
   }, []);
+  
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!restaurantName || !name || !whatsapp || !email) {
+      toast.error('Preencha todos os campos obrigatórios');
+      return;
+    }
+    
+    setSending(true);
+    
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restaurantName, name, whatsapp, email, message }),
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao enviar mensagem');
+      }
+      
+      toast.success('Mensagem enviada! Responderemos em breve.');
+      
+      // Limpar formulário
+      setRestaurantName('');
+      setName('');
+      setWhatsapp('');
+      setEmail('');
+      setMessage('');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao enviar mensagem');
+    } finally {
+      setSending(false);
+    }
+  };
   
   const monthlyRevenue = orders * avgTicket;
   const ifoodCommission = monthlyRevenue * 0.262; // 23% comissão + 3.2% pagamento online
@@ -268,12 +315,14 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold mb-4">📞 Ficou com dúvida?</h2>
             <p className="text-gray-600 mb-6">Entre em contato conosco! Responderemos em até 24 horas.</p>
             
-            <form className="space-y-4 max-w-md mx-auto">
+            <form onSubmit={handleContactSubmit} className="space-y-4 max-w-md mx-auto">
               <div className="text-left">
                 <label className="block text-sm font-medium mb-1">Nome do Restaurante *</label>
                 <input
                   type="text"
                   required
+                  value={restaurantName}
+                  onChange={(e) => setRestaurantName(e.target.value)}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Ex: Pizzaria Bella"
                 />
@@ -284,6 +333,8 @@ export default function HomePage() {
                 <input
                   type="text"
                   required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="João Silva"
                 />
@@ -294,6 +345,8 @@ export default function HomePage() {
                 <input
                   type="tel"
                   required
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="(11) 98888-8888"
                 />
@@ -304,6 +357,8 @@ export default function HomePage() {
                 <input
                   type="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="contato@seurestaurante.com.br"
                 />
@@ -313,17 +368,19 @@ export default function HomePage() {
                 <label className="block text-sm font-medium mb-1">Mensagem</label>
                 <textarea
                   rows={4}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Conte-nos mais sobre seu restaurante e suas necessidades..."
                 ></textarea>
               </div>
               
-              <Button type="submit" size="lg" className="w-full cta-button-primary">
-                📧 Enviar Mensagem
+              <Button type="submit" size="lg" className="w-full cta-button-primary" disabled={sending}>
+                {sending ? '📤 Enviando...' : '📧 Enviar Mensagem'}
               </Button>
               
               <p className="text-xs text-gray-500 text-center">
-                Ou nos chame no WhatsApp: <a href="https://wa.me/5511999999999" className="text-blue-600 underline">(11) 99999-9999</a>
+                Ou responda direto: <a href="mailto:suportemenurapido@gmail.com" className="text-blue-600 underline">suportemenurapido@gmail.com</a>
               </p>
             </form>
           </div>
@@ -332,7 +389,7 @@ export default function HomePage() {
           <div className="mt-16">
             <Link href="/auth/login" className="inline-block">
               <Button size="lg" className="cta-button-primary text-lg py-6 px-8">
-                🚀 Começar Teste Grátis de 30 Dias
+                {isPromoActive ? '🔥 Começar Agora - 15 DIAS GRÁTIS' : '🚀 Começar Teste Grátis'}
               </Button>
             </Link>
             <p className="text-xs text-gray-500 mt-3">

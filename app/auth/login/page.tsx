@@ -106,16 +106,7 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Test Account Info */}
-        <div className="mt-8 p-4 bg-red-700 bg-opacity-50 rounded-lg">
-          <p className="text-white text-sm font-semibold mb-2 text-center">Conta de teste:</p>
-          <div className="space-y-1 text-xs text-red-100">
-            <p><span className="font-medium">Email:</span> john@doe.com</p>
-            <p><span className="font-medium">Senha:</span> johndoe123</p>
-          </div>
-        </div>
-
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center">
           <p className="text-red-100 text-sm">
             Não tem conta?{' '}
             <Link href="/auth/register" className="text-white font-semibold underline hover:no-underline">
