@@ -105,6 +105,7 @@ model Restaurant {
   ingredients         Ingredient[]
   menuItems           MenuItem[]
   orders              Order[]
+  tables              Table[]
   customizationGroups CustomizationGroup[]
   user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -181,6 +182,22 @@ model CustomizationOption {
   group       CustomizationGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
 }
 
+model Table {
+  id             String     @id @default(cuid())
+  restaurantId   String
+  number         String     // Número da mesa (ex: "1", "A1", "VIP 1")
+  qrCode         String     @unique // Hash único para o QR Code
+  capacity       Int        @default(4) // Capacidade de pessoas
+  isActive       Boolean    @default(true)
+  notes          String?    // Observações (ex: "Área externa", "Próximo à janela")
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  restaurant     Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orders         Order[]
+  
+  @@unique([restaurantId, number])
+}
+
 model Order {
   id               String      @id @default(cuid())
   restaurantId     String
@@ -196,6 +213,10 @@ model Order {
   notes            String?
   paymentMethod    String?     @default("Dinheiro")
   
+  // Tipo de pedido
+  orderType        OrderType   @default(DELIVERY)
+  tableId          String?
+  
   // Timestamps de status
   confirmedAt      DateTime?
   preparingAt      DateTime?
@@ -209,6 +230,7 @@ model Order {
   notificationSent Boolean     @default(false)
   
   restaurant       Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table            Table?      @relation(fields: [tableId], references: [id])
   orderItems       OrderItem[]
 }
 
@@ -372,4 +394,10 @@ enum PaymentStatus {
 enum CouponType {
   FIXED
   PERCENT
+}
+
+enum OrderType {
+  DELIVERY
+  TABLE
+  TAKEOUT
 }
