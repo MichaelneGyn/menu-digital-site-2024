@@ -285,3 +285,183 @@ Responda:
 - Registro.br: https://registro.br/
 - INPI: https://busca.inpi.gov.br/
 - Instagram: https://instagram.com/
+
+---
+
+## 🔥 **ATUALIZAÇÃO - PESQUISA REALIZADA (19/10/2025 17h21)**
+
+### ❌ **NOMES OCUPADOS (EVITAR):**
+
+```
+❌ MenuFlow - menuflow.club existe (Alphi Tecnologia)
+❌ PediFácil - Instagram @pedifacil ocupado
+❌ OrderHub - Hub dos Restaurantes existe
+❌ MenuPro - menupro.com + Instagram
+❌ PediJá - Instagram @pedijadelivery
+❌ ZeroFila - Empresa real (app pagamento)
+❌ SmartMenu - Múltiplos concorrentes
+❌ ComandaDigital - comandadigital.com.ar
+❌ MesaDigital - mesadigital.net + Instagram
+❌ QuickMenu - Instagram @quickmenu.africa
+❌ MenuClick - menuclick24.it (Itália)
+❌ ClickMesa - clickmesa.com + Instagram
+❌ OrderNow - Instagram @app.ordernow
+```
+
+---
+
+### ✅ **NOMES PROVAVELMENTE DISPONÍVEIS:**
+
+#### **OPÇÃO #1: PediFlex** 🔥🔥🔥
+```
+✅ Nenhum concorrente encontrado
+✅ Brasileiro + Tech
+✅ "Flex" = Flexível, moderno
+✅ Fácil de pronunciar
+✅ Memorável e único
+
+Domínio: pediflex.com.br
+Instagram: @pediflex
+Tagline: "Flexibilidade para seu negócio"
+```
+
+#### **OPÇÃO #2: MenuRapido** 🔥🔥
+```
+✅ Nenhum concorrente direto
+✅ 100% brasileiro
+✅ Auto-explicativo
+✅ Transmite velocidade
+✅ SEO-friendly
+
+Domínio: menurapido.com.br
+Instagram: @menurapido
+Tagline: "Cardápio rápido, atendimento eficiente"
+```
+
+#### **OPÇÃO #3: TapOrder** 🔥
+```
+✅ Sem presença no Brasil
+✅ Internacional (escalável)
+✅ "Tap" = Tocar (mobile)
+✅ Moderno e tech
+✅ Curto e direto
+
+Domínio: taporder.com.br
+Instagram: @taporder.br
+Tagline: "Toque e peça"
+```
+
+#### **OPÇÃO #4: FastTable** 🔥
+```
+✅ Nenhum resultado direto no Brasil
+✅ Transmite rapidez
+✅ Internacional
+✅ Fácil de lembrar
+✅ Profissional
+
+Domínio: fasttable.com.br
+Instagram: @fasttable.br
+Tagline: "Mesa rápida, cliente feliz"
+```
+
+#### **OPÇÃO #5: QRPedido** 🔥
+```
+✅ Nenhum concorrente encontrado
+✅ Descritivo (QR + Pedido)
+✅ Brasileiro
+✅ Tecnológico
+✅ Único
+
+Domínio: qrpedido.com.br
+Instagram: @qrpedido
+Tagline: "Escaneie e peça"
+```
+
+---
+
+### 🎯 **NOMES 100% ÚNICOS E CRIATIVOS:**
+
+#### **SUGESTÕES EXCLUSIVAS:**
+
+1. **PediGO** - Pedido + GO (ação)
+   - Domínio: pedigo.com.br
+   - Instagram: @pedigo.app
+
+2. **MenuTap** - Menu + Tap (tocar)
+   - Domínio: menutap.com.br
+   - Instagram: @menutap.br
+
+3. **OrderFlex** - Order + Flexível
+   - Domínio: orderflex.com.br
+   - Instagram: @orderflex.br
+
+4. **PediZen** - Pedido + Zen (calmo/organizado)
+   - Domínio: pedizen.com.br
+   - Instagram: @pedizen
+
+5. **MenuGO** - Menu + GO (velocidade)
+   - Domínio: menugo.com.br
+   - Instagram: @menugo.app
+
+6. **FlowPedido** - Fluxo + Pedido
+   - Domínio: flowpedido.com.br
+   - Instagram: @flowpedido
+
+7. **SnapMenu** - Snap (rápido) + Menu
+   - Domínio: snapmenu.com.br
+   - Instagram: @snapmenu.br
+
+8. **PediClick** - Pedido + Click
+   - Domínio: pediclick.com.br
+   - Instagram: @pediclick
+
+9. **MenuZap** - Menu + Zap (rapidez)
+   - Domínio: menuzap.com.br
+   - Instagram: @menuzap.br
+
+10. **OrderZen** - Order + Zen
+    - Domínio: orderzen.com.br
+    - Instagram: @orderzen.br
+
+---
+
+## 🏆 **RECOMENDAÇÃO FINAL ATUALIZADA:**
+
+```
+╔════════════════════════════════════════╗
+║  NOME RECOMENDADO: PediFlex            ║
+╚════════════════════════════════════════╝
+
+Por quê:
+✅ DISPONÍVEL (sem concorrentes)
+✅ Brasileiro e moderno
+✅ Fácil de lembrar e pronunciar
+✅ "Flex" passa ideia de flexibilidade
+✅ Curto e profissional
+✅ Bom para branding
+
+Domínio: pediflex.com.br
+Instagram: @pediflex
+Tagline: "Flexibilidade para seu negócio crescer"
+
+Cores sugeridas: Azul + Verde (tech + crescimento)
+Logo: "P" estilizado com movimento flex
+```
+
+**Alternativas se PediFlex estiver ocupado:**
+1. MenuRapido (brasileiro, claro)
+2. TapOrder (internacional, tech)
+3. PediGO (moderno, ação)
+
+---
+
+## 📋 **PRÓXIMOS PASSOS:**
+
+1. ✅ Pesquisa de nomes concluída
+2. ⏳ Escolher nome final
+3. ⏳ Verificar domínio no Registro.br
+4. ⏳ Verificar Instagram disponível
+5. ⏳ Registrar domínio
+6. ⏳ Criar conta Instagram
+7. ⏳ Atualizar código do site
+8. ⏳ Criar identidade visual

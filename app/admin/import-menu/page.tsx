@@ -477,35 +477,41 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                     </label>
                                     {item.hasFlavors && (
                                       <div className="ml-6 space-y-2">
-                                        <div className="flex gap-2">
-                                          <Input
-                                            placeholder="Ex: Calabresa"
-                                            onKeyPress={(e: any) => {
-                                              if (e.key === 'Enter' && e.target.value.trim()) {
-                                                e.preventDefault();
-                                                updateItem(item.id, 'flavors', [...item.flavors, e.target.value.trim()]);
-                                                e.target.value = '';
-                                              }
-                                            }}
-                                            className="flex-1"
-                                          />
-                                          <Input
-                                            type="number"
-                                            placeholder="Máx"
-                                            value={item.maxFlavors}
-                                            onChange={(e) => updateItem(item.id, 'maxFlavors', e.target.value)}
-                                            className="w-20"
-                                          />
+                                        <div className="text-xs text-gray-600 mb-1">Digite o nome do sabor e pressione ENTER para adicionar</div>
+                                        <div className="flex gap-2 items-end">
+                                          <div className="flex-1">
+                                            <Label className="text-xs">Nome do Sabor</Label>
+                                            <Input
+                                              placeholder="Ex: Calabresa, Mussarela, Frango"
+                                              onKeyPress={(e: any) => {
+                                                if (e.key === 'Enter' && e.target.value.trim()) {
+                                                  e.preventDefault();
+                                                  updateItem(item.id, 'flavors', [...item.flavors, e.target.value.trim()]);
+                                                  e.target.value = '';
+                                                }
+                                              }}
+                                            />
+                                          </div>
+                                          <div className="w-24">
+                                            <Label className="text-xs">Máx. Sabores</Label>
+                                            <Input
+                                              type="number"
+                                              placeholder="2"
+                                              value={item.maxFlavors}
+                                              onChange={(e) => updateItem(item.id, 'maxFlavors', e.target.value)}
+                                            />
+                                          </div>
                                         </div>
                                         {item.flavors.length > 0 && (
                                           <div className="space-y-1">
+                                            <div className="text-xs font-semibold text-gray-700">Sabores adicionados ({item.flavors.length}):</div>
                                             {item.flavors.map((f, i) => (
-                                              <div key={i} className="flex justify-between bg-white p-2 rounded text-sm">
-                                                <span>{f}</span>
+                                              <div key={i} className="flex justify-between bg-white p-2 rounded text-sm border">
+                                                <span>🍕 {f}</span>
                                                 <button
                                                   type="button"
                                                   onClick={() => updateItem(item.id, 'flavors', item.flavors.filter((_, idx) => idx !== i))}
-                                                  className="text-red-500 hover:text-red-700"
+                                                  className="text-red-500 hover:text-red-700 font-bold"
                                                 >
                                                   ✕
                                                 </button>
@@ -530,30 +536,36 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                     </label>
                                     {item.hasBorders && (
                                       <div className="ml-6 space-y-2">
-                                        <div className="flex gap-2">
-                                          <Input
-                                            placeholder="Ex: Catupiry"
-                                            value={tempBorderInputs[item.id]?.name || ''}
-                                            onChange={(e) => setTempBorderInputs({
-                                              ...tempBorderInputs,
-                                              [item.id]: { 
-                                                name: e.target.value, 
-                                                price: tempBorderInputs[item.id]?.price || '' 
-                                              }
-                                            })}
-                                            className="flex-1"
-                                          />
-                                          <PriceInput
-                                            value={tempBorderInputs[item.id]?.price || ''}
-                                            onChange={(val) => setTempBorderInputs({
-                                              ...tempBorderInputs,
-                                              [item.id]: { 
-                                                name: tempBorderInputs[item.id]?.name || '', 
-                                                price: val 
-                                              }
-                                            })}
-                                            placeholder="Preço"
-                                          />
+                                        <div className="text-xs text-gray-600 mb-1">Adicione opções de borda com nome e preço</div>
+                                        <div className="flex gap-2 items-end">
+                                          <div className="flex-1">
+                                            <Label className="text-xs">Nome da Borda *</Label>
+                                            <Input
+                                              placeholder="Ex: Catupiry, Cheddar, Chocolate"
+                                              value={tempBorderInputs[item.id]?.name || ''}
+                                              onChange={(e) => setTempBorderInputs({
+                                                ...tempBorderInputs,
+                                                [item.id]: { 
+                                                  name: e.target.value, 
+                                                  price: tempBorderInputs[item.id]?.price || '' 
+                                                }
+                                              })}
+                                            />
+                                          </div>
+                                          <div className="w-32">
+                                            <Label className="text-xs">Preço +R$</Label>
+                                            <PriceInput
+                                              value={tempBorderInputs[item.id]?.price || ''}
+                                              onChange={(val) => setTempBorderInputs({
+                                                ...tempBorderInputs,
+                                                [item.id]: { 
+                                                  name: tempBorderInputs[item.id]?.name || '', 
+                                                  price: val 
+                                                }
+                                              })}
+                                              placeholder="Ex: 500"
+                                            />
+                                          </div>
                                           <Button
                                             type="button"
                                             size="sm"
@@ -568,21 +580,26 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                   ...tempBorderInputs,
                                                   [item.id]: { name: '', price: '' }
                                                 });
+                                                toast.success('Borda adicionada!');
+                                              } else {
+                                                toast.error('Preencha o nome da borda');
                                               }
                                             }}
+                                            className="bg-green-600 hover:bg-green-700"
                                           >
-                                            +
+                                            ➕
                                           </Button>
                                         </div>
                                         {item.borders.length > 0 && (
                                           <div className="space-y-1">
+                                            <div className="text-xs font-semibold text-gray-700">Bordas adicionadas ({item.borders.length}):</div>
                                             {item.borders.map((b, i) => (
-                                              <div key={i} className="flex justify-between bg-white p-2 rounded text-sm">
-                                                <span>{b.name} - +R$ {parseFloat(b.price || '0').toFixed(2)}</span>
+                                              <div key={i} className="flex justify-between bg-white p-2 rounded text-sm border">
+                                                <span>🍕 {b.name} - <strong className="text-green-600">+R$ {parseFloat(b.price || '0').toFixed(2)}</strong></span>
                                                 <button
                                                   type="button"
                                                   onClick={() => updateItem(item.id, 'borders', item.borders.filter((_, idx) => idx !== i))}
-                                                  className="text-red-500 hover:text-red-700"
+                                                  className="text-red-500 hover:text-red-700 font-bold"
                                                 >
                                                   ✕
                                                 </button>
@@ -607,30 +624,36 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                     </label>
                                     {item.hasExtras && (
                                       <div className="ml-6 space-y-2">
-                                        <div className="flex gap-2">
-                                          <Input
-                                            placeholder="Ex: Bacon Extra"
-                                            value={tempExtraInputs[item.id]?.name || ''}
-                                            onChange={(e) => setTempExtraInputs({
-                                              ...tempExtraInputs,
-                                              [item.id]: { 
-                                                name: e.target.value, 
-                                                price: tempExtraInputs[item.id]?.price || '' 
-                                              }
-                                            })}
-                                            className="flex-1"
-                                          />
-                                          <PriceInput
-                                            value={tempExtraInputs[item.id]?.price || ''}
-                                            onChange={(val) => setTempExtraInputs({
-                                              ...tempExtraInputs,
-                                              [item.id]: { 
-                                                name: tempExtraInputs[item.id]?.name || '', 
-                                                price: val 
-                                              }
-                                            })}
-                                            placeholder="Preço"
-                                          />
+                                        <div className="text-xs text-gray-600 mb-1">Adicione ingredientes extras com nome e preço</div>
+                                        <div className="flex gap-2 items-end">
+                                          <div className="flex-1">
+                                            <Label className="text-xs">Nome do Extra *</Label>
+                                            <Input
+                                              placeholder="Ex: Bacon Extra, Queijo, Azeitona"
+                                              value={tempExtraInputs[item.id]?.name || ''}
+                                              onChange={(e) => setTempExtraInputs({
+                                                ...tempExtraInputs,
+                                                [item.id]: { 
+                                                  name: e.target.value, 
+                                                  price: tempExtraInputs[item.id]?.price || '' 
+                                                }
+                                              })}
+                                            />
+                                          </div>
+                                          <div className="w-32">
+                                            <Label className="text-xs">Preço +R$</Label>
+                                            <PriceInput
+                                              value={tempExtraInputs[item.id]?.price || ''}
+                                              onChange={(val) => setTempExtraInputs({
+                                                ...tempExtraInputs,
+                                                [item.id]: { 
+                                                  name: tempExtraInputs[item.id]?.name || '', 
+                                                  price: val 
+                                                }
+                                              })}
+                                              placeholder="Ex: 300"
+                                            />
+                                          </div>
                                           <Button
                                             type="button"
                                             size="sm"
@@ -645,21 +668,26 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                   ...tempExtraInputs,
                                                   [item.id]: { name: '', price: '' }
                                                 });
+                                                toast.success('Extra adicionado!');
+                                              } else {
+                                                toast.error('Preencha o nome do extra');
                                               }
                                             }}
+                                            className="bg-green-600 hover:bg-green-700"
                                           >
-                                            +
+                                            ➕
                                           </Button>
                                         </div>
                                         {item.extras.length > 0 && (
                                           <div className="space-y-1">
+                                            <div className="text-xs font-semibold text-gray-700">Extras adicionados ({item.extras.length}):</div>
                                             {item.extras.map((e, i) => (
-                                              <div key={i} className="flex justify-between bg-white p-2 rounded text-sm">
-                                                <span>{e.name} - +R$ {parseFloat(e.price || '0').toFixed(2)}</span>
+                                              <div key={i} className="flex justify-between bg-white p-2 rounded text-sm border">
+                                                <span>🍔 {e.name} - <strong className="text-green-600">+R$ {parseFloat(e.price || '0').toFixed(2)}</strong></span>
                                                 <button
                                                   type="button"
                                                   onClick={() => updateItem(item.id, 'extras', item.extras.filter((_, idx) => idx !== i))}
-                                                  className="text-red-500 hover:text-red-700"
+                                                  className="text-red-500 hover:text-red-700 font-bold"
                                                 >
                                                   ✕
                                                 </button>
