@@ -531,7 +531,7 @@ export default function HomePage() {
               </Button>
               
               <p className="text-xs text-gray-500 text-center">
-                Email: <a href="mailto:suportemenurapido@gmail.com" className="text-blue-600 underline">suportemenurapido@gmail.com</a>
+                Email: <a href="mailto:virtualcardapio@gmail.com" className="text-blue-600 underline">virtualcardapio@gmail.com</a>
               </p>
               <p className="text-xs text-gray-400 text-center mt-1">
                 💬 Veja o botão verde no canto da tela para falar conosco no WhatsApp!
