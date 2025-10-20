@@ -190,6 +190,157 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Seção de Planos e Preços */}
+          <div className="mt-20">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">💎 Escolha Seu Plano</h2>
+            <p className="text-gray-600 mb-12">Sem surpresas, sem taxas escondidas. Preço fixo e transparente.</p>
+            
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {/* Plano Básico */}
+              <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200 p-8 hover:shadow-xl transition-shadow relative">
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold mb-2">Básico</h3>
+                  <div className="text-4xl font-bold text-gray-900 mb-1">
+                    R$ 147
+                  </div>
+                  <p className="text-gray-500 text-sm mb-6">/mês</p>
+                  
+                  <ul className="text-left space-y-3 mb-8">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">✓</span>
+                      <span className="text-sm">Cardápio Digital Editável</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">✓</span>
+                      <span className="text-sm">Gestão de Pedidos</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">✓</span>
+                      <span className="text-sm">QR Code para Mesas</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">✓</span>
+                      <span className="text-sm">Até 100 pedidos/mês</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">✓</span>
+                      <span className="text-sm">Suporte por email</span>
+                    </li>
+                  </ul>
+                  
+                  <Link href="/auth/login" className="block">
+                    <Button variant="outline" className="w-full">
+                      Escolher Plano
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Plano Pro - DESTAQUE */}
+              <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl shadow-2xl border-4 border-orange-400 p-8 relative transform hover:scale-105 transition-transform">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-bold shadow-lg">
+                  ⭐ MAIS POPULAR
+                </div>
+                
+                <div className="text-center text-white">
+                  <h3 className="text-2xl font-bold mb-2">Pro</h3>
+                  <div className="text-5xl font-bold mb-1">
+                    R$ 197
+                  </div>
+                  <p className="text-orange-100 text-sm mb-6">/mês</p>
+                  
+                  <ul className="text-left space-y-3 mb-8">
+                    <li className="flex items-start gap-2">
+                      <span className="text-yellow-300 mt-1 font-bold">✓</span>
+                      <span className="text-sm">Tudo do Básico +</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-yellow-300 mt-1 font-bold">✓</span>
+                      <span className="text-sm"><strong>Kitchen Display</strong> (Painel Cozinha)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-yellow-300 mt-1 font-bold">✓</span>
+                      <span className="text-sm"><strong>Chamadas de Garçom</strong></span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-yellow-300 mt-1 font-bold">✓</span>
+                      <span className="text-sm">Pedidos <strong>ilimitados</strong></span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-yellow-300 mt-1 font-bold">✓</span>
+                      <span className="text-sm">Cupons de Desconto</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-yellow-300 mt-1 font-bold">✓</span>
+                      <span className="text-sm">Suporte <strong>prioritário</strong></span>
+                    </li>
+                  </ul>
+                  
+                  <Link href="/auth/login" className="block">
+                    <Button className="w-full bg-white text-orange-600 hover:bg-gray-100 font-bold shadow-lg">
+                      🚀 Começar Agora
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Plano Premium */}
+              <div className="bg-white rounded-2xl shadow-lg border-2 border-purple-200 p-8 hover:shadow-xl transition-shadow relative">
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold mb-2 text-purple-600">Premium</h3>
+                  <div className="text-4xl font-bold text-gray-900 mb-1">
+                    R$ 297
+                  </div>
+                  <p className="text-gray-500 text-sm mb-6">/mês</p>
+                  
+                  <ul className="text-left space-y-3 mb-8">
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-500 mt-1 font-bold">✓</span>
+                      <span className="text-sm">Tudo do Pro +</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-500 mt-1 font-bold">✓</span>
+                      <span className="text-sm"><strong>Calculadora CMV</strong></span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-500 mt-1 font-bold">✓</span>
+                      <span className="text-sm"><strong>Relatórios Avançados</strong></span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-500 mt-1 font-bold">✓</span>
+                      <span className="text-sm"><strong>Multi-lojas</strong> (até 3)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-500 mt-1 font-bold">✓</span>
+                      <span className="text-sm">Customização total</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-500 mt-1 font-bold">✓</span>
+                      <span className="text-sm">Suporte <strong>VIP</strong> (WhatsApp)</span>
+                    </li>
+                  </ul>
+                  
+                  <Link href="/auth/login" className="block">
+                    <Button className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700">
+                      Escolher Premium
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Destaque 15 dias grátis */}
+            {isPromoActive && !loading && (
+              <div className="mt-8 text-center">
+                <div className="inline-block bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg px-6 py-3">
+                  <p className="text-green-700 font-semibold">
+                    🎁 <strong>15 DIAS GRÁTIS</strong> em qualquer plano • Sem cartão de crédito
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Comparação com Concorrentes */}
           <div className="mt-16 p-8 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl">
             <h2 className="text-2xl font-bold mb-6">💡 Economize milhares por ano vs iFood</h2>
