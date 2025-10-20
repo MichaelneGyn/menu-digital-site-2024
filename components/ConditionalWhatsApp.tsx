@@ -6,12 +6,11 @@ import WhatsAppButton from './WhatsAppButton';
 export default function ConditionalWhatsApp() {
   const pathname = usePathname();
   
-  // NÃO mostrar botão WhatsApp nas páginas admin ou auth
-  const isAdminPage = pathname?.startsWith('/admin');
-  const isAuthPage = pathname?.startsWith('/auth');
+  // Mostrar botão WhatsApp APENAS na landing page (página inicial)
+  const isHomePage = pathname === '/';
   
-  // Só mostra em páginas públicas (landing page, cardápio do restaurante, etc)
-  if (isAdminPage || isAuthPage) {
+  // Só mostra na homepage
+  if (!isHomePage) {
     return null;
   }
   
