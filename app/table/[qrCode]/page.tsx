@@ -18,6 +18,7 @@ type Table = {
   };
 };
 
+// Fixed: Using useParams() instead of use() to avoid Next.js 15 compatibility issues
 export default function TableQRCodePage() {
   const params = useParams();
   const qrCode = params?.qrCode as string;
