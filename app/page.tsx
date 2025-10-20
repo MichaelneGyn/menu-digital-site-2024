@@ -81,7 +81,7 @@ export default function HomePage() {
   const ifoodCommission = monthlyRevenue * 0.262; // 23% comissão + 3.2% pagamento online
   const ifoodMonthly = monthlyRevenue >= 1800 ? 150 : 0; // Mensalidade R$ 150 se faturar >R$ 1.800
   const ifoodTotal = ifoodCommission + ifoodMonthly;
-  const ourPrice = 197;
+  const ourPrice = 129;
   const savings = ifoodTotal - ourPrice;
   const yearSavings = savings * 12;
 
@@ -170,7 +170,7 @@ export default function HomePage() {
               <div className="feature-card-old">
                 <div className="feature-icon-old text-4xl">💰</div>
                 <h3 className="feature-title-old">Zero Comissão por Pedido</h3>
-                <p className="feature-description-old">Sem taxa de 27% como iFood. Pague apenas R$ 197/mês fixo e fique com 100% das vendas!</p>
+                <p className="feature-description-old">Sem taxa de 27% como iFood. Pague apenas R$ 129/mês fixo e fique com 100% das vendas!</p>
               </div>
             </div>
 
@@ -198,15 +198,16 @@ export default function HomePage() {
             {/* Seção de Planos e Preços */}
             <div id="planos" className="mt-20">
               <h2 className="text-3xl md:text-4xl font-bold mb-3">💎 Escolha Seu Plano</h2>
-              <p className="text-gray-600 mb-12">Sem surpresas, sem taxas escondidas. Preço fixo e transparente.</p>
+              <p className="text-gray-600 mb-12">Preços competitivos. Sistema completo. Zero comissão por pedido.</p>
               
               <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
                 {/* Plano Básico */}
                 <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200 p-8 hover:shadow-xl transition-shadow relative">
                   <div className="text-center">
                     <h3 className="text-2xl font-bold mb-2">Básico</h3>
-                    <div className="text-4xl font-bold text-gray-900 mb-1">
-                      R$ 147
+                    <p className="text-xs text-gray-500 mb-3">Para começar</p>
+                    <div className="text-5xl font-bold text-gray-900 mb-1">
+                      R$ 79
                     </div>
                     <p className="text-gray-500 text-sm mb-6">/mês</p>
                     
@@ -249,8 +250,9 @@ export default function HomePage() {
                   
                   <div className="text-center text-white">
                     <h3 className="text-2xl font-bold mb-2">Pro</h3>
-                    <div className="text-5xl font-bold mb-1">
-                      R$ 197
+                    <p className="text-xs text-orange-100 mb-3">Recomendado</p>
+                    <div className="text-6xl font-bold mb-1">
+                      R$ 129
                     </div>
                     <p className="text-orange-100 text-sm mb-6">/mês</p>
                     
@@ -293,8 +295,9 @@ export default function HomePage() {
                 <div className="bg-white rounded-2xl shadow-lg border-2 border-purple-200 p-8 hover:shadow-xl transition-shadow relative">
                   <div className="text-center">
                     <h3 className="text-2xl font-bold mb-2 text-purple-600">Premium</h3>
-                    <div className="text-4xl font-bold text-gray-900 mb-1">
-                      R$ 297
+                    <p className="text-xs text-gray-500 mb-3">Para crescer</p>
+                    <div className="text-5xl font-bold text-gray-900 mb-1">
+                      R$ 199
                     </div>
                     <p className="text-gray-500 text-sm mb-6">/mês</p>
                     
@@ -364,7 +367,7 @@ export default function HomePage() {
                   <h3 className="font-bold text-green-600 mb-3">✅ Nosso Sistema</h3>
                   <ul className="space-y-2 text-sm">
                     <li>🎉 0% de taxa por pedido</li>
-                    <li>💵 R$ 197/mês fixo (sem surpresas)</li>
+                    <li>💵 R$ 129/mês fixo (sem surpresas)</li>
                     <li>👑 Cliente é 100% seu</li>
                     <li>📈 Relatórios completos + CMV</li>
                   </ul>
@@ -441,7 +444,7 @@ export default function HomePage() {
                 
                 <details className="p-4 bg-white rounded-lg shadow-sm border">
                   <summary className="font-semibold cursor-pointer">Preciso pagar taxa por pedido?</summary>
-                  <p className="mt-3 text-gray-600">NÃO! Você paga apenas a mensalidade fixa (a partir de R$ 197/mês). Zero taxa por pedido, ao contrário do iFood que cobra 27%.</p>
+                  <p className="mt-3 text-gray-600">NÃO! Você paga apenas a mensalidade fixa (a partir de R$ 79/mês). Zero taxa por pedido, ao contrário do iFood que cobra 27%.</p>
                 </details>
                 
                 <details className="p-4 bg-white rounded-lg shadow-sm border">
