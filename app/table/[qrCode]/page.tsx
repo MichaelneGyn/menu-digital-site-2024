@@ -59,6 +59,7 @@ export default function TableQRCodePage() {
         body: JSON.stringify({
           restaurantId: table.restaurantId,
           tableNumber: table.number,
+          tableId: table.id,
         }),
       });
 

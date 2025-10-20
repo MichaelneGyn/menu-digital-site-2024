@@ -5,53 +5,72 @@ import prisma from '@/lib/prisma';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { restaurantId, tableNumber } = body;
+    const { restaurantId, tableNumber, tableId } = body;
 
     if (!restaurantId || !tableNumber) {
       return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 });
     }
 
-    // Buscar informações do restaurante
-    const restaurant = await prisma.restaurant.findUnique({
-      where: { id: restaurantId },
-      select: {
-        name: true,
-        whatsapp: true,
-        user: {
+    // Buscar mesa se tableId não foi fornecido
+    let finalTableId = tableId;
+    if (!finalTableId) {
+      const table = await prisma.table.findFirst({
+        where: {
+          restaurantId,
+          number: tableNumber,
+        },
+      });
+      
+      if (!table) {
+        return NextResponse.json({ error: 'Mesa não encontrada' }, { status: 404 });
+      }
+      
+      finalTableId = table.id;
+    }
+
+    // Verificar se já existe uma chamada PENDING para essa mesa
+    const existingCall = await prisma.waiterCall.findFirst({
+      where: {
+        restaurantId,
+        tableId: finalTableId,
+        status: 'PENDING',
+      },
+    });
+
+    if (existingCall) {
+      // Já existe chamada ativa, não criar duplicada
+      return NextResponse.json({
+        success: true,
+        message: 'Chamada já registrada anteriormente',
+        callId: existingCall.id,
+      });
+    }
+
+    // Criar nova chamada
+    const waiterCall = await prisma.waiterCall.create({
+      data: {
+        restaurantId,
+        tableId: finalTableId,
+        tableNumber,
+        status: 'PENDING',
+      },
+      include: {
+        restaurant: {
           select: {
-            phone: true,
+            name: true,
           },
         },
       },
     });
 
-    if (!restaurant) {
-      return NextResponse.json({ error: 'Restaurante não encontrado' }, { status: 404 });
-    }
-
-    // Aqui você pode integrar com sistemas de notificação:
-    // - Enviar WhatsApp
-    // - Enviar SMS
-    // - Notificação push
-    // - Email
-    // - Sistema interno de chamadas
-
-    // Por enquanto, vou apenas registrar no console
+    // Log para debug
     const timestamp = new Date().toLocaleString('pt-BR');
-    console.log(`[${timestamp}] 🔔 GARÇOM CHAMADO - Mesa ${tableNumber} - ${restaurant.name}`);
-
-    // Você pode criar uma tabela WaiterCall para registrar as chamadas
-    // await prisma.waiterCall.create({
-    //   data: {
-    //     restaurantId,
-    //     tableNumber,
-    //     timestamp: new Date(),
-    //   },
-    // });
+    console.log(`[${timestamp}] 🔔 GARÇOM CHAMADO - Mesa ${tableNumber} - ${waiterCall.restaurant.name}`);
 
     return NextResponse.json({
       success: true,
       message: 'Garçom chamado com sucesso',
+      callId: waiterCall.id,
     });
   } catch (error) {
     console.error('Erro ao chamar garçom:', error);
