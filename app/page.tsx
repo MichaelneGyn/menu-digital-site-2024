@@ -81,7 +81,7 @@ export default function HomePage() {
   const ifoodCommission = monthlyRevenue * 0.262; // 23% comissão + 3.2% pagamento online
   const ifoodMonthly = monthlyRevenue >= 1800 ? 150 : 0; // Mensalidade R$ 150 se faturar >R$ 1.800
   const ifoodTotal = ifoodCommission + ifoodMonthly;
-  const ourPrice = 129;
+  const ourPrice = 119.90;
   const savings = ifoodTotal - ourPrice;
   const yearSavings = savings * 12;
 
@@ -170,7 +170,7 @@ export default function HomePage() {
               <div className="feature-card-old">
                 <div className="feature-icon-old text-4xl">💰</div>
                 <h3 className="feature-title-old">Zero Comissão por Pedido</h3>
-                <p className="feature-description-old">Sem taxa de 27% como iFood. Pague apenas R$ 129/mês fixo e fique com 100% das vendas!</p>
+                <p className="feature-description-old">Sem taxa de 27% como iFood. Pague apenas R$ 119,90/mês fixo e fique com 100% das vendas!</p>
               </div>
             </div>
 
@@ -198,45 +198,57 @@ export default function HomePage() {
             {/* Seção de Planos e Preços */}
             <div id="planos" className="mt-20">
               <h2 className="text-3xl md:text-4xl font-bold mb-3">💎 Escolha Seu Plano</h2>
-              <p className="text-gray-600 mb-12">Preços competitivos. Sistema completo. Zero comissão por pedido.</p>
+              <p className="text-gray-600 mb-12">Simples, transparente e sem surpresas. Zero comissão por pedido.</p>
               
-              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                {/* Plano Básico */}
-                <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200 p-8 hover:shadow-xl transition-shadow relative">
+              <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                {/* Plano Start */}
+                <div className="bg-white rounded-2xl shadow-lg border-2 border-blue-200 p-8 hover:shadow-xl transition-shadow relative">
                   <div className="text-center">
-                    <h3 className="text-2xl font-bold mb-2">Básico</h3>
+                    <h3 className="text-2xl font-bold mb-2 text-blue-600">Start</h3>
                     <p className="text-xs text-gray-500 mb-3">Para começar</p>
                     <div className="text-5xl font-bold text-gray-900 mb-1">
-                      R$ 79
+                      <span className="text-3xl align-top">R$</span> 69<span className="text-3xl">,90</span>
                     </div>
                     <p className="text-gray-500 text-sm mb-6">/mês</p>
                     
                     <ul className="text-left space-y-3 mb-8">
                       <li className="flex items-start gap-2">
-                        <span className="text-green-500 mt-1">✓</span>
-                        <span className="text-sm">Cardápio Digital Editável</span>
+                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-sm"><strong>Cardápio Digital Editável</strong></span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-green-500 mt-1">✓</span>
-                        <span className="text-sm">Gestão de Pedidos</span>
+                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-sm"><strong>Pedidos ILIMITADOS</strong></span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-green-500 mt-1">✓</span>
+                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-sm">Delivery + Retirada + Mesa</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1 text-lg">✓</span>
                         <span className="text-sm">QR Code para Mesas</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-green-500 mt-1">✓</span>
-                        <span className="text-sm">Até 100 pedidos/mês</span>
+                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-sm">Painel de Gestão em Tempo Real</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-green-500 mt-1">✓</span>
-                        <span className="text-sm">Suporte por email</span>
+                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-sm">Notificações de Novos Pedidos</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-sm"><strong>Suporte Email + WhatsApp</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-sm"><strong>ZERO Comissão</strong></span>
                       </li>
                     </ul>
                     
                     <Link href="/auth/login" className="block">
-                      <Button variant="outline" className="w-full">
-                        Escolher Plano
+                      <Button variant="outline" className="w-full border-2 border-blue-500 text-blue-600 hover:bg-blue-50">
+                        Começar com Start
                       </Button>
                     </Link>
                   </div>
@@ -245,92 +257,59 @@ export default function HomePage() {
                 {/* Plano Pro - DESTAQUE */}
                 <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl shadow-2xl border-4 border-orange-400 p-8 relative transform hover:scale-105 transition-transform">
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-bold shadow-lg">
-                    ⭐ MAIS POPULAR
+                    ⭐ RECOMENDADO
                   </div>
                   
                   <div className="text-center text-white">
-                    <h3 className="text-2xl font-bold mb-2">Pro</h3>
-                    <p className="text-xs text-orange-100 mb-3">Recomendado</p>
+                    <h3 className="text-3xl font-bold mb-2">Pro</h3>
+                    <p className="text-xs text-orange-100 mb-3">Mais completo</p>
                     <div className="text-6xl font-bold mb-1">
-                      R$ 129
+                      <span className="text-4xl align-top">R$</span> 119<span className="text-4xl">,90</span>
                     </div>
                     <p className="text-orange-100 text-sm mb-6">/mês</p>
                     
                     <ul className="text-left space-y-3 mb-8">
                       <li className="flex items-start gap-2">
-                        <span className="text-yellow-300 mt-1 font-bold">✓</span>
-                        <span className="text-sm">Tudo do Básico +</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
+                        <span className="text-sm"><strong>Tudo do Start +</strong></span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-yellow-300 mt-1 font-bold">✓</span>
-                        <span className="text-sm"><strong>Kitchen Display</strong> (Painel Cozinha)</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
+                        <div className="text-sm">
+                          <strong>Kitchen Display (KDS)</strong>
+                          <p className="text-xs text-orange-100 mt-1">Painel em tempo real para cozinha</p>
+                        </div>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-yellow-300 mt-1 font-bold">✓</span>
-                        <span className="text-sm"><strong>Chamadas de Garçom</strong></span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
+                        <div className="text-sm">
+                          <strong>Chamadas de Garçom</strong>
+                          <p className="text-xs text-orange-100 mt-1">Cliente chama direto do celular</p>
+                        </div>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-yellow-300 mt-1 font-bold">✓</span>
-                        <span className="text-sm">Pedidos <strong>ilimitados</strong></span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
+                        <div className="text-sm">
+                          <strong>Sistema de Cupons</strong>
+                          <p className="text-xs text-orange-100 mt-1">Crie promoções personalizadas</p>
+                        </div>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-yellow-300 mt-1 font-bold">✓</span>
-                        <span className="text-sm">Cupons de Desconto</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
+                        <div className="text-sm">
+                          <strong>Notificações Sonoras</strong>
+                          <p className="text-xs text-orange-100 mt-1">Som + alerta visual de pedidos</p>
+                        </div>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-yellow-300 mt-1 font-bold">✓</span>
-                        <span className="text-sm">Suporte <strong>prioritário</strong></span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
+                        <span className="text-sm"><strong>Suporte Prioritário</strong></span>
                       </li>
                     </ul>
                     
                     <Link href="/auth/login" className="block">
-                      <Button className="w-full bg-white text-orange-600 hover:bg-gray-100 font-bold shadow-lg">
-                        🚀 Começar Agora
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Plano Premium */}
-                <div className="bg-white rounded-2xl shadow-lg border-2 border-purple-200 p-8 hover:shadow-xl transition-shadow relative">
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold mb-2 text-purple-600">Premium</h3>
-                    <p className="text-xs text-gray-500 mb-3">Para crescer</p>
-                    <div className="text-5xl font-bold text-gray-900 mb-1">
-                      R$ 199
-                    </div>
-                    <p className="text-gray-500 text-sm mb-6">/mês</p>
-                    
-                    <ul className="text-left space-y-3 mb-8">
-                      <li className="flex items-start gap-2">
-                        <span className="text-purple-500 mt-1 font-bold">✓</span>
-                        <span className="text-sm">Tudo do Pro +</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-purple-500 mt-1 font-bold">✓</span>
-                        <span className="text-sm"><strong>Calculadora CMV</strong></span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-purple-500 mt-1 font-bold">✓</span>
-                        <span className="text-sm"><strong>Relatórios Avançados</strong></span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-purple-500 mt-1 font-bold">✓</span>
-                        <span className="text-sm"><strong>Multi-lojas</strong> (até 3)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-purple-500 mt-1 font-bold">✓</span>
-                        <span className="text-sm">Customização total</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-purple-500 mt-1 font-bold">✓</span>
-                        <span className="text-sm">Suporte <strong>VIP</strong> (WhatsApp)</span>
-                      </li>
-                    </ul>
-                    
-                    <Link href="/auth/login" className="block">
-                      <Button className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700">
-                        Escolher Premium
+                      <Button className="w-full bg-white text-orange-600 hover:bg-gray-100 font-bold shadow-lg text-base py-6">
+                        🚀 Começar com Pro
                       </Button>
                     </Link>
                   </div>
@@ -367,9 +346,9 @@ export default function HomePage() {
                   <h3 className="font-bold text-green-600 mb-3">✅ Nosso Sistema</h3>
                   <ul className="space-y-2 text-sm">
                     <li>🎉 0% de taxa por pedido</li>
-                    <li>💵 R$ 129/mês fixo (sem surpresas)</li>
+                    <li>💵 R$ 119,90/mês fixo (sem surpresas)</li>
                     <li>👑 Cliente é 100% seu</li>
-                    <li>📈 Relatórios completos + CMV</li>
+                    <li>📈 Dados e controle total</li>
                   </ul>
                 </div>
               </div>
@@ -444,7 +423,7 @@ export default function HomePage() {
                 
                 <details className="p-4 bg-white rounded-lg shadow-sm border">
                   <summary className="font-semibold cursor-pointer">Preciso pagar taxa por pedido?</summary>
-                  <p className="mt-3 text-gray-600">NÃO! Você paga apenas a mensalidade fixa (a partir de R$ 79/mês). Zero taxa por pedido, ao contrário do iFood que cobra 27%.</p>
+                  <p className="mt-3 text-gray-600">NÃO! Você paga apenas a mensalidade fixa (a partir de R$ 69,90/mês). Zero taxa por pedido, ao contrário do iFood que cobra 27%.</p>
                 </details>
                 
                 <details className="p-4 bg-white rounded-lg shadow-sm border">
@@ -453,8 +432,8 @@ export default function HomePage() {
                 </details>
                 
                 <details className="p-4 bg-white rounded-lg shadow-sm border">
-                  <summary className="font-semibold cursor-pointer">Vocês têm integração com Mercado Pago?</summary>
-                  <p className="mt-3 text-gray-600">Sim! No plano Premium você tem integração completa com Mercado Pago para pagamentos automáticos via PIX e cartão.</p>
+                  <summary className="font-semibold cursor-pointer">Tem limite de pedidos?</summary>
+                  <p className="mt-3 text-gray-600">NÃO! Ambos os planos têm pedidos ILIMITADOS. Não importa se você tem 10 ou 1000 pedidos por mês, o preço é sempre fixo.</p>
                 </details>
                 
                 <details className="p-4 bg-white rounded-lg shadow-sm border">
