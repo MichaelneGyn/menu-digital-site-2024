@@ -20,11 +20,14 @@ import {
 import { createClient } from '@supabase/supabase-js';
 
 type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'DELIVERED' | 'CANCELLED';
+type OrderType = 'DELIVERY' | 'TABLE' | 'TAKEOUT';
 
 type Order = {
   id: string;
   code: string;
   status: OrderStatus;
+  orderType?: OrderType;
+  tableId?: string;
   total: number;
   customerName: string;
   customerPhone: string;
@@ -94,6 +97,7 @@ export default function KitchenDisplayPage() {
   const [loading, setLoading] = useState(true);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<OrderStatus | 'ALL'>('ALL');
+  const [typeFilter, setTypeFilter] = useState<OrderType | 'ALL'>('ALL');
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [isRealtime, setIsRealtime] = useState(false);
   const [countdown, setCountdown] = useState(10); // ⏱️ Contador regressivo
@@ -290,17 +294,27 @@ export default function KitchenDisplayPage() {
     return `${hours}h ${mins}min`;
   };
 
-  // Filtra pedidos
-  const filteredOrders = activeFilter === 'ALL' 
-    ? orders.filter(o => o.status !== 'DELIVERED' && o.status !== 'CANCELLED')
-    : orders.filter(o => o.status === activeFilter);
+  // Filtra pedidos por status E tipo
+  let filteredOrders = orders;
+  
+  // Filtro por status
+  if (activeFilter === 'ALL') {
+    filteredOrders = filteredOrders.filter(o => o.status !== 'DELIVERED' && o.status !== 'CANCELLED');
+  } else {
+    filteredOrders = filteredOrders.filter(o => o.status === activeFilter);
+  }
+  
+  // Filtro por tipo de pedido
+  if (typeFilter !== 'ALL') {
+    filteredOrders = filteredOrders.filter(o => (o.orderType || 'DELIVERY') === typeFilter);
+  }
 
-  // Agrupa por status para o layout em colunas
+  // Agrupa por status para o layout em colunas (aplicando filtro de tipo)
   const ordersByStatus = {
-    PENDING: orders.filter(o => o.status === 'PENDING'),
-    CONFIRMED: orders.filter(o => o.status === 'CONFIRMED'),
-    PREPARING: orders.filter(o => o.status === 'PREPARING'),
-    READY: orders.filter(o => o.status === 'READY'),
+    PENDING: filteredOrders.filter(o => o.status === 'PENDING'),
+    CONFIRMED: filteredOrders.filter(o => o.status === 'CONFIRMED'),
+    PREPARING: filteredOrders.filter(o => o.status === 'PREPARING'),
+    READY: filteredOrders.filter(o => o.status === 'READY'),
   };
 
   if (loading) {
@@ -374,6 +388,47 @@ export default function KitchenDisplayPage() {
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${isRealtime ? 'animate-pulse' : ''}`} />
               Atualizar
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Filtros por Tipo de Pedido */}
+      <div className="max-w-7xl mx-auto mb-4">
+        <div className="bg-white p-4 rounded-lg shadow">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-gray-700 mr-2">Tipo de Pedido:</span>
+            <Button
+              variant={typeFilter === 'ALL' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTypeFilter('ALL')}
+              className="gap-2"
+            >
+              📋 Todos
+            </Button>
+            <Button
+              variant={typeFilter === 'DELIVERY' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTypeFilter('DELIVERY')}
+              className="gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+            >
+              🚗 Entrega
+            </Button>
+            <Button
+              variant={typeFilter === 'TAKEOUT' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTypeFilter('TAKEOUT')}
+              className="gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
+            >
+              🛍️ Retirada
+            </Button>
+            <Button
+              variant={typeFilter === 'TABLE' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTypeFilter('TABLE')}
+              className="gap-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
+            >
+              🍽️ Mesa
             </Button>
           </div>
         </div>
