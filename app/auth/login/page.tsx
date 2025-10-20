@@ -60,7 +60,7 @@ export default function LoginPage() {
       </div>
 
       {/* Brand Name */}
-      <h1 className="text-white text-3xl font-bold mb-2">OnPedido</h1>
+      <h1 className="text-white text-3xl font-bold mb-2">MenuRapido</h1>
       <p className="text-red-100 text-lg mb-8">Seja bem vindo!</p>
 
       {/* Login Form */}
