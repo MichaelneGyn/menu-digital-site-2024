@@ -6,7 +6,7 @@ export default function WhatsAppButton() {
   const [isHovered, setIsHovered] = useState(false);
   
   const phoneNumber = '5562981105064'; // (62) 98110-5064
-  const message = 'Olá! Vim pelo site do MenuRapido e gostaria de saber mais sobre o sistema.';
+  const message = 'Olá! Vim pelo site do Virtual Cardápio e gostaria de saber mais sobre a plataforma de pedidos online.';
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
   return (

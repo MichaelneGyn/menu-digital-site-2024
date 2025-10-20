@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import LandingHeader from '@/components/LandingHeader';
+import LandingFooter from '@/components/LandingFooter';
 
 export default function HomePage() {
   const [orders, setOrders] = useState(100);
@@ -83,9 +85,11 @@ export default function HomePage() {
   const yearSavings = savings * 12;
 
   return (
-    <div className="min-h-screen flex items-center justify-center page-transition">
-      <div className="max-w-4xl mx-auto text-center p-8">
-        <div className="hero-section-landing">
+    <>
+      <LandingHeader />
+      <div className="min-h-screen page-transition pt-16">
+        <div className="max-w-4xl mx-auto text-center p-8">
+          <div className="hero-section-landing">
           {/* Badge Promocional */}
           {isPromoActive && !loading && (
             <div className="inline-block mb-6 animate-bounce">
@@ -191,7 +195,7 @@ export default function HomePage() {
           </div>
 
           {/* Seção de Planos e Preços */}
-          <div className="mt-20">
+          <div id="planos" className="mt-20">
             <h2 className="text-3xl md:text-4xl font-bold mb-3">💎 Escolha Seu Plano</h2>
             <p className="text-gray-600 mb-12">Sem surpresas, sem taxas escondidas. Preço fixo e transparente.</p>
             
@@ -462,7 +466,7 @@ export default function HomePage() {
           </div>
 
           {/* Formulário de Contato */}
-          <div className="mt-16 p-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl shadow-lg">
+          <div id="contato" className="mt-16 p-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl shadow-lg">
             <h2 className="text-2xl font-bold mb-4">📞 Ficou com dúvida?</h2>
             <p className="text-gray-600 mb-6">Entre em contato conosco! Responderemos em até 24 horas.</p>
             
@@ -552,6 +556,7 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-    </div>
+      <LandingFooter />
+    </>
   );
 }
