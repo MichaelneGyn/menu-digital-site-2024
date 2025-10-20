@@ -96,10 +96,10 @@ export default function HomePage() {
           )}
           
           <h1 className="landing-main-title">
-            Cardápio Digital para Restaurantes
+            Plataforma de Pedidos Online para Restaurantes
           </h1>
           <p className="landing-main-subtitle">
-            Sistema completo: QR Code para Mesas + Delivery sem comissão
+            Seu próprio sistema de delivery e gestão, sem comissão. Como o iFood, mas 100% seu.
           </p>
           
           <div className="flex flex-col items-center gap-4 mb-8">
@@ -151,21 +151,21 @@ export default function HomePage() {
           {/* Benefícios Principais */}
           <div className="grid md:grid-cols-3 gap-6 mt-16">
             <div className="feature-card-old">
-              <div className="feature-icon-old text-4xl">📱</div>
-              <h3 className="feature-title-old">Cardápio Digital</h3>
-              <p className="feature-description-old">Cardápio completo, editável e responsivo. Funciona em qualquer dispositivo.</p>
+              <div className="feature-icon-old text-4xl">🚀</div>
+              <h3 className="feature-title-old">Sistema de Pedidos Online</h3>
+              <p className="feature-description-old">Clientes fazem pedidos pelo celular (delivery, retirada ou mesa). Seu próprio sistema, sem intermediários.</p>
             </div>
             
             <div className="feature-card-old">
-              <div className="feature-icon-old text-4xl">🍽️</div>
-              <h3 className="feature-title-old">Gestão de Pedidos</h3>
-              <p className="feature-description-old">Painel em tempo real para gerenciar pedidos com notificações instantâneas.</p>
+              <div className="feature-icon-old text-4xl">📊</div>
+              <h3 className="feature-title-old">Painel de Gestão Completo</h3>
+              <p className="feature-description-old">Kitchen Display, comandas, relatórios e controle total em tempo real. Como o iFood, mas melhor.</p>
             </div>
             
             <div className="feature-card-old">
               <div className="feature-icon-old text-4xl">💰</div>
-              <h3 className="feature-title-old">Zero Taxa por Pedido</h3>
-              <p className="feature-description-old">Sem comissão de 27% como iFood. Você fica com 100% das vendas!</p>
+              <h3 className="feature-title-old">Zero Comissão por Pedido</h3>
+              <p className="feature-description-old">Sem taxa de 27% como iFood. Pague apenas R$ 197/mês fixo e fique com 100% das vendas!</p>
             </div>
           </div>
 
