@@ -22,9 +22,13 @@ export default function HomePage() {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   
-  const PROMO_LIMIT = 50; // Limite de usuários para promoção
-  const spotsLeft = Math.max(0, PROMO_LIMIT - totalUsers);
-  const isPromoActive = totalUsers < PROMO_LIMIT;
+  const FOUNDER_LIMIT = 10; // Primeiros 10 clientes
+  const EARLY_LIMIT = 50; // Clientes 11-50
+  
+  const isFounder = totalUsers < FOUNDER_LIMIT;
+  const isEarlyAdopter = totalUsers >= FOUNDER_LIMIT && totalUsers < EARLY_LIMIT;
+  const founderSpotsLeft = Math.max(0, FOUNDER_LIMIT - totalUsers);
+  const earlySpotsLeft = Math.max(0, EARLY_LIMIT - totalUsers);
   
   useEffect(() => {
     // Buscar total de usuários
@@ -92,11 +96,23 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto text-center p-8">
           <div className="hero-section-landing">
             {/* Badge Promocional */}
-            {isPromoActive && !loading && (
+            {!loading && (
               <div className="inline-block mb-6 animate-bounce">
-                <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg">
-                  🔥 LANÇAMENTO: 15 DIAS GRÁTIS • Primeiros 50!
-                </div>
+                {isFounder && (
+                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg">
+                    👑 CLIENTES FUNDADORES: R$ 49,90/mês VITALÍCIO • Só {founderSpotsLeft} vagas!
+                  </div>
+                )}
+                {isEarlyAdopter && (
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg">
+                    ⭐ EARLY ADOPTERS: R$ 69,90/mês VITALÍCIO • Só {earlySpotsLeft} vagas!
+                  </div>
+                )}
+                {!isFounder && !isEarlyAdopter && (
+                  <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg">
+                    ✅ LANÇAMENTO: 15 DIAS GRÁTIS • R$ 89,90/mês
+                  </div>
+                )}
               </div>
             )}
             
@@ -109,46 +125,81 @@ export default function HomePage() {
             
             <div className="flex flex-col items-center gap-4 mb-8">
               {/* Contador de Vagas */}
-              {isPromoActive && !loading && (
+              {(isFounder || isEarlyAdopter) && !loading && (
                 <div className="bg-white border-2 border-orange-500 rounded-lg p-4 shadow-lg mb-2 w-full max-w-md">
                   <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-1">⏰ Oferta por tempo limitado</p>
-                    <div className="flex items-center justify-center gap-2 text-2xl font-bold text-orange-600">
-                      <span className="text-4xl">{spotsLeft}</span>
-                      <div className="text-left text-sm">
-                        <div>vagas</div>
-                        <div>restantes</div>
-                      </div>
-                    </div>
-                    <div className="mt-2 bg-gray-200 rounded-full h-2 overflow-hidden">
-                      <div 
-                        className="bg-gradient-to-r from-orange-500 to-red-500 h-full transition-all duration-500"
-                        style={{ width: `${((PROMO_LIMIT - spotsLeft) / PROMO_LIMIT) * 100}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">{PROMO_LIMIT - spotsLeft} de {PROMO_LIMIT} vagas preenchidas</p>
+                    {isFounder && (
+                      <>
+                        <p className="text-sm text-gray-600 mb-1">👑 Preço Vitalício de Fundador</p>
+                        <div className="flex items-center justify-center gap-2 text-2xl font-bold text-yellow-600">
+                          <span className="text-4xl">{founderSpotsLeft}</span>
+                          <div className="text-left text-sm">
+                            <div>vagas</div>
+                            <div>restantes</div>
+                          </div>
+                        </div>
+                        <div className="mt-2 bg-gray-200 rounded-full h-2 overflow-hidden">
+                          <div 
+                            className="bg-gradient-to-r from-yellow-500 to-orange-500 h-full transition-all duration-500"
+                            style={{ width: `${((FOUNDER_LIMIT - founderSpotsLeft) / FOUNDER_LIMIT) * 100}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">{FOUNDER_LIMIT - founderSpotsLeft} de {FOUNDER_LIMIT} vagas preenchidas</p>
+                        <p className="text-xs font-bold text-yellow-700 mt-2">💰 R$ 49,90/mês PARA SEMPRE!</p>
+                      </>
+                    )}
+                    {isEarlyAdopter && (
+                      <>
+                        <p className="text-sm text-gray-600 mb-1">⭐ Preço Vitalício Early Adopter</p>
+                        <div className="flex items-center justify-center gap-2 text-2xl font-bold text-blue-600">
+                          <span className="text-4xl">{earlySpotsLeft}</span>
+                          <div className="text-left text-sm">
+                            <div>vagas</div>
+                            <div>restantes</div>
+                          </div>
+                        </div>
+                        <div className="mt-2 bg-gray-200 rounded-full h-2 overflow-hidden">
+                          <div 
+                            className="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-500"
+                            style={{ width: `${((EARLY_LIMIT - earlySpotsLeft) / EARLY_LIMIT) * 100}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">{EARLY_LIMIT - earlySpotsLeft} de {EARLY_LIMIT} vagas preenchidas</p>
+                        <p className="text-xs font-bold text-blue-700 mt-2">💰 R$ 69,90/mês PARA SEMPRE!</p>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
               
               <Link href="/auth/login" className="w-full max-w-md">
                 <Button size="lg" className="cta-button-primary w-full text-lg py-6 relative overflow-hidden group">
-                  {isPromoActive ? (
+                  {isFounder && (
+                    <>
+                      <span className="relative z-10">👑 Garantir Preço Fundador R$ 49,90/mês</span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 group-hover:opacity-20 transition-opacity"></span>
+                    </>
+                  )}
+                  {isEarlyAdopter && (
+                    <>
+                      <span className="relative z-10">⭐ Garantir R$ 69,90/mês Vitalício</span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity"></span>
+                    </>
+                  )}
+                  {!isFounder && !isEarlyAdopter && (
                     <>
                       <span className="relative z-10">🚀 Começar Agora - 15 DIAS GRÁTIS</span>
-                      <span className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-400 opacity-0 group-hover:opacity-20 transition-opacity"></span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-green-400 to-teal-400 opacity-0 group-hover:opacity-20 transition-opacity"></span>
                     </>
-                  ) : (
-                    '🚀 Começar Agora - 7 Dias Grátis'
                   )}
                 </Button>
               </Link>
               <p className="text-sm text-gray-500">
                 ✅ Sem cartão de crédito • ✅ Cancele quando quiser • ✅ Suporte incluído
               </p>
-              {isPromoActive && !loading && (
+              {!loading && (
                 <p className="text-xs text-orange-600 font-semibold animate-pulse">
-                  🎁 Bônus: Setup completo + Suporte prioritário
+                  🎁 15 Dias Grátis • Sem Cartão • Suporte Incluso
                 </p>
               )}
             </div>
@@ -197,145 +248,151 @@ export default function HomePage() {
 
             {/* Seção de Planos e Preços */}
             <div id="planos" className="mt-20">
-              <h2 className="text-3xl md:text-4xl font-bold mb-3">💎 Escolha Seu Plano</h2>
-              <p className="text-gray-600 mb-12">Simples, transparente e sem surpresas. Zero comissão por pedido.</p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-3">💎 Plano Completo</h2>
+              <p className="text-gray-600 mb-8">Um único plano com TUDO incluído. Zero comissão por pedido.</p>
               
-              <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                {/* Plano Start */}
-                <div className="bg-white rounded-2xl shadow-lg border-2 border-blue-200 p-8 hover:shadow-xl transition-shadow relative">
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold mb-2 text-blue-600">Start</h3>
-                    <p className="text-xs text-gray-500 mb-3">Completo para começar</p>
-                    <div className="text-5xl font-bold text-gray-900 mb-1">
-                      <span className="text-3xl align-top">R$</span> 69<span className="text-3xl">,90</span>
+              {/* Pricing Dinâmico */}
+              {!loading && (isFounder || isEarlyAdopter) && (
+                <div className="mb-8 text-center">
+                  {isFounder && (
+                    <div className="inline-block bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-lg px-6 py-3">
+                      <p className="text-yellow-800 font-bold">
+                        👑 PREÇO FUNDADOR: R$ 49,90/mês VITALÍCIO • Só {founderSpotsLeft} vagas restantes!
+                      </p>
                     </div>
-                    <p className="text-gray-500 text-sm mb-6">/mês</p>
+                  )}
+                  {isEarlyAdopter && (
+                    <div className="inline-block bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-400 rounded-lg px-6 py-3">
+                      <p className="text-blue-800 font-bold">
+                        ⭐ EARLY ADOPTER: R$ 69,90/mês VITALÍCIO • Só {earlySpotsLeft} vagas restantes!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div className="max-w-2xl mx-auto">
+                {/* Plano Único */}
+                <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl shadow-2xl border-4 border-orange-400 p-8 relative">
+                  {!loading && (isFounder || isEarlyAdopter) && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-bold shadow-lg">
+                      {isFounder && '👑 PREÇO FUNDADOR'}
+                      {isEarlyAdopter && '⭐ EARLY ADOPTER'}
+                    </div>
+                  )}
+                  
+                  <div className="text-center text-white">
+                    <h3 className="text-3xl font-bold mb-2">Plano Completo</h3>
+                    <p className="text-xs text-orange-100 mb-3">Tudo incluído, sem limites artificiais</p>
+                    
+                    {/* Preço Dinâmico */}
+                    {!loading && (
+                      <>
+                        {isFounder && (
+                          <>
+                            <div className="text-6xl font-bold mb-1">
+                              <span className="text-4xl align-top">R$</span> 49<span className="text-4xl">,90</span>
+                            </div>
+                            <p className="text-orange-100 text-sm mb-2">/mês • VITALÍCIO</p>
+                            <div className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold inline-block mb-4">
+                              Só {founderSpotsLeft} vagas restantes!
+                            </div>
+                          </>
+                        )}
+                        {isEarlyAdopter && (
+                          <>
+                            <div className="text-6xl font-bold mb-1">
+                              <span className="text-4xl align-top">R$</span> 69<span className="text-4xl">,90</span>
+                            </div>
+                            <p className="text-orange-100 text-sm mb-2">/mês • VITALÍCIO</p>
+                            <div className="bg-blue-400 text-blue-900 px-3 py-1 rounded-full text-xs font-bold inline-block mb-4">
+                              Só {earlySpotsLeft} vagas restantes!
+                            </div>
+                          </>
+                        )}
+                        {!isFounder && !isEarlyAdopter && (
+                          <>
+                            <div className="text-6xl font-bold mb-1">
+                              <span className="text-4xl align-top">R$</span> 89<span className="text-4xl">,90</span>
+                            </div>
+                            <p className="text-orange-100 text-sm mb-6">/mês</p>
+                          </>
+                        )}
+                      </>
+                    )}
+                    {loading && (
+                      <>
+                        <div className="text-6xl font-bold mb-1">
+                          <span className="text-4xl align-top">R$</span> 89<span className="text-4xl">,90</span>
+                        </div>
+                        <p className="text-orange-100 text-sm mb-6">/mês</p>
+                      </>
+                    )}
                     
                     <ul className="text-left space-y-3 mb-8">
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <span className="text-sm"><strong>Cardápio Digital Editável</strong></span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <span className="text-sm"><strong>Pedidos ILIMITADOS</strong></span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <span className="text-sm">Delivery + Retirada + Mesa</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <span className="text-sm">QR Code para Mesas</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <span className="text-sm"><strong>Kitchen Display (Painel Cozinha)</strong></span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <span className="text-sm"><strong>Chamadas de Garçom</strong></span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <span className="text-sm"><strong>Sistema de Cupons</strong></span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <span className="text-sm"><strong>Notificações Sonoras</strong></span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
+                        <span className="text-sm"><strong>Cálculo de CMV Completo</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <span className="text-sm">Painel de Gestão em Tempo Real</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
+                        <span className="text-sm">Analytics e Relatórios</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <span className="text-sm">1 Restaurante</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <span className="text-sm">Suporte Email + WhatsApp</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1 text-lg">✓</span>
-                        <span className="text-sm"><strong>ZERO Comissão</strong></span>
-                      </li>
-                    </ul>
-                    
-                    <Link href="/auth/login" className="block">
-                      <Button variant="outline" className="w-full border-2 border-blue-500 text-blue-600 hover:bg-blue-50">
-                        Começar com Start
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Plano Pro - DESTAQUE */}
-                <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl shadow-2xl border-4 border-orange-400 p-8 relative transform hover:scale-105 transition-transform">
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-bold shadow-lg">
-                    ⭐ RECOMENDADO
-                  </div>
-                  
-                  <div className="text-center text-white">
-                    <h3 className="text-3xl font-bold mb-2">Pro</h3>
-                    <p className="text-xs text-orange-100 mb-3">Para crescer e expandir</p>
-                    <div className="text-6xl font-bold mb-1">
-                      <span className="text-4xl align-top">R$</span> 119<span className="text-4xl">,90</span>
-                    </div>
-                    <p className="text-orange-100 text-sm mb-6">/mês</p>
-                    
-                    <ul className="text-left space-y-3 mb-8">
-                      <li className="flex items-start gap-2">
                         <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
-                        <span className="text-sm"><strong>Tudo do Start +</strong></span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
-                        <div className="text-sm">
-                          <strong>Múltiplos Restaurantes</strong>
-                          <p className="text-xs text-orange-100 mt-1">Ideal para franquias e grupos</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
-                        <div className="text-sm">
-                          <strong>Relatórios Avançados</strong>
-                          <p className="text-xs text-orange-100 mt-1">Analytics + Insights de vendas</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
-                        <div className="text-sm">
-                          <strong>API Personalizada</strong>
-                          <p className="text-xs text-orange-100 mt-1">Integre com seus sistemas</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
-                        <div className="text-sm">
-                          <strong>Suporte Prioritário 24/7</strong>
-                          <p className="text-xs text-orange-100 mt-1">Atendimento preferencial</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
-                        <div className="text-sm">
-                          <strong>Consultor de Cardápio</strong>
-                          <p className="text-xs text-orange-100 mt-1">Ajuda especializada em precificação</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
-                        <div className="text-sm">
-                          <strong>Domínio Personalizado</strong>
-                          <p className="text-xs text-orange-100 mt-1">Ex: pedidos.seurestaurante.com.br</p>
-                        </div>
+                        <span className="text-sm"><strong>ZERO Comissão por Pedido</strong></span>
                       </li>
                     </ul>
                     
                     <Link href="/auth/login" className="block">
                       <Button className="w-full bg-white text-orange-600 hover:bg-gray-100 font-bold shadow-lg text-base py-6">
-                        🚀 Começar com Pro
+                        {isFounder && '👑 Garantir R$ 49,90/mês Vitalício'}
+                        {isEarlyAdopter && '⭐ Garantir R$ 69,90/mês Vitalício'}
+                        {!isFounder && !isEarlyAdopter && '🚀 Começar Agora - 15 DIAS GRÁTIS'}
                       </Button>
                     </Link>
                   </div>
@@ -343,11 +400,13 @@ export default function HomePage() {
               </div>
 
               {/* Destaque 15 dias grátis */}
-              {isPromoActive && !loading && (
+              {!loading && (
                 <div className="mt-8 text-center">
                   <div className="inline-block bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg px-6 py-3">
                     <p className="text-green-700 font-semibold">
-                      🎁 <strong>15 DIAS GRÁTIS</strong> em qualquer plano • Sem cartão de crédito
+                      🎁 <strong>15 DIAS GRÁTIS</strong> • Sem cartão de crédito
+                      {isFounder && <span className="ml-2">• 👑 PREÇO FUNDADOR: R$ 49,90/mês VITALÍCIO</span>}
+                      {isEarlyAdopter && <span className="ml-2">• ⭐ EARLY ADOPTER: R$ 69,90/mês VITALÍCIO</span>}
                     </p>
                   </div>
                 </div>
@@ -556,7 +615,7 @@ export default function HomePage() {
             <div className="mt-16">
               <Link href="/auth/login" className="inline-block">
                 <Button size="lg" className="cta-button-primary text-lg py-6 px-8">
-                  {isPromoActive ? '🔥 Começar Agora - 15 DIAS GRÁTIS' : '🚀 Começar Teste Grátis'}
+                  {isFounder ? '👑 Garantir R$ 49,90/mês Vitalício' : (isEarlyAdopter ? '⭐ Garantir R$ 69,90/mês Vitalício' : '🚀 Começar Agora - 15 DIAS GRÁTIS')}
                 </Button>
               </Link>
               <p className="text-xs text-gray-500 mt-3">
