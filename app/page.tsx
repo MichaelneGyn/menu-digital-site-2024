@@ -287,38 +287,24 @@ export default function HomePage() {
                   
                   <div className="text-center text-white">
                     <h3 className="text-3xl font-bold mb-2">Plano Completo</h3>
-                    <p className="text-xs text-orange-100 mb-6">Tudo incluído, sem limites artificiais</p>
-                    
-                    {/* Destaque 15 DIAS GRÁTIS */}
-                    <div className="bg-gradient-to-r from-green-400 to-emerald-500 rounded-2xl p-6 mb-6 shadow-2xl border-4 border-green-300">
-                      <div className="flex items-center justify-center gap-2 mb-3">
-                        <span className="text-4xl">🎁</span>
-                        <h4 className="text-4xl font-black text-white">15 DIAS GRÁTIS</h4>
-                      </div>
-                      <p className="text-white font-bold text-lg mb-2">Teste completo sem cartão de crédito</p>
-                      <div className="bg-white/20 rounded-lg p-3 backdrop-blur-sm">
-                        <p className="text-white text-sm font-semibold">
-                          ✓ Acesso total por 15 dias<br/>
-                          ✓ Sem compromisso<br/>
-                          ✓ Cancele quando quiser
-                        </p>
-                      </div>
-                    </div>
+                    <p className="text-xs text-orange-100 mb-3">Tudo incluído, sem limites artificiais</p>
                     
                     {/* Preço Dinâmico */}
                     {!loading && (
                       <>
                         {isFounder && (
                           <>
-                            <p className="text-orange-100 text-sm mb-2">Após período de teste:</p>
-                            <div className="text-6xl font-bold mb-1">
-                              <span className="text-4xl align-top">R$</span> 69<span className="text-4xl">,90</span>
+                            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4 border-2 border-yellow-400">
+                              <p className="text-yellow-300 text-lg font-black mb-2 tracking-wide">APÓS PERÍODO DE TESTE:</p>
+                              <div className="text-7xl font-black mb-1 text-yellow-300 drop-shadow-lg" style={{fontFamily: 'system-ui, -apple-system, sans-serif'}}>
+                                R$ 69<span className="text-5xl">,90</span>
+                              </div>
+                              <p className="text-yellow-200 text-base font-bold mb-3">/mês</p>
+                              <div className="bg-yellow-400 text-yellow-900 px-5 py-2 rounded-full text-base font-black inline-block shadow-lg">
+                                🔥 PRIMEIROS 10: Só {founderSpotsLeft} vagas!
+                              </div>
+                              <p className="text-sm text-yellow-200 mt-3 font-semibold">* Após os 10 primeiros clientes haverá reajuste de preço</p>
                             </div>
-                            <p className="text-orange-100 text-sm mb-2">/mês</p>
-                            <div className="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-full text-sm font-bold inline-block mb-2">
-                              🔥 PRIMEIROS 10: Só {founderSpotsLeft} vagas!
-                            </div>
-                            <p className="text-xs text-orange-200 mb-4">* Após os 10 primeiros clientes haverá reajuste de preço</p>
                           </>
                         )}
                         {isEarlyAdopter && (
@@ -411,7 +397,7 @@ export default function HomePage() {
                     </ul>
                     
                     <Link href="/auth/login" className="block">
-                      <Button className="w-full bg-white text-orange-600 hover:bg-gray-100 font-bold shadow-lg text-base py-6">
+                      <Button className="w-full bg-white text-orange-600 hover:bg-gray-100 shadow-2xl text-lg py-7 font-black tracking-wide" style={{fontFamily: 'system-ui, -apple-system, sans-serif'}}>
                         {isFounder && '🔥 GARANTIR R$ 69,90/MÊS'}
                         {isEarlyAdopter && '⭐ GARANTIR R$ 79,90/MÊS'}
                         {!isFounder && !isEarlyAdopter && '🚀 Começar Agora - 15 DIAS GRÁTIS'}
