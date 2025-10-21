@@ -205,7 +205,7 @@ export default function HomePage() {
                 <div className="bg-white rounded-2xl shadow-lg border-2 border-blue-200 p-8 hover:shadow-xl transition-shadow relative">
                   <div className="text-center">
                     <h3 className="text-2xl font-bold mb-2 text-blue-600">Start</h3>
-                    <p className="text-xs text-gray-500 mb-3">Para começar</p>
+                    <p className="text-xs text-gray-500 mb-3">Completo para começar</p>
                     <div className="text-5xl font-bold text-gray-900 mb-1">
                       <span className="text-3xl align-top">R$</span> 69<span className="text-3xl">,90</span>
                     </div>
@@ -230,15 +230,31 @@ export default function HomePage() {
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-sm"><strong>Kitchen Display (Painel Cozinha)</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-sm"><strong>Chamadas de Garçom</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-sm"><strong>Sistema de Cupons</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1 text-lg">✓</span>
+                        <span className="text-sm"><strong>Notificações Sonoras</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1 text-lg">✓</span>
                         <span className="text-sm">Painel de Gestão em Tempo Real</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-blue-500 mt-1 text-lg">✓</span>
-                        <span className="text-sm">Notificações de Novos Pedidos</span>
+                        <span className="text-sm">1 Restaurante</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-blue-500 mt-1 text-lg">✓</span>
-                        <span className="text-sm"><strong>Suporte Email + WhatsApp</strong></span>
+                        <span className="text-sm">Suporte Email + WhatsApp</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-blue-500 mt-1 text-lg">✓</span>
@@ -262,7 +278,7 @@ export default function HomePage() {
                   
                   <div className="text-center text-white">
                     <h3 className="text-3xl font-bold mb-2">Pro</h3>
-                    <p className="text-xs text-orange-100 mb-3">Mais completo</p>
+                    <p className="text-xs text-orange-100 mb-3">Para crescer e expandir</p>
                     <div className="text-6xl font-bold mb-1">
                       <span className="text-4xl align-top">R$</span> 119<span className="text-4xl">,90</span>
                     </div>
@@ -276,34 +292,44 @@ export default function HomePage() {
                       <li className="flex items-start gap-2">
                         <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <div className="text-sm">
-                          <strong>Kitchen Display (KDS)</strong>
-                          <p className="text-xs text-orange-100 mt-1">Painel em tempo real para cozinha</p>
+                          <strong>Múltiplos Restaurantes</strong>
+                          <p className="text-xs text-orange-100 mt-1">Ideal para franquias e grupos</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <div className="text-sm">
-                          <strong>Chamadas de Garçom</strong>
-                          <p className="text-xs text-orange-100 mt-1">Cliente chama direto do celular</p>
+                          <strong>Relatórios Avançados</strong>
+                          <p className="text-xs text-orange-100 mt-1">Analytics + Insights de vendas</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <div className="text-sm">
-                          <strong>Sistema de Cupons</strong>
-                          <p className="text-xs text-orange-100 mt-1">Crie promoções personalizadas</p>
+                          <strong>API Personalizada</strong>
+                          <p className="text-xs text-orange-100 mt-1">Integre com seus sistemas</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
                         <div className="text-sm">
-                          <strong>Notificações Sonoras</strong>
-                          <p className="text-xs text-orange-100 mt-1">Som + alerta visual de pedidos</p>
+                          <strong>Suporte Prioritário 24/7</strong>
+                          <p className="text-xs text-orange-100 mt-1">Atendimento preferencial</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
-                        <span className="text-sm"><strong>Suporte Prioritário</strong></span>
+                        <div className="text-sm">
+                          <strong>Consultor de Cardápio</strong>
+                          <p className="text-xs text-orange-100 mt-1">Ajuda especializada em precificação</p>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
+                        <div className="text-sm">
+                          <strong>Domínio Personalizado</strong>
+                          <p className="text-xs text-orange-100 mt-1">Ex: pedidos.seurestaurante.com.br</p>
+                        </div>
                       </li>
                     </ul>
                     
