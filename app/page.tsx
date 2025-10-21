@@ -248,23 +248,109 @@ export default function HomePage() {
 
             {/* Seção de Planos e Preços */}
             <div id="planos" className="mt-20">
-              <h2 className="text-3xl md:text-4xl font-bold mb-3">💎 Plano Completo</h2>
-              <p className="text-gray-600 mb-8">Um único plano com TUDO incluído. Zero comissão por pedido.</p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-3">💎 Um Único Plano. Tudo Incluído.</h2>
+              <p className="text-gray-600 mb-8">Sistema completo de pedidos + gestão. Sem taxa por pedido, sem surpresas.</p>
               
+              {/* Comparação de Economia - DESTAQUE */}
+              <div className="max-w-3xl mx-auto mb-12">
+                <div className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-300 rounded-2xl p-6 shadow-xl">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* iFood */}
+                    <div className="bg-white rounded-xl p-6 border-2 border-red-400">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xl font-bold text-red-600">iFood</h3>
+                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Concorrente</span>
+                      </div>
+                      <div className="space-y-2 text-sm mb-4">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Mensalidade:</span>
+                          <span className="font-bold">R$ 150/mês</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Comissão:</span>
+                          <span className="font-bold text-red-600">27% por pedido</span>
+                        </div>
+                        <div className="border-t pt-2 mt-2">
+                          <div className="flex justify-between text-xs text-gray-500">
+                            <span>100 pedidos × R$ 50:</span>
+                            <span>R$ 5.000</span>
+                          </div>
+                          <div className="flex justify-between text-xs text-red-600">
+                            <span>Comissão 27%:</span>
+                            <span>-R$ 1.350</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="border-t-2 border-red-300 pt-3 mt-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-semibold">Custo Total/mês:</span>
+                          <span className="text-2xl font-bold text-red-600">R$ 1.500</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Seu Sistema */}
+                    <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 border-2 border-green-400 shadow-lg relative overflow-hidden">
+                      <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-bl-lg text-xs font-bold">
+                        VOCÊ ECONOMIZA
+                      </div>
+                      <div className="flex items-center justify-between mb-4 mt-2">
+                        <h3 className="text-xl font-bold text-white">Seu Sistema</h3>
+                        <span className="text-xs bg-white/20 text-white px-2 py-1 rounded">✨ NOSSO</span>
+                      </div>
+                      <div className="space-y-2 text-sm mb-4 text-white">
+                        <div className="flex justify-between">
+                          <span>Mensalidade:</span>
+                          <span className="font-bold">R$ 89,90/mês</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Comissão:</span>
+                          <span className="font-bold text-yellow-300">0% por pedido ✨</span>
+                        </div>
+                        <div className="border-t border-white/20 pt-2 mt-2">
+                          <div className="flex justify-between text-xs opacity-90">
+                            <span>100 pedidos × R$ 50:</span>
+                            <span>R$ 5.000</span>
+                          </div>
+                          <div className="flex justify-between text-xs text-yellow-300 font-bold">
+                            <span>Comissão 0%:</span>
+                            <span>R$ 0 🎉</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="border-t-2 border-white/30 pt-3 mt-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-semibold text-white">Custo Total/mês:</span>
+                          <span className="text-3xl font-bold text-yellow-300">R$ 89,90</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Economia Total */}
+                  <div className="mt-6 text-center bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl p-4 shadow-lg">
+                    <p className="text-sm text-yellow-900 font-semibold mb-1">💰 VOCÊ ECONOMIZA vs iFood:</p>
+                    <p className="text-4xl font-bold text-yellow-900 mb-1">R$ 1.410 /mês</p>
+                    <p className="text-2xl font-bold text-yellow-900">R$ 16.920 /ano</p>
+                    <p className="text-xs text-yellow-800 mt-2">*Baseado em 100 pedidos/mês com ticket médio de R$ 50</p>
+                  </div>
+                </div>
+              </div>
+
               {/* Pricing Dinâmico */}
               {!loading && (isFounder || isEarlyAdopter) && (
                 <div className="mb-8 text-center">
                   {isFounder && (
-                    <div className="inline-block bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-lg px-6 py-3">
+                    <div className="inline-block bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-lg px-6 py-3 animate-pulse">
                       <p className="text-yellow-800 font-bold">
-                        👑 PREÇO FUNDADOR: R$ 49,90/mês VITALÍCIO • Só {founderSpotsLeft} vagas restantes!
+                        👑 FUNDADOR: R$ 69,90/mês VITALÍCIO • Só {founderSpotsLeft} vagas! (Preço normal: R$ 89,90)
                       </p>
                     </div>
                   )}
                   {isEarlyAdopter && (
-                    <div className="inline-block bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-400 rounded-lg px-6 py-3">
+                    <div className="inline-block bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-400 rounded-lg px-6 py-3 animate-pulse">
                       <p className="text-blue-800 font-bold">
-                        ⭐ EARLY ADOPTER: R$ 69,90/mês VITALÍCIO • Só {earlySpotsLeft} vagas restantes!
+                        ⭐ EARLY ADOPTER: R$ 89,90/mês VITALÍCIO • Só {earlySpotsLeft} vagas! (Preço futuro: R$ 119,90)
                       </p>
                     </div>
                   )}
