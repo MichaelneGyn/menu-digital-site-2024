@@ -125,104 +125,47 @@ export default function HomePage() {
             </p>
             
             <div className="flex flex-col items-center gap-4 mb-8">
-              {/* Contador de Vagas - DESTAQUE ESPECIAL */}
+              {/* Contador de Vagas */}
               {(isFounder || isEarlyAdopter) && !loading && (
-                <div className="bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 border-4 border-red-500 rounded-2xl p-6 shadow-2xl mb-4 w-full max-w-md relative animate-pulse" style={{ animationDuration: '2s' }}>
-                  {/* Efeito de brilho ao redor */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-yellow-400 via-red-500 to-orange-500 opacity-20 animate-pulse"></div>
-                  
-                  {/* Badge "LIMITADO" com animação forte */}
-                  <div className="absolute -top-4 -right-4 z-10">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-red-500 rounded-full blur-xl opacity-50 animate-ping"></div>
-                      <div className="relative bg-gradient-to-r from-red-600 to-orange-600 text-white px-5 py-2 rounded-full text-xs font-black shadow-2xl animate-bounce" style={{ animationDuration: '1s' }}>
-                        ⚡ LIMITADO!
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-center relative z-10">
+                <div className="bg-white border-2 border-orange-500 rounded-lg p-6 shadow-lg mb-4 w-full max-w-md">
+                  <div className="text-center">
                     {isFounder && (
                       <>
-                        {/* Título com animação */}
-                        <div className="mb-3">
-                          <div className="inline-block animate-bounce" style={{ animationDuration: '1.5s' }}>
-                            <p className="text-2xl font-black mb-1 bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 bg-clip-text text-transparent">
-                              🔥 PRIMEIROS 10 CLIENTES 🔥
-                            </p>
-                          </div>
-                          <p className="text-sm font-bold text-red-700 animate-pulse">Garanta o menor preço de lançamento!</p>
-                        </div>
+                        <p className="text-sm text-gray-600 mb-2">🔥 Primeiros 10 Clientes</p>
+                        <p className="text-xs text-gray-500 mb-4">Garanta o menor preço de lançamento</p>
                         
-                        {/* Contador de vagas com destaque MÁXIMO */}
                         <div className="flex items-center justify-center gap-4 mb-4">
-                          <div className="relative">
-                            {/* Brilho atrás do número */}
-                            <div className="absolute inset-0 bg-yellow-400 rounded-2xl blur-2xl opacity-30 animate-pulse"></div>
-                            <div className="relative bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 rounded-2xl p-5 shadow-2xl transform hover:scale-110 transition-transform border-4 border-white">
-                              <span className="text-6xl font-black text-white drop-shadow-2xl animate-pulse" style={{ animationDuration: '1s' }}>
-                                {founderSpotsLeft}
-                              </span>
-                              <p className="text-xs text-white font-bold mt-1 uppercase tracking-wider">Vagas!</p>
-                            </div>
+                          <div className="bg-orange-100 rounded-xl p-4 border-2 border-orange-400">
+                            <span className="text-5xl font-black text-orange-600">{founderSpotsLeft}</span>
+                            <p className="text-xs text-gray-600 mt-1 font-semibold">vagas restantes</p>
                           </div>
                           
                           <div className="text-left">
-                            <div className="bg-white rounded-lg px-4 py-2 shadow-lg border-2 border-green-500">
-                              <p className="text-4xl font-black text-green-600 animate-pulse">R$ 69,90</p>
-                              <p className="text-xs text-gray-600 font-semibold">por mês</p>
-                              <p className="text-sm text-red-600 line-through font-bold">R$ 89,90</p>
-                              <p className="text-xs font-bold text-green-700 mt-1">💰 Economize R$ 20!</p>
-                            </div>
+                            <p className="text-3xl font-bold text-green-600">R$ 69,90</p>
+                            <p className="text-xs text-gray-600">por mês</p>
+                            <p className="text-sm text-gray-400 line-through">R$ 89,90</p>
                           </div>
                         </div>
-                        {/* Barra de progresso animada */}
-                        <div className="bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner mb-3 border-2 border-gray-300">
+                        
+                        <div className="bg-gray-200 rounded-full h-2 overflow-hidden mb-2">
                           <div 
-                            className="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-600 h-full transition-all duration-500 shadow-lg relative overflow-hidden"
+                            className="bg-gradient-to-r from-orange-500 to-red-500 h-full transition-all duration-500"
                             style={{ width: `${((FOUNDER_LIMIT - founderSpotsLeft) / FOUNDER_LIMIT) * 100}%` }}
-                          >
-                            {/* Efeito de brilho animado */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
-                          </div>
+                          ></div>
                         </div>
-                        <p className="text-sm font-bold text-gray-700 mb-4">
-                          <span className="text-red-600 text-lg">{FOUNDER_LIMIT - founderSpotsLeft}</span> de <span className="text-lg">{FOUNDER_LIMIT}</span> vagas já garantidas!
-                        </p>
-                        {/* Caixa de benefícios com destaque */}
-                        <div className="bg-gradient-to-br from-yellow-100 to-orange-100 border-3 border-yellow-500 rounded-xl p-4 mb-3 shadow-lg transform hover:scale-105 transition-transform">
-                          <p className="text-sm font-black text-yellow-900 mb-2 flex items-center justify-center gap-2">
-                            <span className="text-xl animate-bounce">💎</span>
-                            <span>BENEFÍCIOS EXCLUSIVOS</span>
-                            <span className="text-xl animate-bounce" style={{ animationDelay: '0.2s' }}>💎</span>
-                          </p>
-                          <ul className="text-sm text-left text-yellow-900 space-y-2 font-semibold">
-                            <li className="flex items-center gap-2">
-                              <span className="text-green-600 text-lg">✅</span>
-                              <span>R$ 69,90/mês (normal R$ 89,90)</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <span className="text-green-600 text-lg">✅</span>
-                              <span>Economize R$ 240/ano</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <span className="text-green-600 text-lg">✅</span>
-                              <span>Badge exclusivo 👑</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <span className="text-green-600 text-lg">✅</span>
-                              <span>15 dias grátis sem cartão</span>
-                            </li>
+                        <p className="text-xs text-gray-500 mb-4">{FOUNDER_LIMIT - founderSpotsLeft} de {FOUNDER_LIMIT} vagas garantidas</p>
+                        
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
+                          <p className="text-xs font-bold text-orange-900 mb-2">💎 BENEFÍCIOS:</p>
+                          <ul className="text-xs text-left text-orange-900 space-y-1">
+                            <li>✅ R$ 69,90/mês (normal R$ 89,90)</li>
+                            <li>✅ Economize R$ 240/ano</li>
+                            <li>✅ Badge exclusivo</li>
+                            <li>✅ 15 dias grátis</li>
                           </ul>
                         </div>
                         
-                        {/* Aviso de cancelamento com destaque */}
-                        <div className="bg-red-100 border-2 border-red-500 rounded-lg p-3 animate-pulse" style={{ animationDuration: '3s' }}>
-                          <p className="text-sm text-red-700 font-bold flex items-center justify-center gap-2">
-                            <span className="text-xl">⚠️</span>
-                            <span>Se cancelar e retornar, paga R$ 89,90/mês</span>
-                          </p>
-                        </div>
+                        <p className="text-xs text-red-600 font-bold">⚠️ Se cancelar e retornar, paga R$ 89,90/mês</p>
                       </>
                     )}
                     {isEarlyAdopter && (
@@ -342,88 +285,79 @@ export default function HomePage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-3">💎 Um Único Plano. Tudo Incluído.</h2>
               <p className="text-gray-600 mb-8">Sistema completo de pedidos + gestão. Sem taxa por pedido, sem surpresas.</p>
               
-              {/* Comparação de Economia - DESTAQUE */}
+              {/* Comparação com iFood */}
               <div className="max-w-3xl mx-auto mb-12">
-                <div className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-300 rounded-2xl p-6 shadow-xl">
+                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                   <div className="grid md:grid-cols-2 gap-6">
                     {/* iFood */}
-                    <div className="bg-white rounded-xl p-6 border-2 border-red-400">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xl font-bold text-red-600">iFood</h3>
-                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Concorrente</span>
-                      </div>
-                      <div className="space-y-2 text-sm mb-4">
+                    <div className="border-l-4 border-red-500 pl-4">
+                      <h3 className="text-lg font-bold text-gray-900 mb-3">iFood</h3>
+                      <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Mensalidade:</span>
-                          <span className="font-bold">R$ 150/mês</span>
+                          <span className="font-semibold">R$ 150/mês</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Comissão:</span>
-                          <span className="font-bold text-red-600">27% por pedido</span>
+                          <span className="font-semibold text-red-600">27% por pedido</span>
                         </div>
                         <div className="border-t pt-2 mt-2">
                           <div className="flex justify-between text-xs text-gray-500">
                             <span>100 pedidos × R$ 50:</span>
                             <span>R$ 5.000</span>
                           </div>
-                          <div className="flex justify-between text-xs text-red-600">
+                          <div className="flex justify-between text-xs text-red-600 font-medium">
                             <span>Comissão 27%:</span>
                             <span>-R$ 1.350</span>
                           </div>
                         </div>
-                      </div>
-                      <div className="border-t-2 border-red-300 pt-3 mt-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-semibold">Custo Total/mês:</span>
-                          <span className="text-2xl font-bold text-red-600">R$ 1.500</span>
+                        <div className="border-t pt-2 mt-2">
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold">Custo Total:</span>
+                            <span className="text-xl font-bold text-red-600">R$ 1.500</span>
+                          </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Seu Sistema */}
-                    <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 border-2 border-green-400 shadow-lg relative overflow-hidden">
-                      <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-bl-lg text-xs font-bold">
-                        VOCÊ ECONOMIZA
-                      </div>
-                      <div className="flex items-center justify-between mb-4 mt-2">
-                        <h3 className="text-xl font-bold text-white">Seu Sistema</h3>
-                        <span className="text-xs bg-white/20 text-white px-2 py-1 rounded">✨ NOSSO</span>
-                      </div>
-                      <div className="space-y-2 text-sm mb-4 text-white">
+                    <div className="border-l-4 border-green-500 pl-4">
+                      <h3 className="text-lg font-bold text-gray-900 mb-3">Seu Sistema</h3>
+                      <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span>Mensalidade:</span>
-                          <span className="font-bold">R$ 89,90/mês</span>
+                          <span className="text-gray-600">Mensalidade:</span>
+                          <span className="font-semibold">R$ 89,90/mês</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Comissão:</span>
-                          <span className="font-bold text-yellow-300">0% por pedido ✨</span>
+                          <span className="text-gray-600">Comissão:</span>
+                          <span className="font-semibold text-green-600">0% por pedido</span>
                         </div>
-                        <div className="border-t border-white/20 pt-2 mt-2">
-                          <div className="flex justify-between text-xs opacity-90">
+                        <div className="border-t pt-2 mt-2">
+                          <div className="flex justify-between text-xs text-gray-500">
                             <span>100 pedidos × R$ 50:</span>
                             <span>R$ 5.000</span>
                           </div>
-                          <div className="flex justify-between text-xs text-yellow-300 font-bold">
+                          <div className="flex justify-between text-xs text-green-600 font-medium">
                             <span>Comissão 0%:</span>
-                            <span>R$ 0 🎉</span>
+                            <span>R$ 0</span>
                           </div>
                         </div>
-                      </div>
-                      <div className="border-t-2 border-white/30 pt-3 mt-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-semibold text-white">Custo Total/mês:</span>
-                          <span className="text-3xl font-bold text-yellow-300">R$ 89,90</span>
+                        <div className="border-t pt-2 mt-2">
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold">Custo Total:</span>
+                            <span className="text-xl font-bold text-green-600">R$ 89,90</span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Economia Total */}
-                  <div className="mt-6 text-center bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl p-4 shadow-lg">
-                    <p className="text-sm text-yellow-900 font-semibold mb-1">💰 VOCÊ ECONOMIZA vs iFood:</p>
-                    <p className="text-4xl font-bold text-yellow-900 mb-1">R$ 1.410 /mês</p>
-                    <p className="text-2xl font-bold text-yellow-900">R$ 16.920 /ano</p>
-                    <p className="text-xs text-yellow-800 mt-2">*Baseado em 100 pedidos/mês com ticket médio de R$ 50</p>
+                  {/* Economia */}
+                  <div className="mt-6 text-center border-t pt-4">
+                    <p className="text-sm text-gray-600 mb-1">Você economiza vs iFood:</p>
+                    <p className="text-3xl font-bold text-orange-600">R$ 1.410 /mês</p>
+                    <p className="text-lg font-semibold text-gray-700">R$ 16.920 /ano</p>
+                    <p className="text-xs text-gray-500 mt-2">*Baseado em 100 pedidos/mês com ticket médio de R$ 50</p>
                   </div>
                 </div>
               </div>
