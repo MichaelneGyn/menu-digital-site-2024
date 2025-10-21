@@ -107,52 +107,82 @@ export default function HomePage() {
             <div className="flex flex-col items-center gap-4 mb-8">
               {/* Contador de Vagas */}
               {(isFounder || isEarlyAdopter) && !loading && (
-                <div className="bg-gradient-to-br from-orange-50 to-red-50 border-3 border-orange-500 rounded-xl p-6 shadow-xl mb-4 w-full max-w-md relative">
+                <div className="bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 border-4 border-orange-400 rounded-2xl p-8 shadow-2xl mb-4 w-full max-w-md relative overflow-hidden">
+                  {/* Efeito de brilho de fundo */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-200 via-red-200 to-yellow-200 opacity-30"></div>
+                  
                   {/* Badge "LIMITADO" */}
-                  <div className="absolute -top-3 -right-3 bg-red-500 text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse">
-                    ⚡ LIMITADO
+                  <div className="absolute -top-3 -right-3 z-10">
+                    <div className="bg-gradient-to-r from-red-600 to-orange-600 text-white px-5 py-2 rounded-full text-xs font-bold shadow-xl animate-pulse">
+                      ⚡ LIMITADO
+                    </div>
                   </div>
                   
-                  <div className="text-center">
+                  <div className="text-center relative z-10">
                     {isFounder && (
                       <>
-                        <p className="text-base font-bold text-orange-700 mb-1">🔥 Primeiros 10 Clientes</p>
-                        <p className="text-sm text-gray-600 mb-4">Garanta o menor preço de lançamento</p>
+                        <div className="mb-4">
+                          <p className="text-xl font-black text-orange-700 mb-2">🔥 Primeiros 10 Clientes</p>
+                          <p className="text-sm text-gray-700 font-medium">Garanta o menor preço de lançamento</p>
+                        </div>
                         
-                        <div className="flex items-center justify-center gap-4 mb-4">
-                          <div className="bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl p-5 border-2 border-orange-500 shadow-md">
-                            <span className="text-6xl font-black text-orange-600">{founderSpotsLeft}</span>
-                            <p className="text-xs text-gray-700 mt-1 font-bold">vagas restantes</p>
+                        <div className="flex items-center justify-center gap-6 mb-5">
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-orange-400 rounded-2xl blur-lg opacity-40"></div>
+                            <div className="relative bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-6 border-4 border-white shadow-2xl transform hover:scale-105 transition-transform">
+                              <span className="text-7xl font-black text-white drop-shadow-lg">{founderSpotsLeft}</span>
+                              <p className="text-xs text-white font-bold mt-2 uppercase tracking-wide">Vagas</p>
+                            </div>
                           </div>
                           
-                          <div className="text-left">
-                            <p className="text-4xl font-black text-green-600">R$ 69,90</p>
-                            <p className="text-sm text-gray-600">por mês</p>
-                            <p className="text-base text-gray-400 line-through font-semibold">R$ 89,90</p>
+                          <div className="text-left bg-white rounded-xl p-4 shadow-lg border-2 border-green-400">
+                            <p className="text-5xl font-black text-green-600">R$ 69,90</p>
+                            <p className="text-sm text-gray-600 font-semibold">por mês</p>
+                            <p className="text-lg text-gray-400 line-through font-bold">R$ 89,90</p>
+                            <p className="text-xs text-green-700 font-bold mt-1">💰 Economize R$ 20/mês</p>
                           </div>
                         </div>
                         
-                        <div className="bg-gray-300 rounded-full h-3 overflow-hidden mb-2 shadow-inner">
+                        <div className="bg-white rounded-full h-4 overflow-hidden mb-3 shadow-lg border-2 border-gray-200">
                           <div 
-                            className="bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 h-full transition-all duration-500"
+                            className="bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 h-full transition-all duration-500 relative"
                             style={{ width: `${((FOUNDER_LIMIT - founderSpotsLeft) / FOUNDER_LIMIT) * 100}%` }}
-                          ></div>
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-600 font-semibold mb-4">{FOUNDER_LIMIT - founderSpotsLeft} de {FOUNDER_LIMIT} vagas garantidas</p>
+                        <p className="text-sm text-gray-700 font-bold mb-5">
+                          <span className="text-red-600 text-lg">{FOUNDER_LIMIT - founderSpotsLeft}</span> de <span className="text-lg">{FOUNDER_LIMIT}</span> vagas garantidas
+                        </p>
                         
-                        <div className="bg-gradient-to-br from-orange-100 to-yellow-100 border-2 border-orange-300 rounded-lg p-4 mb-3 shadow-sm">
-                          <p className="text-sm font-bold text-orange-900 mb-2">💎 BENEFÍCIOS:</p>
-                          <ul className="text-sm text-left text-orange-900 space-y-1.5">
-                            <li>✅ R$ 69,90/mês (normal R$ 89,90)</li>
-                            <li>✅ Economize R$ 240/ano</li>
-                            <li>✅ Badge exclusivo</li>
-                            <li>✅ 15 dias grátis</li>
+                        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border-3 border-orange-400 rounded-xl p-5 mb-4 shadow-lg">
+                          <p className="text-base font-black text-orange-800 mb-3 flex items-center justify-center gap-2">
+                            <span className="text-2xl">💎</span>
+                            <span>BENEFÍCIOS EXCLUSIVOS</span>
+                          </p>
+                          <ul className="text-sm text-left text-orange-900 space-y-2 font-semibold">
+                            <li className="flex items-center gap-2">
+                              <span className="text-green-600 text-base">✅</span>
+                              <span>R$ 69,90/mês (normal R$ 89,90)</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <span className="text-green-600 text-base">✅</span>
+                              <span>Economize R$ 240/ano</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <span className="text-green-600 text-base">✅</span>
+                              <span>Badge exclusivo 👑</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <span className="text-green-600 text-base">✅</span>
+                              <span>15 dias grátis sem cartão</span>
+                            </li>
                           </ul>
                         </div>
                         
-                        <div className="bg-red-50 border-2 border-red-400 rounded-lg p-2">
-                          <p className="text-sm text-red-700 font-bold">⚠️ Se cancelar e retornar, paga R$ 89,90/mês</p>
-                        </div>
+                        <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-2">
+                          ⚠️ Se cancelar e retornar, paga R$ 89,90/mês
+                        </p>
                       </>
                     )}
                     {isEarlyAdopter && (
