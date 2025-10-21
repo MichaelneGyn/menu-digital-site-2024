@@ -3,10 +3,16 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+// Configuração de Planos e Preços
 const PLANS = {
-  basic: { name: 'Básico', price: 49.90 },
-  pro: { name: 'Profissional', price: 99.90 },
+  founder: { name: 'Fundador (10 primeiros)', price: 69.90 },
+  early: { name: 'Early Adopter (11-50)', price: 79.90 },
+  normal: { name: 'Normal', price: 89.90 },
 };
+
+// 🔑 CHAVE PIX DO SISTEMA
+const PIX_KEY = 'c39d3f73-ea89-4954-88cc-d26120896540';
+const PIX_RECIPIENT_NAME = 'Menu Digital';
 
 /**
  * Cria um pagamento PIX para assinatura
@@ -63,7 +69,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       id: payment.id,
       amount: planInfo.price,
-      pixKey: 'pix@seurestaurante.com', // Substitua pela chave PIX real
+      pixKey: PIX_KEY,
+      pixRecipientName: PIX_RECIPIENT_NAME,
       pixQrCode: `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(pixCopyPaste)}`,
       pixCopyPaste,
       status: payment.status,
@@ -78,11 +85,15 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * Gera código PIX Copia e Cola fictício
- * Em produção, usar API do provedor (Mercado Pago, PagSeguro, etc.)
+ * Gera código PIX Copia e Cola
+ * NOTA: Esta é uma versão simplificada para pagamento manual
+ * Para automação completa, integrar API Mercado Pago/PagSeguro
  */
 function generatePixCode(paymentId: string, amount: number): string {
-  // Código PIX fictício para demonstração
-  // Em produção, usar API real
-  return `00020126580014br.gov.bcb.pix0136${paymentId}520400005303986540${amount.toFixed(2)}5802BR5925SEU RESTAURANTE LTDA6009SAO PAULO62070503***6304${Math.random().toString(36).substring(7).toUpperCase()}`;
+  // Código PIX simplificado com a chave real
+  // Formato básico do PIX: chave + valor
+  const amountStr = amount.toFixed(2).replace('.', '');
+  const checksum = Math.random().toString(36).substring(7).toUpperCase();
+  
+  return `00020126580014br.gov.bcb.pix0136${PIX_KEY}520400005303986540${amountStr}5802BR5925${PIX_RECIPIENT_NAME.toUpperCase().padEnd(25).substring(0, 25)}6009SAO PAULO62070503***6304${checksum}`;
 }
