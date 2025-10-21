@@ -320,7 +320,7 @@ export default function HomePage() {
                                 R$ 69<span className="text-5xl">,90</span>
                               </div>
                               <p className="text-orange-100 text-lg font-bold mb-4">/mês</p>
-                              <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-5 py-2.5 rounded-full text-base font-black inline-block shadow-2xl" style={{fontFamily: 'system-ui, -apple-system, sans-serif'}}>
+                              <div className="bg-gradient-to-r from-red-600 to-orange-600 text-white px-5 py-2.5 rounded-full text-base font-extrabold inline-block shadow-2xl border-2 border-white/50" style={{fontFamily: 'system-ui, -apple-system, sans-serif'}}>
                                 🔥 PRIMEIROS 10: Só {founderSpotsLeft} vagas!
                               </div>
                               <p className="text-sm text-orange-100 mt-3 font-semibold">* Após os 10 primeiros clientes haverá reajuste de preço</p>
