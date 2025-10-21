@@ -14,17 +14,34 @@ const signUpSchema = z.object({
   whatsapp: z.string().optional(),
 });
 
-// Data de início das 10 vagas (AJUSTE PARA A DATA REAL DE LANÇAMENTO)
-const LAUNCH_DATE = new Date('2025-01-21T00:00:00Z'); 
-const FOUNDER_LIMIT = 10;
-const EARLY_LIMIT = 50;
+// LIMITE DE USUÁRIOS (Ajustável conforme upgrade do servidor)
+// Comece com 10, depois aumente para 20, 50, 100, etc.
+const USER_LIMIT = 10; // 🔧 AJUSTE ESTE VALOR QUANDO FIZER UPGRADE DO SERVIDOR
 
-// Função para enviar notificação (você pode melhorar depois)
+const FOUNDER_LIMIT = 10;  // Primeiros 10 pagam R$ 69,90
+const EARLY_LIMIT = 50;     // Usuários 11-50 pagam R$ 79,90
+                            // Usuários 51+ pagam R$ 89,90
+
+// Função para enviar notificação quando chegar perto do limite
 async function sendLimitNotification(count: number, limit: number) {
   try {
-    console.log(`🚨 ALERTA: ${count} de ${limit} vagas preenchidas!`);
-    // TODO: Enviar email/WhatsApp para o admin
-    // Você pode integrar com Resend ou outro serviço aqui
+    console.log(`\n🚨 ═══════════════════════════════════════`);
+    console.log(`🚨 ALERTA DE LIMITE: ${count}/${limit} usuários cadastrados!`);
+    console.log(`🚨 ═══════════════════════════════════════\n`);
+    
+    // Avisos específicos
+    if (count === limit - 1) {
+      console.log(`⚠️  ATENÇÃO: ÚLTIMA VAGA DISPONÍVEL!`);
+      console.log(`⚠️  Próximo cadastro atingirá o limite do servidor.`);
+    } else if (count === limit) {
+      console.log(`🔴 LIMITE ATINGIDO!`);
+      console.log(`🔴 Novos cadastros estão bloqueados.`);
+      console.log(`🔴 Faça upgrade do servidor e ajuste USER_LIMIT em /app/api/signup/route.ts`);
+    }
+    console.log(`\n═══════════════════════════════════════\n`);
+    
+    // TODO: Enviar email/WhatsApp para o admin quando implementar
+    // await sendEmail({ to: 'admin@email.com', subject: 'Limite de usuários' });
   } catch (error) {
     console.error('Erro ao enviar notificação:', error);
   }
@@ -40,20 +57,20 @@ export async function POST(request: NextRequest) {
       return rateLimitResult.response;
     }
 
-    // 🔒 VERIFICAR LIMITE DE VAGAS (PRIMEIROS 10)
-    const newUsersCount = await prisma.user.count({
-      where: {
-        createdAt: {
-          gte: LAUNCH_DATE,
-        },
-      },
-    });
+    // 🔒 VERIFICAR LIMITE DE USUÁRIOS NO SERVIDOR
+    const totalUsers = await prisma.user.count();
 
-    if (newUsersCount >= FOUNDER_LIMIT) {
-      console.log(`🚫 LIMITE ATINGIDO: ${newUsersCount}/${FOUNDER_LIMIT} vagas preenchidas`);
+    // Notificar quando estiver perto do limite
+    if (totalUsers === USER_LIMIT - 1 || totalUsers === USER_LIMIT) {
+      await sendLimitNotification(totalUsers, USER_LIMIT);
+    }
+
+    // Bloquear novos cadastros se atingiu o limite
+    if (totalUsers >= USER_LIMIT) {
+      console.log(`🚫 CADASTRO BLOQUEADO: ${totalUsers}/${USER_LIMIT} usuários no servidor`);
       return NextResponse.json(
         { 
-          error: 'Vagas esgotadas! As 10 vagas de lançamento já foram preenchidas. Entre na lista de espera.',
+          error: 'Limite de usuários atingido! Estamos preparando mais vagas. Por favor, tente novamente em breve ou entre em contato.',
           limitReached: true,
         },
         { status: 403 }
@@ -157,23 +174,18 @@ export async function POST(request: NextRequest) {
       return { user, restaurant, subscription };
     });
 
-    // 🔔 NOTIFICAR SE ESTÁ PRÓXIMO DO LIMITE
-    const updatedCount = newUsersCount + 1;
-    if (updatedCount === FOUNDER_LIMIT - 2) {
-      await sendLimitNotification(updatedCount, FOUNDER_LIMIT);
-    } else if (updatedCount === FOUNDER_LIMIT - 1) {
-      await sendLimitNotification(updatedCount, FOUNDER_LIMIT);
-    } else if (updatedCount === FOUNDER_LIMIT) {
-      await sendLimitNotification(updatedCount, FOUNDER_LIMIT);
-      console.log('🎉 LIMITE ATINGIDO! Prepare o upgrade da infraestrutura!');
-    }
+    // Determinar qual tipo de cliente é (para pricing)
+    const finalUserCount = totalUsers + 1; // +1 porque acabamos de criar
+    const isFounder = finalUserCount <= FOUNDER_LIMIT;
+    const isEarlyAdopter = finalUserCount > FOUNDER_LIMIT && finalUserCount <= EARLY_LIMIT;
 
     return NextResponse.json(
       { 
         message: 'Conta criada com sucesso!',
         restaurantSlug: result.restaurant?.slug || null,
-        isFounder: updatedCount <= FOUNDER_LIMIT,
-        spotNumber: updatedCount,
+        isFounder,
+        isEarlyAdopter,
+        spotNumber: finalUserCount,
       },
       { status: 201 }
     );
