@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
@@ -60,8 +61,8 @@ export default function LoginPage() {
       </div>
 
       {/* Brand Name */}
-      <h1 className="text-white text-3xl font-bold mb-2">MenuRapido</h1>
-      <p className="text-red-100 text-lg mb-8">Seja bem vindo!</p>
+      <h1 className="text-white text-3xl font-bold mb-2">Virtual Cardápio</h1>
+      <p className="text-red-100 text-lg mb-8">Plataforma de Pedidos</p>
 
       {/* Login Form */}
       <div className="w-full max-w-sm">

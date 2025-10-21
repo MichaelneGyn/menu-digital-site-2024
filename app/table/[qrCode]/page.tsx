@@ -176,8 +176,8 @@ export default function TableQRCodePage() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-sm text-gray-500">
-          <p>✨ Powered by MenuRapido</p>
-          <p className="mt-1">Cardápio Digital Inteligente</p>
+          <p>✨ Powered by Virtual Cardápio</p>
+          <p className="mt-1">Plataforma de Pedidos Online</p>
         </div>
       </div>
     </div>
