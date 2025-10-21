@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import toast from 'react-hot-toast';
-import { Upload, Save, ImageIcon } from 'lucide-react';
+import { Upload, Save, ImageIcon, AlertTriangle } from 'lucide-react';
+import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
 
 type Restaurant = {
   id: string;
@@ -24,8 +26,9 @@ type Restaurant = {
   slug: string;
 };
 
-export default function SettingsPage() {
-  const { data: session } = useSession();
+function SettingsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -43,9 +46,17 @@ export default function SettingsPage() {
     address: '',
   });
 
+  // Verificar autenticação
   useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session) {
+      router.push('/auth/login');
+      return;
+    }
+    
     fetchRestaurant();
-  }, []);
+  }, [session, status, router]);
 
   const fetchRestaurant = async () => {
     try {
@@ -369,3 +380,6 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+// Exportar com proteção de autenticação e assinatura
+export default withSubscriptionCheck(SettingsPage);
