@@ -101,12 +101,12 @@ export default function HomePage() {
               <div className="inline-block mb-6 animate-bounce">
                 {isFounder && (
                   <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg">
-                    🔥 10 PRIMEIROS FUNDADORES: R$ 69,90/mês VITALÍCIO • Só {founderSpotsLeft} vagas!
+                    🔥 PRIMEIROS 10 CLIENTES: R$ 69,90/mês • Só {founderSpotsLeft} vagas!
                   </div>
                 )}
                 {isEarlyAdopter && (
                   <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg">
-                    ⭐ PRIMEIROS 50: R$ 79,90/mês VITALÍCIO • Restam {earlySpotsLeft} vagas!
+                    ⭐ PRIMEIROS 50: R$ 79,90/mês • Restam {earlySpotsLeft} vagas!
                   </div>
                 )}
                 {!isFounder && !isEarlyAdopter && (
@@ -134,8 +134,8 @@ export default function HomePage() {
                   <div className="text-center">
                     {isFounder && (
                       <>
-                        <p className="text-lg text-red-700 font-bold mb-2">🔥 10 PRIMEIROS FUNDADORES</p>
-                        <p className="text-sm text-gray-700 mb-3">Garanta o menor preço VITALÍCIO</p>
+                        <p className="text-lg text-red-700 font-bold mb-2">🔥 PRIMEIROS 10 CLIENTES</p>
+                        <p className="text-sm text-gray-700 mb-3">Garanta o menor preço de lançamento</p>
                         <div className="flex items-center justify-center gap-3 mb-3">
                           <div className="bg-white rounded-xl p-4 shadow-md border-2 border-yellow-400">
                             <span className="text-5xl font-black text-yellow-600">{founderSpotsLeft}</span>
@@ -144,7 +144,7 @@ export default function HomePage() {
                           <div className="text-left">
                             <p className="text-3xl font-bold text-green-600">R$ 69,90</p>
                             <p className="text-xs text-gray-600">por mês</p>
-                            <p className="text-xs font-bold text-yellow-700">VITALÍCIO!</p>
+                            <p className="text-xs text-gray-500 line-through">R$ 89,90</p>
                           </div>
                         </div>
                         <div className="bg-white rounded-full h-3 overflow-hidden shadow-inner mb-2">
@@ -155,21 +155,21 @@ export default function HomePage() {
                         </div>
                         <p className="text-sm text-gray-600 mb-3">{FOUNDER_LIMIT - founderSpotsLeft} de {FOUNDER_LIMIT} vagas já garantidas</p>
                         <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-3 mb-2">
-                          <p className="text-xs font-bold text-yellow-900">💎 BENEFÍCIOS EXCLUSIVOS:</p>
+                          <p className="text-xs font-bold text-yellow-900">💎 BENEFÍCIOS:</p>
                           <ul className="text-xs text-left text-yellow-900 mt-2 space-y-1">
-                            <li>✅ R$ 69,90/mês para SEMPRE (preço nunca aumenta)</li>
-                            <li>✅ Economize R$ 240/ano vs preço normal</li>
-                            <li>✅ Badge exclusivo "Cliente Fundador"</li>
-                            <li>✅ 15 dias grátis para testar</li>
+                            <li>✅ R$ 69,90/mês (preço normal R$ 89,90)</li>
+                            <li>✅ Economize R$ 240/ano</li>
+                            <li>✅ Badge exclusivo</li>
+                            <li>✅ 15 dias grátis</li>
                           </ul>
                         </div>
-                        <p className="text-xs text-red-600 font-bold">⚠️ Atenção: Se cancelar e retornar, paga preço cheio (R$ 89,90)</p>
+                        <p className="text-xs text-red-600 font-bold">⚠️ Atenção: Se cancelar e retornar, paga preço normal (R$ 89,90/mês)</p>
                       </>
                     )}
                     {isEarlyAdopter && (
                       <>
                         <p className="text-lg text-blue-700 font-bold mb-2">⭐ PRIMEIROS 50 CLIENTES</p>
-                        <p className="text-sm text-gray-700 mb-3">Garanta desconto VITALÍCIO</p>
+                        <p className="text-sm text-gray-700 mb-3">Garanta preço promocional</p>
                         <div className="flex items-center justify-center gap-3 mb-3">
                           <div className="bg-white rounded-xl p-4 shadow-md border-2 border-blue-400">
                             <span className="text-5xl font-black text-blue-600">{earlySpotsLeft}</span>
@@ -178,7 +178,7 @@ export default function HomePage() {
                           <div className="text-left">
                             <p className="text-3xl font-bold text-green-600">R$ 79,90</p>
                             <p className="text-xs text-gray-600">por mês</p>
-                            <p className="text-xs font-bold text-blue-700">VITALÍCIO!</p>
+                            <p className="text-xs text-gray-500 line-through">R$ 89,90</p>
                           </div>
                         </div>
                         <div className="bg-white rounded-full h-3 overflow-hidden shadow-inner mb-2">
@@ -189,15 +189,15 @@ export default function HomePage() {
                         </div>
                         <p className="text-sm text-gray-600 mb-3">{EARLY_LIMIT - earlySpotsLeft} de {EARLY_LIMIT} vagas já garantidas</p>
                         <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-3 mb-2">
-                          <p className="text-xs font-bold text-blue-900">💎 BENEFÍCIOS EXCLUSIVOS:</p>
+                          <p className="text-xs font-bold text-blue-900">💎 BENEFÍCIOS:</p>
                           <ul className="text-xs text-left text-blue-900 mt-2 space-y-1">
-                            <li>✅ R$ 79,90/mês para SEMPRE (preço nunca aumenta)</li>
-                            <li>✅ Economize R$ 120/ano vs preço normal</li>
-                            <li>✅ Badge "Early Adopter"</li>
-                            <li>✅ 15 dias grátis para testar</li>
+                            <li>✅ R$ 79,90/mês (preço normal R$ 89,90)</li>
+                            <li>✅ Economize R$ 120/ano</li>
+                            <li>✅ Badge especial</li>
+                            <li>✅ 15 dias grátis</li>
                           </ul>
                         </div>
-                        <p className="text-xs text-red-600 font-bold">⚠️ Atenção: Se cancelar e retornar, paga preço cheio (R$ 89,90)</p>
+                        <p className="text-xs text-red-600 font-bold">⚠️ Atenção: Se cancelar e retornar, paga preço normal (R$ 89,90/mês)</p>
                       </>
                     )}
                   </div>
@@ -208,13 +208,13 @@ export default function HomePage() {
                 <Button size="lg" className="cta-button-primary w-full text-lg py-6 relative overflow-hidden group">
                   {isFounder && (
                     <>
-                      <span className="relative z-10">🔥 GARANTIR R$ 69,90/MÊS VITALÍCIO</span>
+                      <span className="relative z-10">🔥 GARANTIR R$ 69,90/MÊS</span>
                       <span className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 group-hover:opacity-20 transition-opacity"></span>
                     </>
                   )}
                   {isEarlyAdopter && (
                     <>
-                      <span className="relative z-10">⭐ GARANTIR R$ 79,90/MÊS VITALÍCIO</span>
+                      <span className="relative z-10">⭐ GARANTIR R$ 79,90/MÊS</span>
                       <span className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity"></span>
                     </>
                   )}
@@ -375,14 +375,14 @@ export default function HomePage() {
                   {isFounder && (
                     <div className="inline-block bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-lg px-6 py-3 animate-pulse">
                       <p className="text-yellow-800 font-bold">
-                        👑 FUNDADOR: R$ 69,90/mês VITALÍCIO • Só {founderSpotsLeft} vagas! (Preço normal: R$ 89,90)
+                        🔥 PRIMEIROS 10: R$ 69,90/mês • Só {founderSpotsLeft} vagas! (Preço normal: R$ 89,90)
                       </p>
                     </div>
                   )}
                   {isEarlyAdopter && (
                     <div className="inline-block bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-400 rounded-lg px-6 py-3 animate-pulse">
                       <p className="text-blue-800 font-bold">
-                        ⭐ PRIMEIROS 50: R$ 79,90/mês VITALÍCIO • Restam {earlySpotsLeft} vagas! (Preço normal: R$ 89,90)
+                        ⭐ PRIMEIROS 50: R$ 79,90/mês • Restam {earlySpotsLeft} vagas! (Preço normal: R$ 89,90)
                       </p>
                     </div>
                   )}
@@ -411,7 +411,7 @@ export default function HomePage() {
                             <div className="text-6xl font-bold mb-1">
                               <span className="text-4xl align-top">R$</span> 49<span className="text-4xl">,90</span>
                             </div>
-                            <p className="text-orange-100 text-sm mb-2">/mês • VITALÍCIO</p>
+                            <p className="text-orange-100 text-sm mb-6">/mês</p>
                             <div className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold inline-block mb-4">
                               Só {founderSpotsLeft} vagas restantes!
                             </div>
@@ -422,7 +422,7 @@ export default function HomePage() {
                             <div className="text-6xl font-bold mb-1">
                               <span className="text-4xl align-top">R$</span> 69<span className="text-4xl">,90</span>
                             </div>
-                            <p className="text-orange-100 text-sm mb-2">/mês • VITALÍCIO</p>
+                            <p className="text-orange-100 text-sm mb-6">/mês</p>
                             <div className="bg-blue-400 text-blue-900 px-3 py-1 rounded-full text-xs font-bold inline-block mb-4">
                               Só {earlySpotsLeft} vagas restantes!
                             </div>
@@ -508,8 +508,8 @@ export default function HomePage() {
                     
                     <Link href="/auth/login" className="block">
                       <Button className="w-full bg-white text-orange-600 hover:bg-gray-100 font-bold shadow-lg text-base py-6">
-                        {isFounder && '🔥 GARANTIR R$ 69,90/MÊS VITALÍCIO'}
-                        {isEarlyAdopter && '⭐ GARANTIR R$ 79,90/MÊS VITALÍCIO'}
+                        {isFounder && '🔥 GARANTIR R$ 69,90/MÊS'}
+                        {isEarlyAdopter && '⭐ GARANTIR R$ 79,90/MÊS'}
                         {!isFounder && !isEarlyAdopter && '🚀 Começar Agora - 15 DIAS GRÁTIS'}
                       </Button>
                     </Link>
@@ -523,8 +523,8 @@ export default function HomePage() {
                   <div className="inline-block bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg px-6 py-3">
                     <p className="text-green-700 font-semibold">
                       🎁 <strong>15 DIAS GRÁTIS</strong> • Sem cartão de crédito
-                      {isFounder && <span className="ml-2">• 🔥 FUNDADOR: R$ 69,90/mês VITALÍCIO</span>}
-                      {isEarlyAdopter && <span className="ml-2">• ⭐ PRIMEIROS 50: R$ 79,90/mês VITALÍCIO</span>}
+                      {isFounder && <span className="ml-2">• 🔥 PRIMEIROS 10: R$ 69,90/mês</span>}
+                      {isEarlyAdopter && <span className="ml-2">• ⭐ PRIMEIROS 50: R$ 79,90/mês</span>}
                     </p>
                     {(isFounder || isEarlyAdopter) && (
                       <p className="text-xs text-red-600 mt-2">
@@ -738,7 +738,7 @@ export default function HomePage() {
             <div className="mt-16">
               <Link href="/auth/login" className="inline-block">
                 <Button size="lg" className="cta-button-primary text-lg py-6 px-8">
-                  {isFounder ? '🔥 GARANTIR R$ 69,90/MÊS VITALÍCIO' : (isEarlyAdopter ? '⭐ GARANTIR R$ 79,90/MÊS VITALÍCIO' : '🚀 Começar Agora - 15 DIAS GRÁTIS')}
+                  {isFounder ? '🔥 GARANTIR R$ 69,90/MÊS' : (isEarlyAdopter ? '⭐ GARANTIR R$ 79,90/MÊS' : '🚀 Começar Agora - 15 DIAS GRÁTIS')}
                 </Button>
               </Link>
               <p className="text-xs text-gray-500 mt-3">
