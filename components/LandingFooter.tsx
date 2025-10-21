@@ -109,12 +109,12 @@ export default function LandingFooter() {
               <li className="flex items-start gap-2">
                 <span>📷</span>
                 <a 
-                  href="https://instagram.com/vituralcardapio" 
+                  href="https://instagram.com/virtualcardapio" 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-orange-500 transition-colors"
                 >
-                  @vituralcardapio
+                  @virtualcardapio
                 </a>
               </li>
             </ul>
@@ -125,7 +125,7 @@ export default function LandingFooter() {
         <div className="border-t border-gray-800 pt-8 mt-8 mb-8">
           <div className="flex justify-center gap-6">
             <a 
-              href="https://instagram.com/vituralcardapio" 
+              href="https://instagram.com/virtualcardapio" 
               target="_blank"
               rel="noopener noreferrer"
               className="bg-gray-800 hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 p-3 rounded-full transition-all duration-300 transform hover:scale-110"
