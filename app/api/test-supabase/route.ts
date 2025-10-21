@@ -1,18 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getServerSession } from 'next-auth/next';
+import { authOptions, userIsAdmin } from '@/lib/auth';
 
 /**
- * Rota de teste para verificar conexão Supabase
+ * 🔒 Rota de teste PROTEGIDA para verificar conexão Supabase
+ * Apenas ADMIN pode acessar
  * Acesse: /api/test-supabase
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    // 🔒 SEGURANÇA: Verificar autenticação de ADMIN
+    const session = await getServerSession(authOptions);
+    const email = session?.user?.email ?? undefined;
+    const isAdmin = await userIsAdmin(email);
+    
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: 'Acesso negado. Apenas administradores.' },
+        { status: 403 }
+      );
+    }
 
-    console.log('🔍 [Test] Supabase URL:', supabaseUrl);
-    console.log('🔍 [Test] Usando chave:', supabaseKey ? 'SERVICE_ROLE_KEY' : 'ANON_KEY');
-    console.log('🔍 [Test] Chave começa com:', supabaseKey?.substring(0, 20) + '...');
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    // 🔒 SEGURANÇA: Não logar informações sensíveis em produção
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 [Test] Supabase URL:', supabaseUrl);
+      console.log('🔍 [Test] Usando chave SERVICE_ROLE_KEY');
+    }
 
     if (!supabaseUrl || !supabaseKey) {
       return NextResponse.json({
@@ -37,12 +54,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: false,
         error: 'Erro ao listar buckets',
-        details: bucketsError,
-        config: {
-          url: supabaseUrl,
-          keyType: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'service_role' : 'anon',
-          keyPrefix: supabaseKey.substring(0, 20) + '...'
-        }
+        details: bucketsError
       }, { status: 500 });
     }
 
@@ -55,11 +67,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: false,
         error: 'Bucket "menu-images" não encontrado',
-        availableBuckets: buckets?.map(b => b.name) || [],
-        config: {
-          url: supabaseUrl,
-          keyType: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'service_role' : 'anon',
-        }
+        availableBuckets: buckets?.map(b => b.name) || []
       }, { status: 404 });
     }
 
@@ -75,18 +83,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Conexão Supabase OK!',
+      message: 'Conexão Supabase OK! ✅',
       buckets: buckets?.map(b => ({ name: b.name, public: b.public })),
       menuImagesBucket: {
         found: true,
         public: menuImagesBucket.public,
-        filesCount: files?.length || 0,
-        sampleFiles: files?.slice(0, 3).map(f => f.name) || []
-      },
-      config: {
-        url: supabaseUrl,
-        keyType: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'service_role' : 'anon',
-        keyPrefix: supabaseKey.substring(0, 20) + '...'
+        filesCount: files?.length || 0
       }
     });
 
