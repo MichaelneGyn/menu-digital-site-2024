@@ -170,15 +170,6 @@ export default function LandingFooter() {
           </div>
         </div>
 
-        {/* Badge */}
-        <div className="mt-8 text-center">
-          <div className="inline-block bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-lg px-4 py-2">
-            <p className="text-xs text-gray-400">
-              🚀 <span className="text-white font-semibold">Desenvolvido com tecnologia de ponta</span> • 
-              Next.js + Vercel + Supabase
-            </p>
-          </div>
-        </div>
       </div>
     </footer>
   );
