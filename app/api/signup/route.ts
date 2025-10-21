@@ -14,6 +14,22 @@ const signUpSchema = z.object({
   whatsapp: z.string().optional(),
 });
 
+// Data de início das 10 vagas (AJUSTE PARA A DATA REAL DE LANÇAMENTO)
+const LAUNCH_DATE = new Date('2025-01-21T00:00:00Z'); 
+const FOUNDER_LIMIT = 10;
+const EARLY_LIMIT = 50;
+
+// Função para enviar notificação (você pode melhorar depois)
+async function sendLimitNotification(count: number, limit: number) {
+  try {
+    console.log(`🚨 ALERTA: ${count} de ${limit} vagas preenchidas!`);
+    // TODO: Enviar email/WhatsApp para o admin
+    // Você pode integrar com Resend ou outro serviço aqui
+  } catch (error) {
+    console.error('Erro ao enviar notificação:', error);
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting por IP
@@ -22,6 +38,26 @@ export async function POST(request: NextRequest) {
     
     if (!rateLimitResult.success && rateLimitResult.response) {
       return rateLimitResult.response;
+    }
+
+    // 🔒 VERIFICAR LIMITE DE VAGAS (PRIMEIROS 10)
+    const newUsersCount = await prisma.user.count({
+      where: {
+        createdAt: {
+          gte: LAUNCH_DATE,
+        },
+      },
+    });
+
+    if (newUsersCount >= FOUNDER_LIMIT) {
+      console.log(`🚫 LIMITE ATINGIDO: ${newUsersCount}/${FOUNDER_LIMIT} vagas preenchidas`);
+      return NextResponse.json(
+        { 
+          error: 'Vagas esgotadas! As 10 vagas de lançamento já foram preenchidas. Entre na lista de espera.',
+          limitReached: true,
+        },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
@@ -121,10 +157,23 @@ export async function POST(request: NextRequest) {
       return { user, restaurant, subscription };
     });
 
+    // 🔔 NOTIFICAR SE ESTÁ PRÓXIMO DO LIMITE
+    const updatedCount = newUsersCount + 1;
+    if (updatedCount === FOUNDER_LIMIT - 2) {
+      await sendLimitNotification(updatedCount, FOUNDER_LIMIT);
+    } else if (updatedCount === FOUNDER_LIMIT - 1) {
+      await sendLimitNotification(updatedCount, FOUNDER_LIMIT);
+    } else if (updatedCount === FOUNDER_LIMIT) {
+      await sendLimitNotification(updatedCount, FOUNDER_LIMIT);
+      console.log('🎉 LIMITE ATINGIDO! Prepare o upgrade da infraestrutura!');
+    }
+
     return NextResponse.json(
       { 
         message: 'Conta criada com sucesso!',
-        restaurantSlug: result.restaurant?.slug || null
+        restaurantSlug: result.restaurant?.slug || null,
+        isFounder: updatedCount <= FOUNDER_LIMIT,
+        spotNumber: updatedCount,
       },
       { status: 201 }
     );
