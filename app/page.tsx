@@ -132,7 +132,7 @@ export default function HomePage() {
               </p>
               {isFounder && !loading && (
                 <p className="text-xs text-red-600 font-bold animate-pulse">
-                  ⚠️ Só {founderSpotsLeft} vagas! Após isso, preço sobe para R$ 79,90
+                  ⚠️ Só {founderSpotsLeft} vagas! Após isso, preço sobe para R$ 89,90
                 </p>
               )}
             </div>
@@ -294,16 +294,36 @@ export default function HomePage() {
                       <>
                         {isFounder && (
                           <>
-                            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4 border-2 border-yellow-400">
-                              <p className="text-yellow-300 text-lg font-black mb-2 tracking-wide">APÓS PERÍODO DE TESTE:</p>
-                              <div className="text-7xl font-black mb-1 text-yellow-300 drop-shadow-lg" style={{fontFamily: 'system-ui, -apple-system, sans-serif'}}>
+                            {/* Contador de Vagas */}
+                            <div className="mb-6">
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-3xl font-black text-white" style={{fontFamily: 'system-ui, -apple-system, sans-serif'}}>
+                                  {founderSpotsLeft} <span className="text-base font-semibold text-orange-200">de 10 vagas</span>
+                                </span>
+                                <div className="bg-orange-300 text-orange-900 px-4 py-1.5 rounded-full text-sm font-black shadow-lg">
+                                  {FOUNDER_LIMIT - founderSpotsLeft} vendidas
+                                </div>
+                              </div>
+                              <div className="relative h-2.5 bg-orange-900/30 rounded-full overflow-hidden shadow-inner">
+                                <div 
+                                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-orange-400 via-red-500 to-red-600 rounded-full transition-all duration-1000 ease-out shadow-lg"
+                                  style={{ width: `${((FOUNDER_LIMIT - founderSpotsLeft) / FOUNDER_LIMIT) * 100}%` }}
+                                >
+                                  <div className="absolute inset-0 bg-white opacity-30 animate-pulse"></div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 mb-4 border-2 border-white/30 shadow-xl">
+                              <p className="text-white text-base font-bold mb-3 tracking-wide" style={{fontFamily: 'system-ui, -apple-system, sans-serif'}}>APÓS PERÍODO DE TESTE:</p>
+                              <div className="text-7xl font-black mb-1 text-white drop-shadow-2xl" style={{fontFamily: 'system-ui, -apple-system, sans-serif'}}>
                                 R$ 69<span className="text-5xl">,90</span>
                               </div>
-                              <p className="text-yellow-200 text-base font-bold mb-3">/mês</p>
-                              <div className="bg-yellow-400 text-yellow-900 px-5 py-2 rounded-full text-base font-black inline-block shadow-lg">
+                              <p className="text-orange-100 text-lg font-bold mb-4">/mês</p>
+                              <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-5 py-2.5 rounded-full text-base font-black inline-block shadow-2xl" style={{fontFamily: 'system-ui, -apple-system, sans-serif'}}>
                                 🔥 PRIMEIROS 10: Só {founderSpotsLeft} vagas!
                               </div>
-                              <p className="text-sm text-yellow-200 mt-3 font-semibold">* Após os 10 primeiros clientes haverá reajuste de preço</p>
+                              <p className="text-sm text-orange-100 mt-3 font-semibold">* Após os 10 primeiros clientes haverá reajuste de preço</p>
                             </div>
                           </>
                         )}
