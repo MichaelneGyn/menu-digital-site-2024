@@ -127,43 +127,102 @@ export default function HomePage() {
             <div className="flex flex-col items-center gap-4 mb-8">
               {/* Contador de Vagas - DESTAQUE ESPECIAL */}
               {(isFounder || isEarlyAdopter) && !loading && (
-                <div className="bg-gradient-to-br from-red-50 to-orange-50 border-4 border-red-400 rounded-2xl p-6 shadow-2xl mb-4 w-full max-w-md relative">
-                  <div className="absolute -top-3 -right-3 bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg animate-pulse">
-                    ⚡ LIMITADO!
+                <div className="bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 border-4 border-red-500 rounded-2xl p-6 shadow-2xl mb-4 w-full max-w-md relative animate-pulse" style={{ animationDuration: '2s' }}>
+                  {/* Efeito de brilho ao redor */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-yellow-400 via-red-500 to-orange-500 opacity-20 animate-pulse"></div>
+                  
+                  {/* Badge "LIMITADO" com animação forte */}
+                  <div className="absolute -top-4 -right-4 z-10">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-red-500 rounded-full blur-xl opacity-50 animate-ping"></div>
+                      <div className="relative bg-gradient-to-r from-red-600 to-orange-600 text-white px-5 py-2 rounded-full text-xs font-black shadow-2xl animate-bounce" style={{ animationDuration: '1s' }}>
+                        ⚡ LIMITADO!
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-center">
+                  
+                  <div className="text-center relative z-10">
                     {isFounder && (
                       <>
-                        <p className="text-lg text-red-700 font-bold mb-2">🔥 PRIMEIROS 10 CLIENTES</p>
-                        <p className="text-sm text-gray-700 mb-3">Garanta o menor preço de lançamento</p>
-                        <div className="flex items-center justify-center gap-3 mb-3">
-                          <div className="bg-white rounded-xl p-4 shadow-md border-2 border-yellow-400">
-                            <span className="text-5xl font-black text-yellow-600">{founderSpotsLeft}</span>
-                            <p className="text-xs text-gray-600 mt-1 font-semibold">vagas restantes</p>
+                        {/* Título com animação */}
+                        <div className="mb-3">
+                          <div className="inline-block animate-bounce" style={{ animationDuration: '1.5s' }}>
+                            <p className="text-2xl font-black mb-1 bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 bg-clip-text text-transparent">
+                              🔥 PRIMEIROS 10 CLIENTES 🔥
+                            </p>
                           </div>
+                          <p className="text-sm font-bold text-red-700 animate-pulse">Garanta o menor preço de lançamento!</p>
+                        </div>
+                        
+                        {/* Contador de vagas com destaque MÁXIMO */}
+                        <div className="flex items-center justify-center gap-4 mb-4">
+                          <div className="relative">
+                            {/* Brilho atrás do número */}
+                            <div className="absolute inset-0 bg-yellow-400 rounded-2xl blur-2xl opacity-30 animate-pulse"></div>
+                            <div className="relative bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 rounded-2xl p-5 shadow-2xl transform hover:scale-110 transition-transform border-4 border-white">
+                              <span className="text-6xl font-black text-white drop-shadow-2xl animate-pulse" style={{ animationDuration: '1s' }}>
+                                {founderSpotsLeft}
+                              </span>
+                              <p className="text-xs text-white font-bold mt-1 uppercase tracking-wider">Vagas!</p>
+                            </div>
+                          </div>
+                          
                           <div className="text-left">
-                            <p className="text-3xl font-bold text-green-600">R$ 69,90</p>
-                            <p className="text-xs text-gray-600">por mês</p>
-                            <p className="text-xs text-gray-500 line-through">R$ 89,90</p>
+                            <div className="bg-white rounded-lg px-4 py-2 shadow-lg border-2 border-green-500">
+                              <p className="text-4xl font-black text-green-600 animate-pulse">R$ 69,90</p>
+                              <p className="text-xs text-gray-600 font-semibold">por mês</p>
+                              <p className="text-sm text-red-600 line-through font-bold">R$ 89,90</p>
+                              <p className="text-xs font-bold text-green-700 mt-1">💰 Economize R$ 20!</p>
+                            </div>
                           </div>
                         </div>
-                        <div className="bg-white rounded-full h-3 overflow-hidden shadow-inner mb-2">
+                        {/* Barra de progresso animada */}
+                        <div className="bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner mb-3 border-2 border-gray-300">
                           <div 
-                            className="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 h-full transition-all duration-500 shadow-lg"
+                            className="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-600 h-full transition-all duration-500 shadow-lg relative overflow-hidden"
                             style={{ width: `${((FOUNDER_LIMIT - founderSpotsLeft) / FOUNDER_LIMIT) * 100}%` }}
-                          ></div>
+                          >
+                            {/* Efeito de brilho animado */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-600 mb-3">{FOUNDER_LIMIT - founderSpotsLeft} de {FOUNDER_LIMIT} vagas já garantidas</p>
-                        <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-3 mb-2">
-                          <p className="text-xs font-bold text-yellow-900">💎 BENEFÍCIOS:</p>
-                          <ul className="text-xs text-left text-yellow-900 mt-2 space-y-1">
-                            <li>✅ R$ 69,90/mês (preço normal R$ 89,90)</li>
-                            <li>✅ Economize R$ 240/ano</li>
-                            <li>✅ Badge exclusivo</li>
-                            <li>✅ 15 dias grátis</li>
+                        <p className="text-sm font-bold text-gray-700 mb-4">
+                          <span className="text-red-600 text-lg">{FOUNDER_LIMIT - founderSpotsLeft}</span> de <span className="text-lg">{FOUNDER_LIMIT}</span> vagas já garantidas!
+                        </p>
+                        {/* Caixa de benefícios com destaque */}
+                        <div className="bg-gradient-to-br from-yellow-100 to-orange-100 border-3 border-yellow-500 rounded-xl p-4 mb-3 shadow-lg transform hover:scale-105 transition-transform">
+                          <p className="text-sm font-black text-yellow-900 mb-2 flex items-center justify-center gap-2">
+                            <span className="text-xl animate-bounce">💎</span>
+                            <span>BENEFÍCIOS EXCLUSIVOS</span>
+                            <span className="text-xl animate-bounce" style={{ animationDelay: '0.2s' }}>💎</span>
+                          </p>
+                          <ul className="text-sm text-left text-yellow-900 space-y-2 font-semibold">
+                            <li className="flex items-center gap-2">
+                              <span className="text-green-600 text-lg">✅</span>
+                              <span>R$ 69,90/mês (normal R$ 89,90)</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <span className="text-green-600 text-lg">✅</span>
+                              <span>Economize R$ 240/ano</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <span className="text-green-600 text-lg">✅</span>
+                              <span>Badge exclusivo 👑</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <span className="text-green-600 text-lg">✅</span>
+                              <span>15 dias grátis sem cartão</span>
+                            </li>
                           </ul>
                         </div>
-                        <p className="text-xs text-red-600 font-bold">⚠️ Atenção: Se cancelar e retornar, paga preço normal (R$ 89,90/mês)</p>
+                        
+                        {/* Aviso de cancelamento com destaque */}
+                        <div className="bg-red-100 border-2 border-red-500 rounded-lg p-3 animate-pulse" style={{ animationDuration: '3s' }}>
+                          <p className="text-sm text-red-700 font-bold flex items-center justify-center gap-2">
+                            <span className="text-xl">⚠️</span>
+                            <span>Se cancelar e retornar, paga R$ 89,90/mês</span>
+                          </p>
+                        </div>
                       </>
                     )}
                     {isEarlyAdopter && (
