@@ -3,9 +3,22 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "framework": "nextjs",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.virtualcardapio.com.br"
+        }
+      ],
+      "destination": "https://virtualcardapio.com.br/:path*",
+      "permanent": true
+    }
+  ],
   "env": {
     "NODE_ENV": "production",
-    "NEXTAUTH_URL": "https://menu-digital-site-2024-8773d37d6064-git-main-michaeldouglasqueiroz.vercel.app",
-    "NEXTAUTH_URL_INTERNAL": "https://menu-digital-site-2024-8773d37d6064-git-main-michaeldouglasqueiroz.vercel.app"
+    "NEXTAUTH_URL": "https://virtualcardapio.com.br",
+    "NEXTAUTH_URL_INTERNAL": "https://virtualcardapio.com.br"
   }
 }
