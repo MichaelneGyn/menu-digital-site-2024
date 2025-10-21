@@ -105,151 +105,6 @@ export default function HomePage() {
             </p>
             
             <div className="flex flex-col items-center gap-4 mb-8">
-              {/* Contador de Vagas */}
-              {(isFounder || isEarlyAdopter) && !loading && (
-                <div className="relative bg-white rounded-3xl shadow-2xl overflow-hidden w-full max-w-md mb-4 transition-all duration-700 opacity-100">
-                  {/* Badge LIMITADO */}
-                  <div className="absolute top-0 right-0 bg-gradient-to-r from-red-600 to-red-500 text-white px-6 py-2 rounded-bl-2xl font-bold text-sm tracking-wide shadow-lg">
-                    LIMITADO
-                  </div>
-                  
-                  <div className="p-8 pt-12">
-                    {isFounder && (
-                      <>
-                        {/* Header */}
-                        <div className="text-center mb-8 transition-all duration-700">
-                          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-100 to-red-100 px-4 py-2 rounded-full mb-4">
-                            <span className="text-orange-600 text-xl">🔥</span>
-                            <span className="text-orange-900 font-bold text-sm">Primeiros 10 Clientes</span>
-                          </div>
-                          <p className="text-gray-600 text-sm font-medium">Garanta o menor preço de lançamento</p>
-                        </div>
-                        
-                        {/* Preço Destacado */}
-                        <div className="relative mb-8 transition-all duration-700">
-                          <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-2xl blur opacity-20"></div>
-                          <div className="relative bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6 text-center">
-                            <div className="flex items-center justify-center gap-3 mb-2">
-                              <span className="text-3xl font-bold text-green-700">R$</span>
-                              <span className="text-6xl font-black text-green-700 tracking-tight">69,90</span>
-                            </div>
-                            <p className="text-green-700 font-semibold mb-3">por mês</p>
-                            <div className="flex items-center justify-center gap-2">
-                              <span className="text-gray-400 line-through text-lg">R$ 89,90</span>
-                              <div className="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-bold">
-                                -22%
-                              </div>
-                            </div>
-                            <div className="mt-3 flex items-center justify-center gap-2 text-green-700">
-                              <span className="text-lg">🔥</span>
-                              <span className="text-sm font-semibold">Economize R$ 20/mês</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Vagas Restantes */}
-                        <div className="mb-8 transition-all duration-700">
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-2xl font-bold text-gray-800">
-                              {founderSpotsLeft} <span className="text-base font-normal text-gray-500">de 10 vagas</span>
-                            </span>
-                            <div className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">
-                              {FOUNDER_LIMIT - founderSpotsLeft} vendidas
-                            </div>
-                          </div>
-                          <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden">
-                            <div 
-                              className="absolute inset-y-0 left-0 bg-gradient-to-r from-orange-500 via-red-500 to-red-600 rounded-full transition-all duration-1000 ease-out shadow-lg"
-                              style={{ width: `${((FOUNDER_LIMIT - founderSpotsLeft) / FOUNDER_LIMIT) * 100}%` }}
-                            >
-                              <div className="absolute inset-0 bg-white opacity-20 animate-pulse"></div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Benefícios */}
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 mb-6 transition-all duration-700">
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="w-2 h-2 bg-blue-600 rounded-full animate-ping"></div>
-                            <div className="w-2 h-2 bg-blue-600 rounded-full animate-ping" style={{animationDelay: '0.3s'}}></div>
-                            <div className="w-2 h-2 bg-blue-600 rounded-full animate-ping" style={{animationDelay: '0.6s'}}></div>
-                            <h3 className="font-bold text-blue-900 ml-1">BENEFÍCIOS EXCLUSIVOS</h3>
-                          </div>
-                          <div className="space-y-3">
-                            <div className="flex items-start gap-3 group">
-                              <div className="mt-0.5 bg-green-500 rounded-full p-1 group-hover:scale-110 transition-transform">
-                                <span className="text-white text-xs font-bold">✓</span>
-                              </div>
-                              <span className="text-gray-700 font-medium text-sm">R$ 69,90/mês (normal R$ 89,90)</span>
-                            </div>
-                            <div className="flex items-start gap-3 group">
-                              <div className="mt-0.5 bg-green-500 rounded-full p-1 group-hover:scale-110 transition-transform">
-                                <span className="text-white text-xs font-bold">✓</span>
-                              </div>
-                              <span className="text-gray-700 font-medium text-sm">Economize R$ 240/ano</span>
-                            </div>
-                            <div className="flex items-start gap-3 group">
-                              <div className="mt-0.5 bg-green-500 rounded-full p-1 group-hover:scale-110 transition-transform">
-                                <span className="text-white text-xs font-bold">✓</span>
-                              </div>
-                              <span className="text-gray-700 font-medium text-sm">Badge exclusivo 👑</span>
-                            </div>
-                            <div className="flex items-start gap-3 group">
-                              <div className="mt-0.5 bg-green-500 rounded-full p-1 group-hover:scale-110 transition-transform">
-                                <span className="text-white text-xs font-bold">✓</span>
-                              </div>
-                              <span className="text-gray-700 font-medium text-sm">15 dias grátis sem cartão</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Aviso de Cancelamento */}
-                        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 transition-all duration-700">
-                          <span className="text-amber-600 text-lg flex-shrink-0 mt-0.5">⚠️</span>
-                          <p className="text-amber-800 text-xs font-medium">
-                            Se cancelar e retornar, paga R$ 89,90/mês
-                          </p>
-                        </div>
-                      </>
-                    )}
-                    {isEarlyAdopter && (
-                      <>
-                        <p className="text-lg text-blue-700 font-bold mb-2">⭐ PRIMEIROS 50 CLIENTES</p>
-                        <p className="text-sm text-gray-700 mb-3">Garanta preço promocional</p>
-                        <div className="flex items-center justify-center gap-3 mb-3">
-                          <div className="bg-white rounded-xl p-4 shadow-md border-2 border-blue-400">
-                            <span className="text-5xl font-black text-blue-600">{earlySpotsLeft}</span>
-                            <p className="text-xs text-gray-600 mt-1 font-semibold">vagas restantes</p>
-                          </div>
-                          <div className="text-left">
-                            <p className="text-3xl font-bold text-green-600">R$ 79,90</p>
-                            <p className="text-xs text-gray-600">por mês</p>
-                            <p className="text-xs text-gray-500 line-through">R$ 89,90</p>
-                          </div>
-                        </div>
-                        <div className="bg-white rounded-full h-3 overflow-hidden shadow-inner mb-2">
-                          <div 
-                            className="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-500"
-                            style={{ width: `${((EARLY_LIMIT - earlySpotsLeft) / EARLY_LIMIT) * 100}%` }}
-                          ></div>
-                        </div>
-                        <p className="text-sm text-gray-600 mb-3">{EARLY_LIMIT - earlySpotsLeft} de {EARLY_LIMIT} vagas já garantidas</p>
-                        <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-3 mb-2">
-                          <p className="text-xs font-bold text-blue-900">💎 BENEFÍCIOS:</p>
-                          <ul className="text-xs text-left text-blue-900 mt-2 space-y-1">
-                            <li>✅ R$ 79,90/mês (preço normal R$ 89,90)</li>
-                            <li>✅ Economize R$ 120/ano</li>
-                            <li>✅ Badge especial</li>
-                            <li>✅ 15 dias grátis</li>
-                          </ul>
-                        </div>
-                        <p className="text-xs text-red-600 font-bold">⚠️ Atenção: Se cancelar e retornar, paga preço normal (R$ 89,90/mês)</p>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-              
               <Link href="/auth/login" className="w-full max-w-md">
                 <Button size="lg" className="cta-button-primary w-full text-lg py-6 relative overflow-hidden group">
                   {isFounder && (
@@ -432,20 +287,38 @@ export default function HomePage() {
                   
                   <div className="text-center text-white">
                     <h3 className="text-3xl font-bold mb-2">Plano Completo</h3>
-                    <p className="text-xs text-orange-100 mb-3">Tudo incluído, sem limites artificiais</p>
+                    <p className="text-xs text-orange-100 mb-6">Tudo incluído, sem limites artificiais</p>
+                    
+                    {/* Destaque 15 DIAS GRÁTIS */}
+                    <div className="bg-gradient-to-r from-green-400 to-emerald-500 rounded-2xl p-6 mb-6 shadow-2xl border-4 border-green-300">
+                      <div className="flex items-center justify-center gap-2 mb-3">
+                        <span className="text-4xl">🎁</span>
+                        <h4 className="text-4xl font-black text-white">15 DIAS GRÁTIS</h4>
+                      </div>
+                      <p className="text-white font-bold text-lg mb-2">Teste completo sem cartão de crédito</p>
+                      <div className="bg-white/20 rounded-lg p-3 backdrop-blur-sm">
+                        <p className="text-white text-sm font-semibold">
+                          ✓ Acesso total por 15 dias<br/>
+                          ✓ Sem compromisso<br/>
+                          ✓ Cancele quando quiser
+                        </p>
+                      </div>
+                    </div>
                     
                     {/* Preço Dinâmico */}
                     {!loading && (
                       <>
                         {isFounder && (
                           <>
+                            <p className="text-orange-100 text-sm mb-2">Após período de teste:</p>
                             <div className="text-6xl font-bold mb-1">
                               <span className="text-4xl align-top">R$</span> 69<span className="text-4xl">,90</span>
                             </div>
-                            <p className="text-orange-100 text-sm mb-6">/mês</p>
-                            <div className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold inline-block mb-4">
-                              Só {founderSpotsLeft} vagas restantes!
+                            <p className="text-orange-100 text-sm mb-2">/mês</p>
+                            <div className="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-full text-sm font-bold inline-block mb-2">
+                              🔥 PRIMEIROS 10: Só {founderSpotsLeft} vagas!
                             </div>
+                            <p className="text-xs text-orange-200 mb-4">* Após os 10 primeiros clientes haverá reajuste de preço</p>
                           </>
                         )}
                         {isEarlyAdopter && (
