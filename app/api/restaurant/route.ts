@@ -68,7 +68,22 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, name, whatsapp, address, openTime, closeTime, workingDays, pixKey, pixQrCode } = body;
+    const { 
+      id, 
+      name, 
+      description,
+      logo,
+      primaryColor,
+      secondaryColor,
+      email,
+      whatsapp, 
+      address, 
+      openTime, 
+      closeTime, 
+      workingDays, 
+      pixKey, 
+      pixQrCode 
+    } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'ID do restaurante é obrigatório' }, { status: 400 });
@@ -122,6 +137,12 @@ export async function PUT(request: NextRequest) {
       where: { id },
       data: {
         name,
+        description: description || null,
+        logo: logo || null,
+        logoUrl: logo || null, // Atualizar ambos os campos por compatibilidade
+        primaryColor: primaryColor || undefined,
+        secondaryColor: secondaryColor || undefined,
+        email: email || null,
         slug: slugToUse,
         whatsapp: whatsapp ? wpp : null,
         address,
