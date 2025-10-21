@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
@@ -22,8 +23,14 @@ export default function LandingHeader() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <span className="text-2xl">🍽️</span>
+            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <Image 
+                src="/logo.png" 
+                alt="Virtual Cardápio" 
+                width={45} 
+                height={45}
+                className="rounded-lg"
+              />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Virtual Cardápio</h1>
                 <p className="text-xs text-gray-500 -mt-1">Plataforma de Pedidos</p>
