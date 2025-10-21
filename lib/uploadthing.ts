@@ -9,7 +9,11 @@
  */
 
 export async function uploadToImgBB(file: File | Buffer, fileName: string): Promise<string> {
-  const apiKey = process.env.IMGBB_API_KEY || '4d755673c02c216e5e83a0b8e6d7c0e2'; // Chave demo
+  const apiKey = process.env.IMGBB_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('🔒 IMGBB_API_KEY não configurada. Configure a variável de ambiente.');
+  }
 
   try {
     const formData = new FormData();
@@ -51,7 +55,11 @@ export async function uploadToImgBB(file: File | Buffer, fileName: string): Prom
  * Upload para ImgBB a partir de Buffer (para API routes)
  */
 export async function uploadBufferToImgBB(buffer: Buffer, fileName: string): Promise<string> {
-  const apiKey = process.env.IMGBB_API_KEY || '4d755673c02c216e5e83a0b8e6d7c0e2';
+  const apiKey = process.env.IMGBB_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('🔒 IMGBB_API_KEY não configurada. Configure a variável de ambiente.');
+  }
 
   try {
     // Converter buffer para base64
