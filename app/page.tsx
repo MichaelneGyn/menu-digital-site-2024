@@ -96,26 +96,6 @@ export default function HomePage() {
       <div className="min-h-screen page-transition pt-16">
         <div className="max-w-4xl mx-auto text-center p-8">
           <div className="hero-section-landing">
-            {/* Badge Promocional */}
-            {!loading && (
-              <div className="inline-block mb-6 animate-bounce">
-                {isFounder && (
-                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg">
-                    🔥 PRIMEIROS 10 CLIENTES: R$ 69,90/mês • Só {founderSpotsLeft} vagas!
-                  </div>
-                )}
-                {isEarlyAdopter && (
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg">
-                    ⭐ PRIMEIROS 50: R$ 79,90/mês • Restam {earlySpotsLeft} vagas!
-                  </div>
-                )}
-                {!isFounder && !isEarlyAdopter && (
-                  <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg">
-                    ✅ LANÇAMENTO: 15 DIAS GRÁTIS • R$ 89,90/mês
-                  </div>
-                )}
-              </div>
-            )}
             
             <h1 className="landing-main-title">
               Plataforma de Pedidos Online para Restaurantes
@@ -127,37 +107,42 @@ export default function HomePage() {
             <div className="flex flex-col items-center gap-4 mb-8">
               {/* Contador de Vagas */}
               {(isFounder || isEarlyAdopter) && !loading && (
-                <div className="bg-white border-2 border-orange-500 rounded-lg p-6 shadow-lg mb-4 w-full max-w-md">
+                <div className="bg-gradient-to-br from-orange-50 to-red-50 border-3 border-orange-500 rounded-xl p-6 shadow-xl mb-4 w-full max-w-md relative">
+                  {/* Badge "LIMITADO" */}
+                  <div className="absolute -top-3 -right-3 bg-red-500 text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse">
+                    ⚡ LIMITADO
+                  </div>
+                  
                   <div className="text-center">
                     {isFounder && (
                       <>
-                        <p className="text-sm text-gray-600 mb-2">🔥 Primeiros 10 Clientes</p>
-                        <p className="text-xs text-gray-500 mb-4">Garanta o menor preço de lançamento</p>
+                        <p className="text-base font-bold text-orange-700 mb-1">🔥 Primeiros 10 Clientes</p>
+                        <p className="text-sm text-gray-600 mb-4">Garanta o menor preço de lançamento</p>
                         
                         <div className="flex items-center justify-center gap-4 mb-4">
-                          <div className="bg-orange-100 rounded-xl p-4 border-2 border-orange-400">
-                            <span className="text-5xl font-black text-orange-600">{founderSpotsLeft}</span>
-                            <p className="text-xs text-gray-600 mt-1 font-semibold">vagas restantes</p>
+                          <div className="bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl p-5 border-2 border-orange-500 shadow-md">
+                            <span className="text-6xl font-black text-orange-600">{founderSpotsLeft}</span>
+                            <p className="text-xs text-gray-700 mt-1 font-bold">vagas restantes</p>
                           </div>
                           
                           <div className="text-left">
-                            <p className="text-3xl font-bold text-green-600">R$ 69,90</p>
-                            <p className="text-xs text-gray-600">por mês</p>
-                            <p className="text-sm text-gray-400 line-through">R$ 89,90</p>
+                            <p className="text-4xl font-black text-green-600">R$ 69,90</p>
+                            <p className="text-sm text-gray-600">por mês</p>
+                            <p className="text-base text-gray-400 line-through font-semibold">R$ 89,90</p>
                           </div>
                         </div>
                         
-                        <div className="bg-gray-200 rounded-full h-2 overflow-hidden mb-2">
+                        <div className="bg-gray-300 rounded-full h-3 overflow-hidden mb-2 shadow-inner">
                           <div 
-                            className="bg-gradient-to-r from-orange-500 to-red-500 h-full transition-all duration-500"
+                            className="bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 h-full transition-all duration-500"
                             style={{ width: `${((FOUNDER_LIMIT - founderSpotsLeft) / FOUNDER_LIMIT) * 100}%` }}
                           ></div>
                         </div>
-                        <p className="text-xs text-gray-500 mb-4">{FOUNDER_LIMIT - founderSpotsLeft} de {FOUNDER_LIMIT} vagas garantidas</p>
+                        <p className="text-sm text-gray-600 font-semibold mb-4">{FOUNDER_LIMIT - founderSpotsLeft} de {FOUNDER_LIMIT} vagas garantidas</p>
                         
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
-                          <p className="text-xs font-bold text-orange-900 mb-2">💎 BENEFÍCIOS:</p>
-                          <ul className="text-xs text-left text-orange-900 space-y-1">
+                        <div className="bg-gradient-to-br from-orange-100 to-yellow-100 border-2 border-orange-300 rounded-lg p-4 mb-3 shadow-sm">
+                          <p className="text-sm font-bold text-orange-900 mb-2">💎 BENEFÍCIOS:</p>
+                          <ul className="text-sm text-left text-orange-900 space-y-1.5">
                             <li>✅ R$ 69,90/mês (normal R$ 89,90)</li>
                             <li>✅ Economize R$ 240/ano</li>
                             <li>✅ Badge exclusivo</li>
@@ -165,7 +150,9 @@ export default function HomePage() {
                           </ul>
                         </div>
                         
-                        <p className="text-xs text-red-600 font-bold">⚠️ Se cancelar e retornar, paga R$ 89,90/mês</p>
+                        <div className="bg-red-50 border-2 border-red-400 rounded-lg p-2">
+                          <p className="text-sm text-red-700 font-bold">⚠️ Se cancelar e retornar, paga R$ 89,90/mês</p>
+                        </div>
                       </>
                     )}
                     {isEarlyAdopter && (
@@ -385,12 +372,6 @@ export default function HomePage() {
               <div className="max-w-2xl mx-auto">
                 {/* Plano Único */}
                 <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl shadow-2xl border-4 border-orange-400 p-8 relative">
-                  {!loading && (isFounder || isEarlyAdopter) && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-bold shadow-lg">
-                      {isFounder && '👑 PREÇO FUNDADOR'}
-                      {isEarlyAdopter && '⭐ EARLY ADOPTER'}
-                    </div>
-                  )}
                   
                   <div className="text-center text-white">
                     <h3 className="text-3xl font-bold mb-2">Plano Completo</h3>
