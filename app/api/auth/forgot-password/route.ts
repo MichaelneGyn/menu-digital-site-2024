@@ -67,11 +67,11 @@ export async function POST(request: NextRequest) {
     const mailOptions = {
       from: process.env.SMTP_FROM || process.env.SMTP_USER,
       to: email,
-      subject: 'Recuperação de Senha - MenuRapido',
+      subject: 'Recuperação de Senha - Virtual Cardápio',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background-color: #d32f2f; padding: 20px; text-align: center;">
-            <h1 style="color: white; margin: 0;">MenuRapido</h1>
+            <h1 style="color: white; margin: 0;">Virtual Cardápio</h1>
           </div>
           <div style="padding: 20px; background-color: #f5f5f5;">
             <h2 style="color: #333;">Recuperação de Senha</h2>
