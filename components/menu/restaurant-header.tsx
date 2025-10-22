@@ -10,11 +10,16 @@ interface RestaurantHeaderProps {
 }
 
 export default function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
-  // Debug: verificar logo
+  // Debug: verificar logo (ambos os campos)
   console.log('🖼️ Restaurant Header - Logo:', restaurant?.logo);
+  console.log('🖼️ Restaurant Header - LogoUrl:', restaurant?.logoUrl);
+  console.log('🖼️ Restaurant Header - Full Restaurant:', restaurant);
+  
+  // Usar logo OU logoUrl (fallback para compatibilidade)
+  const logoSource = restaurant?.logo || restaurant?.logoUrl;
   
   // Adicionar timestamp para evitar cache de imagem
-  const logoUrl = restaurant?.logo ? `${restaurant.logo}?t=${Date.now()}` : null;
+  const logoUrl = logoSource ? `${logoSource}?t=${Date.now()}` : null;
   
   return (
     <header className="restaurant-header">
