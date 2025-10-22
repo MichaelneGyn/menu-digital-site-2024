@@ -8,6 +8,9 @@ interface PageProps {
   };
 }
 
+// Revalidar a cada 10 segundos (garante que mudanças apareçam rapidamente)
+export const revalidate = 10;
+
 export default async function RestaurantPage({ params }: PageProps) {
   const restaurant = await getRestaurantBySlug(params.slug);
 
