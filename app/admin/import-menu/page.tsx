@@ -516,7 +516,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                 toast.error('Digite o nome do sabor');
                                               }
                                             }}
-                                            className="bg-green-600 hover:bg-green-700"
+                                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
                                           >
                                             ➕
                                           </Button>
@@ -604,7 +604,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                 toast.error('Preencha o nome da borda');
                                               }
                                             }}
-                                            className="bg-green-600 hover:bg-green-700"
+                                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
                                           >
                                             ➕
                                           </Button>
@@ -692,7 +692,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                 toast.error('Preencha o nome do extra');
                                               }
                                             }}
-                                            className="bg-green-600 hover:bg-green-700"
+                                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
                                           >
                                             ➕
                                           </Button>
