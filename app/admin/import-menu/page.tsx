@@ -572,28 +572,126 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                   
                                   {/* NOVO SISTEMA FLEXÍVEL DE GRUPOS - SIMPLIFICADO */}
                                   <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-5 mb-4 shadow-sm">
-                                    <div className="flex items-start justify-between mb-4">
-                                      <div>
-                                        <h4 className="text-lg font-bold text-purple-900 flex items-center gap-2">
-                                          <span className="text-2xl">✨</span>
-                                          Opções Personalizadas
-                                        </h4>
-                                        <p className="text-sm text-purple-700 mt-2 font-medium">
-                                          🍕 Crie grupos como: <strong>Sabores</strong>, <strong>Tamanhos</strong>, <strong>Cremes</strong>, etc.
-                                        </p>
-                                        <p className="text-xs text-purple-600 mt-1">
-                                          💡 Exemplo: Pizza com opção de até 2 sabores, ou Açaí com escolha de tamanho obrigatório
-                                        </p>
+                                    <div className="mb-4">
+                                      <div className="flex items-start justify-between mb-3">
+                                        <div>
+                                          <h4 className="text-lg font-bold text-purple-900 flex items-center gap-2">
+                                            <span className="text-2xl">✨</span>
+                                            Opções Personalizadas
+                                          </h4>
+                                          <p className="text-xs text-purple-600 mt-1">
+                                            💡 Sugestões baseadas na categoria <strong>{item.categoryName || 'do produto'}</strong>
+                                          </p>
+                                        </div>
+                                        <Button
+                                          type="button"
+                                          onClick={() => addCustomizationGroup(item.id)}
+                                          className="bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md hover:shadow-lg transition-all"
+                                          size="lg"
+                                        >
+                                          <Plus className="w-5 h-5 mr-2" />
+                                          Criar Grupo Personalizado
+                                        </Button>
                                       </div>
-                                      <Button
-                                        type="button"
-                                        onClick={() => addCustomizationGroup(item.id)}
-                                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md hover:shadow-lg transition-all"
-                                        size="lg"
-                                      >
-                                        <Plus className="w-5 h-5 mr-2" />
-                                        Novo Grupo
-                                      </Button>
+
+                                      {/* SUGESTÕES INTELIGENTES BASEADAS NA CATEGORIA */}
+                                      {(() => {
+                                        const categoryLower = item.categoryName.toLowerCase();
+                                        let suggestions: Array<{name: string; emoji: string; description: string; maxSelections: number; isRequired: boolean}> = [];
+
+                                        // Pizza, Pizzas, Pizza Doce, etc
+                                        if (categoryLower.includes('pizza')) {
+                                          suggestions = [
+                                            {name: 'Sabores', emoji: '🍕', description: 'Escolha até 2 sabores', maxSelections: 2, isRequired: true},
+                                            {name: 'Bordas', emoji: '🥖', description: 'Escolha a borda', maxSelections: 1, isRequired: false},
+                                            {name: 'Extras', emoji: '🧀', description: 'Adicione extras', maxSelections: 5, isRequired: false}
+                                          ];
+                                        }
+                                        // Açaí, Açai
+                                        else if (categoryLower.includes('açaí') || categoryLower.includes('acai')) {
+                                          suggestions = [
+                                            {name: 'Tamanho', emoji: '📏', description: 'Escolha o tamanho', maxSelections: 1, isRequired: true},
+                                            {name: 'Cremes', emoji: '🍫', description: 'Até 2 cremes', maxSelections: 2, isRequired: false},
+                                            {name: 'Frutas', emoji: '🍓', description: 'Adicione frutas', maxSelections: 3, isRequired: false},
+                                            {name: 'Complementos', emoji: '🥜', description: 'Granola, paçoca, etc', maxSelections: 3, isRequired: false}
+                                          ];
+                                        }
+                                        // Sorvete, Sorvetes
+                                        else if (categoryLower.includes('sorvete')) {
+                                          suggestions = [
+                                            {name: 'Sabores', emoji: '🍦', description: 'Escolha os sabores', maxSelections: 3, isRequired: true},
+                                            {name: 'Caldas', emoji: '🍯', description: 'Adicione caldas', maxSelections: 2, isRequired: false},
+                                            {name: 'Coberturas', emoji: '🍬', description: 'Confete, biscoito, etc', maxSelections: 3, isRequired: false}
+                                          ];
+                                        }
+                                        // Bebida, Bebidas, Suco, Sucos
+                                        else if (categoryLower.includes('bebida') || categoryLower.includes('suco') || categoryLower.includes('drink')) {
+                                          suggestions = [
+                                            {name: 'Sabor', emoji: '🍹', description: 'Escolha o sabor', maxSelections: 1, isRequired: true},
+                                            {name: 'Tamanho', emoji: '🥤', description: 'Escolha o tamanho', maxSelections: 1, isRequired: true},
+                                            {name: 'Adicionais', emoji: '🥛', description: 'Leite em pó, etc', maxSelections: 2, isRequired: false}
+                                          ];
+                                        }
+                                        // Sanduíche, Lanche, Hamburguer, Burger
+                                        else if (categoryLower.includes('sanduí') || categoryLower.includes('lanche') || categoryLower.includes('burger') || categoryLower.includes('hambur')) {
+                                          suggestions = [
+                                            {name: 'Pão', emoji: '🍞', description: 'Escolha o pão', maxSelections: 1, isRequired: true},
+                                            {name: 'Molhos', emoji: '🥫', description: 'Até 2 molhos', maxSelections: 2, isRequired: false},
+                                            {name: 'Salada', emoji: '🥬', description: 'Alface, tomate, etc', maxSelections: 3, isRequired: false},
+                                            {name: 'Extras', emoji: '🧀', description: 'Queijo, bacon, etc', maxSelections: 5, isRequired: false}
+                                          ];
+                                        }
+                                        // Pastel, Salgado, Esfiha
+                                        else if (categoryLower.includes('pastel') || categoryLower.includes('salgad') || categoryLower.includes('esfiha') || categoryLower.includes('coxinha')) {
+                                          suggestions = [
+                                            {name: 'Sabores', emoji: '🥟', description: 'Escolha o sabor', maxSelections: 1, isRequired: true},
+                                            {name: 'Molhos', emoji: '🥫', description: 'Ketchup, mostarda, etc', maxSelections: 2, isRequired: false}
+                                          ];
+                                        }
+                                        // Genérico - qualquer categoria
+                                        else {
+                                          suggestions = [
+                                            {name: 'Opções', emoji: '⭐', description: 'Personalize este produto', maxSelections: 1, isRequired: false}
+                                          ];
+                                        }
+
+                                        return suggestions.length > 0 && (
+                                          <div className="bg-white rounded-lg p-3 mb-3 border border-purple-200">
+                                            <div className="text-xs font-bold text-purple-900 mb-2">🎯 Sugestões Rápidas:</div>
+                                            <div className="flex flex-wrap gap-2">
+                                              {suggestions.map((suggestion, idx) => (
+                                                <button
+                                                  key={idx}
+                                                  type="button"
+                                                  onClick={() => {
+                                                    const newGroup: CustomizationGroup = {
+                                                      id: Math.random().toString(36).substring(7),
+                                                      name: suggestion.name,
+                                                      description: suggestion.description,
+                                                      isRequired: suggestion.isRequired,
+                                                      minSelections: suggestion.isRequired ? 1 : 0,
+                                                      maxSelections: suggestion.maxSelections,
+                                                      options: []
+                                                    };
+                                                    
+                                                    setItems(items.map(i => 
+                                                      i.id === item.id 
+                                                        ? { ...i, customizationGroups: [...i.customizationGroups, newGroup] }
+                                                        : i
+                                                    ));
+                                                    toast.success(`${suggestion.emoji} Grupo "${suggestion.name}" adicionado!`);
+                                                  }}
+                                                  className="px-3 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-300 rounded-lg text-xs font-semibold text-purple-900 transition-all flex items-center gap-2"
+                                                >
+                                                  <span className="text-base">{suggestion.emoji}</span>
+                                                  {suggestion.name}
+                                                </button>
+                                              ))}
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-2">💡 Clique para adicionar rapidamente, ou crie um grupo personalizado</p>
+                                          </div>
+                                        );
+                                      })()}
                                     </div>
 
                                     {item.customizationGroups.length === 0 && (
