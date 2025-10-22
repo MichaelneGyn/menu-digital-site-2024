@@ -19,6 +19,19 @@ type ImportResult = {
   items: Array<{ name: string; price: number }>;
 };
 
+type CustomizationGroup = {
+  id: string;
+  name: string; // Ex: "Sabores", "Tamanho", "Cremes", etc.
+  description: string;
+  isRequired: boolean;
+  minSelections: number;
+  maxSelections: number;
+  options: Array<{
+    name: string;
+    price: string;
+  }>;
+};
+
 type ItemForm = {
   id: string;
   name: string;
@@ -30,8 +43,10 @@ type ItemForm = {
   imagePreview: string;
   isPromo: boolean;
   originalPrice: string;
-  // Customizations
+  // Customizations - NOVO SISTEMA FLEXÍVEL
   hasCustomizations: boolean;
+  customizationGroups: CustomizationGroup[];
+  // Legacy (manter compatibilidade)
   hasFlavors: boolean;
   flavors: string[];
   maxFlavors: string;
@@ -66,6 +81,9 @@ export default function ImportMenuPage() {
   const [tempFlavorInputs, setTempFlavorInputs] = useState<Record<string, string>>({});
   const [tempBorderInputs, setTempBorderInputs] = useState<Record<string, {name: string; price: string}>>({});
   const [tempExtraInputs, setTempExtraInputs] = useState<Record<string, {name: string; price: string}>>({});
+  
+  // Novo sistema flexível de grupos
+  const [tempGroupOptionInputs, setTempGroupOptionInputs] = useState<Record<string, {name: string; price: string}>>({});
 
   // Carrega categorias ao montar
   useEffect(() => {
@@ -86,8 +104,10 @@ export default function ImportMenuPage() {
       imagePreview: '',
       isPromo: false,
       originalPrice: '',
-      // Customizations
+      // Customizations - NOVO SISTEMA FLEXÍVEL
       hasCustomizations: false,
+      customizationGroups: [],
+      // Legacy (compatibilidade)
       hasFlavors: false,
       flavors: [],
       maxFlavors: '2',
@@ -144,6 +164,90 @@ export default function ImportMenuPage() {
   const updateItem = (id: string, field: keyof ItemForm, value: any) => {
     setItems(items.map(item => 
       item.id === id ? { ...item, [field]: value } : item
+    ));
+  };
+
+  // Funções para manipular grupos de customização
+  const addCustomizationGroup = (itemId: string) => {
+    const newGroup: CustomizationGroup = {
+      id: Math.random().toString(36).substring(7),
+      name: '',
+      description: '',
+      isRequired: false,
+      minSelections: 0,
+      maxSelections: 1,
+      options: []
+    };
+    
+    setItems(items.map(item => 
+      item.id === itemId 
+        ? { ...item, customizationGroups: [...item.customizationGroups, newGroup] }
+        : item
+    ));
+    toast.success('Grupo de personalização adicionado!');
+  };
+
+  const removeCustomizationGroup = (itemId: string, groupId: string) => {
+    setItems(items.map(item => 
+      item.id === itemId 
+        ? { ...item, customizationGroups: item.customizationGroups.filter(g => g.id !== groupId) }
+        : item
+    ));
+  };
+
+  const updateGroupField = (itemId: string, groupId: string, field: keyof CustomizationGroup, value: any) => {
+    setItems(items.map(item => 
+      item.id === itemId 
+        ? {
+            ...item,
+            customizationGroups: item.customizationGroups.map(group =>
+              group.id === groupId ? { ...group, [field]: value } : group
+            )
+          }
+        : item
+    ));
+  };
+
+  const addOptionToGroup = (itemId: string, groupId: string, optionName: string, optionPrice: string) => {
+    if (!optionName.trim()) {
+      toast.error('Digite o nome da opção');
+      return;
+    }
+
+    setItems(items.map(item => 
+      item.id === itemId 
+        ? {
+            ...item,
+            customizationGroups: item.customizationGroups.map(group =>
+              group.id === groupId 
+                ? { ...group, options: [...group.options, { name: optionName.trim(), price: optionPrice || '0' }] }
+                : group
+            )
+          }
+        : item
+    ));
+
+    // Limpar input temporário
+    setTempGroupOptionInputs({
+      ...tempGroupOptionInputs,
+      [groupId]: { name: '', price: '' }
+    });
+
+    toast.success('Opção adicionada!');
+  };
+
+  const removeOptionFromGroup = (itemId: string, groupId: string, optionIndex: number) => {
+    setItems(items.map(item => 
+      item.id === itemId 
+        ? {
+            ...item,
+            customizationGroups: item.customizationGroups.map(group =>
+              group.id === groupId 
+                ? { ...group, options: group.options.filter((_, idx) => idx !== optionIndex) }
+                : group
+            )
+          }
+        : item
     ));
   };
 
@@ -465,6 +569,185 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
 
                               {item.hasCustomizations && (
                                 <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
+                                  
+                                  {/* NOVO SISTEMA FLEXÍVEL DE GRUPOS */}
+                                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-lg p-4 mb-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <div>
+                                        <h4 className="font-bold text-purple-900 flex items-center gap-2">
+                                          <span className="text-xl">✨</span>
+                                          Grupos de Personalização (ILIMITADOS)
+                                        </h4>
+                                        <p className="text-xs text-purple-700 mt-1">
+                                          Crie grupos como: Sabores, Tamanhos, Cremes, Molhos, Complementos, etc.
+                                        </p>
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        onClick={() => addCustomizationGroup(item.id)}
+                                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                                        size="sm"
+                                      >
+                                        <Plus className="w-4 h-4 mr-1" />
+                                        Adicionar Grupo
+                                      </Button>
+                                    </div>
+
+                                    {item.customizationGroups.length === 0 && (
+                                      <div className="text-center py-6 text-purple-600 text-sm">
+                                        👆 Clique em "Adicionar Grupo" para criar opções personalizadas
+                                      </div>
+                                    )}
+
+                                    {item.customizationGroups.map((group) => (
+                                      <div key={group.id} className="bg-white border-2 border-purple-100 rounded-lg p-4 mb-3">
+                                        <div className="flex items-start justify-between mb-3">
+                                          <div className="flex-1 space-y-3">
+                                            <div className="grid grid-cols-2 gap-3">
+                                              <div>
+                                                <Label className="text-xs font-semibold text-purple-900">Nome do Grupo *</Label>
+                                                <Input
+                                                  placeholder="Ex: Sabores, Tamanhos, Cremes..."
+                                                  value={group.name}
+                                                  onChange={(e) => updateGroupField(item.id, group.id, 'name', e.target.value)}
+                                                  className="border-purple-200"
+                                                />
+                                              </div>
+                                              <div>
+                                                <Label className="text-xs font-semibold text-purple-900">Descrição (opcional)</Label>
+                                                <Input
+                                                  placeholder="Ex: Escolha até 2 sabores"
+                                                  value={group.description}
+                                                  onChange={(e) => updateGroupField(item.id, group.id, 'description', e.target.value)}
+                                                  className="border-purple-200"
+                                                />
+                                              </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-3 gap-3">
+                                              <div className="flex items-center gap-2">
+                                                <input
+                                                  type="checkbox"
+                                                  checked={group.isRequired}
+                                                  onChange={(e) => updateGroupField(item.id, group.id, 'isRequired', e.target.checked)}
+                                                  className="w-4 h-4"
+                                                />
+                                                <Label className="text-xs">Obrigatório</Label>
+                                              </div>
+                                              <div>
+                                                <Label className="text-xs">Mín. Seleções</Label>
+                                                <Input
+                                                  type="number"
+                                                  min="0"
+                                                  value={group.minSelections}
+                                                  onChange={(e) => updateGroupField(item.id, group.id, 'minSelections', parseInt(e.target.value) || 0)}
+                                                  className="border-purple-200"
+                                                />
+                                              </div>
+                                              <div>
+                                                <Label className="text-xs">Máx. Seleções</Label>
+                                                <Input
+                                                  type="number"
+                                                  min="1"
+                                                  value={group.maxSelections}
+                                                  onChange={(e) => updateGroupField(item.id, group.id, 'maxSelections', parseInt(e.target.value) || 1)}
+                                                  className="border-purple-200"
+                                                />
+                                              </div>
+                                            </div>
+
+                                            {/* Adicionar opções ao grupo */}
+                                            <div className="border-t pt-3 mt-3">
+                                              <Label className="text-xs font-semibold text-purple-900 mb-2 block">Opções do Grupo</Label>
+                                              <div className="flex gap-2 items-end">
+                                                <div className="flex-1">
+                                                  <Label className="text-xs">Nome da Opção *</Label>
+                                                  <Input
+                                                    placeholder="Ex: Calabresa, 500ml, Chocolate..."
+                                                    value={tempGroupOptionInputs[group.id]?.name || ''}
+                                                    onChange={(e) => setTempGroupOptionInputs({
+                                                      ...tempGroupOptionInputs,
+                                                      [group.id]: {
+                                                        name: e.target.value,
+                                                        price: tempGroupOptionInputs[group.id]?.price || ''
+                                                      }
+                                                    })}
+                                                    className="border-purple-200"
+                                                  />
+                                                </div>
+                                                <div className="w-32">
+                                                  <Label className="text-xs">Preço +R$</Label>
+                                                  <PriceInput
+                                                    value={tempGroupOptionInputs[group.id]?.price || ''}
+                                                    onChange={(val) => setTempGroupOptionInputs({
+                                                      ...tempGroupOptionInputs,
+                                                      [group.id]: {
+                                                        name: tempGroupOptionInputs[group.id]?.name || '',
+                                                        price: val
+                                                      }
+                                                    })}
+                                                    placeholder="Ex: 500"
+                                                  />
+                                                </div>
+                                                <Button
+                                                  type="button"
+                                                  size="sm"
+                                                  onClick={() => addOptionToGroup(
+                                                    item.id,
+                                                    group.id,
+                                                    tempGroupOptionInputs[group.id]?.name || '',
+                                                    tempGroupOptionInputs[group.id]?.price || ''
+                                                  )}
+                                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                                >
+                                                  <Plus className="w-4 h-4" />
+                                                </Button>
+                                              </div>
+
+                                              {/* Lista de opções adicionadas */}
+                                              {group.options.length > 0 && (
+                                                <div className="space-y-1 mt-3">
+                                                  <div className="text-xs font-semibold text-gray-700">Opções adicionadas ({group.options.length}):</div>
+                                                  {group.options.map((option, optionIdx) => (
+                                                    <div key={optionIdx} className="flex justify-between bg-gray-50 p-2 rounded text-sm border">
+                                                      <span>
+                                                        {option.name} 
+                                                        {parseFloat(option.price) > 0 && (
+                                                          <strong className="text-green-600 ml-2">+R$ {parseFloat(option.price).toFixed(2)}</strong>
+                                                        )}
+                                                      </span>
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => removeOptionFromGroup(item.id, group.id, optionIdx)}
+                                                        className="text-red-500 hover:text-red-700 font-bold"
+                                                      >
+                                                        ✕
+                                                      </button>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+
+                                          <button
+                                            type="button"
+                                            onClick={() => removeCustomizationGroup(item.id, group.id)}
+                                            className="ml-3 text-red-500 hover:text-red-700"
+                                            title="Remover grupo"
+                                          >
+                                            <X className="w-5 h-5" />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+
+                                  {/* SISTEMA LEGADO (manter compatibilidade) */}
+                                  <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-xs text-yellow-800 mb-3">
+                                    ⚠️ <strong>Sistema Antigo:</strong> Use o sistema de "Grupos de Personalização" acima (mais flexível!)
+                                  </div>
+
                                   {/* Sabores */}
                                   <div className="border-b pb-3">
                                     <label className="flex items-center gap-2 mb-2">
