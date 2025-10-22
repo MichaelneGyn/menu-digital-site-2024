@@ -267,7 +267,7 @@ function AdminDashboard() {
                     onClick={() => setShowAddItemModal(true)}
                     className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
                   >
-                    <span className="text-xl sm:text-2xl">➕</span>
+                    <span className="text-xl sm:text-2xl text-white">➕</span>
                     <span className="text-xs sm:text-sm font-medium text-center">Adicionar Item</span>
                   </button>
 
@@ -514,7 +514,7 @@ function AdminDashboard() {
                   onClick={() => setShowAddItemModal(true)}
                   disabled={!restaurant}
                 >
-                  <span className="mr-2">➕</span>
+                  <span className="mr-2 text-white">➕</span>
                   Adicionar Primeiro Item
                 </Button>
               </div>
@@ -1315,6 +1315,22 @@ function EditItemModal({ isOpen, onClose, item, categories, onSuccess }: EditIte
                 </div>
               </>
             )}
+
+            {/* Aviso sobre customizações */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">ℹ️</span>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-blue-900 mb-1">Opções de Personalização</h4>
+                  <p className="text-sm text-blue-700 mb-2">
+                    Para adicionar ou editar <strong>sabores, bordas e extras</strong>, use a função <strong>"Importar Menu"</strong> no menu lateral.
+                  </p>
+                  <p className="text-xs text-blue-600">
+                    💡 Lá você pode configurar todas as opções de personalização do produto.
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <div className="flex gap-3 pt-4">
               <Button type="button" variant="outline" onClick={onClose} className="flex-1">
