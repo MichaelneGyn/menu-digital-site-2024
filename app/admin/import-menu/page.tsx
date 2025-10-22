@@ -518,7 +518,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                             }}
                                             className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
                                           >
-                                            ➕
+                                            <Plus className="w-4 h-4" />
                                           </Button>
                                         </div>
                                         {item.flavors.length > 0 && (
@@ -606,7 +606,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                             }}
                                             className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
                                           >
-                                            ➕
+                                            <Plus className="w-4 h-4" />
                                           </Button>
                                         </div>
                                         {item.borders.length > 0 && (
@@ -694,7 +694,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                             }}
                                             className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
                                           >
-                                            ➕
+                                            <Plus className="w-4 h-4" />
                                           </Button>
                                         </div>
                                         {item.extras.length > 0 && (
