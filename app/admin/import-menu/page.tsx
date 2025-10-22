@@ -63,6 +63,7 @@ export default function ImportMenuPage() {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   
   // Estados temporários para inputs de customização
+  const [tempFlavorInputs, setTempFlavorInputs] = useState<Record<string, string>>({});
   const [tempBorderInputs, setTempBorderInputs] = useState<Record<string, {name: string; price: string}>>({});
   const [tempExtraInputs, setTempExtraInputs] = useState<Record<string, {name: string; price: string}>>({});
 
@@ -477,19 +478,17 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                     </label>
                                     {item.hasFlavors && (
                                       <div className="ml-6 space-y-2">
-                                        <div className="text-xs text-gray-600 mb-1">Digite o nome do sabor e pressione ENTER para adicionar</div>
+                                        <div className="text-xs text-gray-600 mb-1">Digite o nome do sabor</div>
                                         <div className="flex gap-2 items-end">
                                           <div className="flex-1">
                                             <Label className="text-xs">Nome do Sabor</Label>
                                             <Input
                                               placeholder="Ex: Calabresa, Mussarela, Frango"
-                                              onKeyPress={(e: any) => {
-                                                if (e.key === 'Enter' && e.target.value.trim()) {
-                                                  e.preventDefault();
-                                                  updateItem(item.id, 'flavors', [...item.flavors, e.target.value.trim()]);
-                                                  e.target.value = '';
-                                                }
-                                              }}
+                                              value={tempFlavorInputs[item.id] || ''}
+                                              onChange={(e) => setTempFlavorInputs({
+                                                ...tempFlavorInputs,
+                                                [item.id]: e.target.value
+                                              })}
                                             />
                                           </div>
                                           <div className="w-24">
@@ -501,6 +500,26 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                               onChange={(e) => updateItem(item.id, 'maxFlavors', e.target.value)}
                                             />
                                           </div>
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            onClick={() => {
+                                              const flavorName = tempFlavorInputs[item.id];
+                                              if (flavorName?.trim()) {
+                                                updateItem(item.id, 'flavors', [...item.flavors, flavorName.trim()]);
+                                                setTempFlavorInputs({
+                                                  ...tempFlavorInputs,
+                                                  [item.id]: ''
+                                                });
+                                                toast.success('Sabor adicionado!');
+                                              } else {
+                                                toast.error('Digite o nome do sabor');
+                                              }
+                                            }}
+                                            className="bg-green-600 hover:bg-green-700"
+                                          >
+                                            ➕
+                                          </Button>
                                         </div>
                                         {item.flavors.length > 0 && (
                                           <div className="space-y-1">
