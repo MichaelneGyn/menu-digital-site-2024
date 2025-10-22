@@ -122,16 +122,29 @@ function SettingsPage() {
         body: formDataUpload,
       });
 
-      if (!res.ok) throw new Error('Erro no upload');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Erro no upload');
+      }
 
-      const { url } = await res.json();
-      setFormData({ ...formData, logo: url });
+      const data = await res.json();
+      const imageUrl = data.image_url || data.url; // API retorna image_url
+      
+      console.log('✅ Upload response:', data);
+      console.log('✅ Image URL:', imageUrl);
+      
+      if (!imageUrl) {
+        throw new Error('URL da imagem não retornada pela API');
+      }
+      
+      setFormData({ ...formData, logo: imageUrl });
+      setLogoPreview(imageUrl);
       toast.dismiss();
-      toast.success('Imagem carregada!');
-    } catch (error) {
-      console.error('Erro no upload:', error);
+      toast.success('✅ Imagem carregada! Não esqueça de clicar em "Salvar Configurações"');
+    } catch (error: any) {
+      console.error('❌ Erro no upload:', error);
       toast.dismiss();
-      toast.error('Erro ao fazer upload. Por enquanto, use uma URL de imagem.');
+      toast.error(error.message || 'Erro ao fazer upload. Tente usar uma URL de imagem.');
     }
   };
 
@@ -145,6 +158,12 @@ function SettingsPage() {
         setSaving(false);
         return;
       }
+
+      console.log('📤 Enviando configurações:', {
+        id: restaurant.id,
+        ...formData,
+        logo: formData.logo || 'VAZIO'
+      });
 
       const res = await fetch('/api/restaurant', {
         method: 'PUT',

@@ -85,6 +85,13 @@ export async function PUT(request: NextRequest) {
       pixQrCode 
     } = body;
 
+    console.log('📥 API Restaurant PUT - Dados recebidos:', {
+      id,
+      name,
+      logo: logo || 'VAZIO',
+      logoLength: logo?.length || 0
+    });
+
     if (!id) {
       return NextResponse.json({ error: 'ID do restaurante é obrigatório' }, { status: 400 });
     }
@@ -164,6 +171,13 @@ export async function PUT(request: NextRequest) {
           }
         }
       }
+    });
+
+    console.log('✅ API Restaurant PUT - Restaurante atualizado:', {
+      id: updatedRestaurant.id,
+      name: updatedRestaurant.name,
+      logo: updatedRestaurant.logo || 'NULL',
+      logoUrl: updatedRestaurant.logoUrl || 'NULL'
     });
 
     return NextResponse.json(updatedRestaurant);
