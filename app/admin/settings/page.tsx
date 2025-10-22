@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import toast from 'react-hot-toast';
-import { Upload, Save, ImageIcon, AlertTriangle } from 'lucide-react';
+import { Upload, Save, ImageIcon, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
+import Link from 'next/link';
 
 type Restaurant = {
   id: string;
@@ -180,7 +181,15 @@ function SettingsPage() {
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
+      {/* Botão Voltar */}
       <div className="mb-6">
+        <Link href="/admin/dashboard">
+          <Button variant="outline" className="mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar ao Dashboard
+          </Button>
+        </Link>
+        
         <h1 className="text-3xl font-bold">Configurações do Restaurante</h1>
         <p className="text-gray-600">
           Personalize a aparência do seu cardápio digital
