@@ -139,19 +139,32 @@ function SettingsPage() {
     setSaving(true);
 
     try {
+      if (!restaurant?.id) {
+        toast.error('Restaurante não encontrado');
+        setSaving(false);
+        return;
+      }
+
       const res = await fetch('/api/restaurant', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          id: restaurant.id, // ✅ ID obrigatório
+          ...formData,
+        }),
       });
 
-      if (!res.ok) throw new Error('Erro ao salvar');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.error('Erro da API:', errorData);
+        throw new Error(errorData.error || 'Erro ao salvar');
+      }
 
       toast.success('Configurações salvas com sucesso!');
       fetchRestaurant();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro:', error);
-      toast.error('Erro ao salvar configurações');
+      toast.error(error.message || 'Erro ao salvar configurações');
     } finally {
       setSaving(false);
     }
