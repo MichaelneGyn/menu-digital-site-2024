@@ -14,12 +14,27 @@ interface Category {
   name: string;
 }
 
+interface EditItem {
+  id: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  image?: string | null;
+  isPromo?: boolean;
+  originalPrice?: number;
+  promoTag?: string | null;
+  category: {
+    id: string;
+  };
+}
+
 interface AddItemWithCustomizationsModalProps {
   isOpen: boolean;
   onClose: () => void;
   restaurantId: string;
   categories: Category[];
   onSuccess: () => void;
+  item?: EditItem; // Opcional: se fornecido, entra em modo de edição
 }
 
 export default function AddItemWithCustomizationsModal({
@@ -27,20 +42,23 @@ export default function AddItemWithCustomizationsModal({
   onClose,
   restaurantId,
   categories,
-  onSuccess
+  onSuccess,
+  item
 }: AddItemWithCustomizationsModalProps) {
+  const isEditing = !!item; // Modo de edição se item estiver presente
+  
   // Basic info
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    categoryId: '',
-    isPromo: false,
-    oldPrice: '',
-    promoTag: ''
+    name: item?.name || '',
+    description: item?.description || '',
+    price: item?.price?.toString() || '',
+    categoryId: item?.category.id || '',
+    isPromo: item?.isPromo || false,
+    oldPrice: item?.originalPrice?.toString() || '',
+    promoTag: item?.promoTag || ''
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(item?.image || null);
   
   // Customizations
   const [hasCustomizations, setHasCustomizations] = useState(false);
