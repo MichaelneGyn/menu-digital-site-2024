@@ -234,7 +234,7 @@ export default function AddItemWithCustomizationsModal({
             description: 'Adicione extras ao seu pedido',
             isRequired: false,
             minSelections: 0,
-            maxSelections: null,
+            maxSelections: 10, // Fix: não pode ser null
             sortOrder: 2,
             isActive: true,
             options: extras.map((extra, index) => ({
@@ -402,6 +402,44 @@ export default function AddItemWithCustomizationsModal({
 
               {hasCustomizations && (
                 <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+                  {/* Sugestões Inteligentes */}
+                  {(() => {
+                    const selectedCategory = categories.find(c => c.id === formData.categoryId);
+                    if (!selectedCategory) return null;
+                    
+                    const categoryLower = selectedCategory.name.toLowerCase();
+                    let suggestions: string[] = [];
+
+                    if (categoryLower.includes('pizza')) {
+                      return (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                          <p className="text-sm font-semibold text-blue-900 mb-2">💡 Sugestões para Pizza:</p>
+                          <div className="flex gap-2 flex-wrap">
+                            <button type="button" onClick={() => setHasFlavors(true)} className="px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded-full text-xs font-semibold">🍕 Sabores</button>
+                            <button type="button" onClick={() => setHasBorders(true)} className="px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded-full text-xs font-semibold">🥖 Bordas</button>
+                            <button type="button" onClick={() => setHasExtras(true)} className="px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded-full text-xs font-semibold">🧀 Extras</button>
+                          </div>
+                        </div>
+                      );
+                    } else if (categoryLower.includes('açaí') || categoryLower.includes('acai')) {
+                      return (
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
+                          <p className="text-sm font-semibold text-purple-900 mb-2">💡 Dica: Para Açaí, considere adicionar Sabores e Extras (cremes, frutas)</p>
+                        </div>
+                      );
+                    } else if (categoryLower.includes('sanduí') || categoryLower.includes('lanche') || categoryLower.includes('burger')) {
+                      return (
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+                          <p className="text-sm font-semibold text-orange-900 mb-2">💡 Sugestões para Lanche:</p>
+                          <div className="flex gap-2 flex-wrap">
+                            <button type="button" onClick={() => setHasFlavors(true)} className="px-3 py-1 bg-orange-100 hover:bg-orange-200 rounded-full text-xs font-semibold">🍞 Opções de Pão</button>
+                            <button type="button" onClick={() => setHasExtras(true)} className="px-3 py-1 bg-orange-100 hover:bg-orange-200 rounded-full text-xs font-semibold">🧀 Extras</button>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                   {/* Flavors */}
                   <div className="border-b pb-4">
                     <div className="flex items-center gap-2 mb-2">
