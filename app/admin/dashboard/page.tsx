@@ -260,132 +260,131 @@ function AdminDashboard() {
                 <CardTitle>Ações Rápidas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Grade original de Ações Rápidas: manter exatamente os cards e funcionalidades */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {/* Grade de Ações Rápidas - 4 colunas para melhor organização */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {/* Adicionar Item */}
                   <button
                     onClick={() => setShowAddItemModal(true)}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-white shadow-sm hover:shadow-md transition-all"
                   >
-                    <span className="text-xl sm:text-2xl text-white">➕</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Adicionar Item</span>
+                    <span className="text-3xl">➕</span>
+                    <span className="text-xs font-semibold text-center leading-tight">Adicionar<br />Item</span>
                   </button>
 
                   {/* Nova Categoria */}
                   <button
                     onClick={() => setShowAddCategoryModal(true)}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-white shadow-sm hover:shadow-md transition-all"
                   >
-                    <span className="text-xl sm:text-2xl">📁</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Nova Categoria</span>
+                    <span className="text-3xl">📁</span>
+                    <span className="text-xs font-semibold text-center leading-tight">Nova<br />Categoria</span>
                   </button>
 
                   {/* Cupons de Desconto */}
                   <button
                     onClick={() => setShowCouponsModal(true)}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-300 shadow-sm hover:shadow-md transition-all"
                   >
-                    <span className="text-xl sm:text-2xl">🎫</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Cupons</span>
-                    <span className="text-xs text-orange-600 font-semibold">NOVO</span>
+                    <span className="text-3xl">🎫</span>
+                    <span className="text-xs font-semibold text-center leading-tight">Cupons</span>
+                    <span className="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full font-bold">NOVO</span>
                   </button>
 
                   {/* Importar em Massa */}
                   <button
                     onClick={() => router.push('/admin/import-menu')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300 shadow-sm hover:shadow-md transition-all"
                   >
-                    <span className="text-xl sm:text-2xl">📤</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Importar em Massa</span>
-                    <span className="text-xs text-purple-600 font-semibold">NOVO</span>
+                    <span className="text-3xl">📤</span>
+                    <span className="text-xs font-semibold text-center leading-tight">Importar<br />Massa</span>
+                    <span className="text-[10px] bg-purple-500 text-white px-2 py-0.5 rounded-full font-bold">NOVO</span>
                   </button>
 
                   {/* Configurações */}
                   <button
                     onClick={() => router.push('/admin/settings')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300 shadow-sm hover:shadow-md transition-all"
                   >
-                    <span className="text-xl sm:text-2xl">⚙️</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Configurações</span>
-                    <span className="text-xs text-blue-600 font-semibold">NOVO</span>
+                    <span className="text-3xl">⚙️</span>
+                    <span className="text-xs font-semibold text-center leading-tight">Config.</span>
+                    <span className="text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full font-bold">NOVO</span>
                   </button>
 
                   {/* Personalizar */}
                   <button
                     onClick={() => setShowPersonalizeModal(true)}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-white shadow-sm hover:shadow-md transition-all"
                   >
-                    <span className="text-xl sm:text-2xl">🎨</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Personalizar</span>
+                    <span className="text-3xl">🎨</span>
+                    <span className="text-xs font-semibold text-center leading-tight">Personalizar</span>
                   </button>
 
                   {/* Calculadora CMV */}
                   <button
                     onClick={() => router.push('/admin/cmv')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-green-50 to-blue-50 border-green-200"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-gradient-to-br from-green-50 to-blue-50 border-green-300 shadow-sm hover:shadow-md transition-all"
                   >
-                    <span className="text-xl sm:text-2xl">🧮</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Calculadora CMV</span>
-                    <span className="text-xs text-green-600 font-semibold">NOVO</span>
+                    <span className="text-3xl">🧮</span>
+                    <span className="text-xs font-semibold text-center leading-tight">CMV</span>
+                    <span className="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">NOVO</span>
                   </button>
 
                   {/* Relatórios */}
                   <button
                     onClick={() => setShowReportsModal(true)}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-white shadow-sm hover:shadow-md transition-all"
                   >
-                    <span className="text-xl sm:text-2xl">📊</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Relatórios</span>
+                    <span className="text-3xl">📊</span>
+                    <span className="text-xs font-semibold text-center leading-tight">Relatórios</span>
                   </button>
 
-                  {/* Novos cards adicionais */}
-                  {/* Comandas: sempre visível */}
+                  {/* Comandas */}
                   <button
                     onClick={() => router.push('/admin/orders')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-white shadow-sm hover:shadow-md transition-all"
                   >
-                    <span className="text-xl sm:text-2xl">🧾</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Comandas</span>
+                    <span className="text-3xl">🧾</span>
+                    <span className="text-xs font-semibold text-center leading-tight">Comandas</span>
                   </button>
 
                   {/* Painel de Comandos (Kitchen Display) */}
                   <button
                     onClick={() => router.push('/admin/kitchen')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-orange-50 to-red-50 border-orange-200"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-gradient-to-br from-orange-50 to-red-50 border-orange-300 shadow-sm hover:shadow-md transition-all"
                   >
-                    <span className="text-xl sm:text-2xl">👨‍🍳</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Painel de Comandos</span>
-                    <span className="text-xs text-orange-600 font-semibold">NOVO</span>
+                    <span className="text-3xl">👨‍🍳</span>
+                    <span className="text-xs font-semibold text-center leading-tight">Painel<br />Comandos</span>
+                    <span className="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full font-bold">NOVO</span>
                   </button>
 
                   {/* Gestão de Mesas */}
                   <button
                     onClick={() => router.push('/admin/tables')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300 shadow-sm hover:shadow-md transition-all"
                   >
-                    <span className="text-xl sm:text-2xl">🍽️</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Gestão de Mesas</span>
-                    <span className="text-xs text-blue-600 font-semibold">NOVO</span>
+                    <span className="text-3xl">🍽️</span>
+                    <span className="text-xs font-semibold text-center leading-tight">Gestão<br />Mesas</span>
+                    <span className="text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full font-bold">NOVO</span>
                   </button>
 
                   {/* Chamadas de Garçom */}
                   <button
                     onClick={() => router.push('/admin/waiter-calls')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-red-50 to-pink-50 border-red-200"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-gradient-to-br from-red-50 to-pink-50 border-red-300 shadow-sm hover:shadow-md transition-all"
                   >
-                    <span className="text-xl sm:text-2xl">🔔</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Chamadas</span>
-                    <span className="text-xs text-red-600 font-semibold">NOVO</span>
+                    <span className="text-3xl">🔔</span>
+                    <span className="text-xs font-semibold text-center leading-tight">Chamadas</span>
+                    <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full font-bold">NOVO</span>
                   </button>
 
                   {/* Usuários & Assinaturas: somente para admin */}
                   {isAdmin && (
                     <button
                       onClick={() => router.push('/admin/customers')}
-                      className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
+                      className="h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl p-3 hover-scale animated-button hover-float bg-white shadow-sm hover:shadow-md transition-all"
                     >
-                      <span className="text-xl sm:text-2xl">👥💳</span>
-                      <span className="text-xs sm:text-sm font-medium text-center">Usuários</span>
+                      <span className="text-3xl">👥💳</span>
+                      <span className="text-xs font-semibold text-center leading-tight">Usuários</span>
                     </button>
                   )}
                 </div>
