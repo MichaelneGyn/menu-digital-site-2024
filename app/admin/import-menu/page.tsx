@@ -570,32 +570,37 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                               {item.hasCustomizations && (
                                 <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
                                   
-                                  {/* NOVO SISTEMA FLEXÍVEL DE GRUPOS */}
-                                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-lg p-4 mb-4">
-                                    <div className="flex items-center justify-between mb-3">
+                                  {/* NOVO SISTEMA FLEXÍVEL DE GRUPOS - SIMPLIFICADO */}
+                                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-5 mb-4 shadow-sm">
+                                    <div className="flex items-start justify-between mb-4">
                                       <div>
-                                        <h4 className="font-bold text-purple-900 flex items-center gap-2">
-                                          <span className="text-xl">✨</span>
-                                          Grupos de Personalização (ILIMITADOS)
+                                        <h4 className="text-lg font-bold text-purple-900 flex items-center gap-2">
+                                          <span className="text-2xl">✨</span>
+                                          Opções Personalizadas
                                         </h4>
-                                        <p className="text-xs text-purple-700 mt-1">
-                                          Crie grupos como: Sabores, Tamanhos, Cremes, Molhos, Complementos, etc.
+                                        <p className="text-sm text-purple-700 mt-2 font-medium">
+                                          🍕 Crie grupos como: <strong>Sabores</strong>, <strong>Tamanhos</strong>, <strong>Cremes</strong>, etc.
+                                        </p>
+                                        <p className="text-xs text-purple-600 mt-1">
+                                          💡 Exemplo: Pizza com opção de até 2 sabores, ou Açaí com escolha de tamanho obrigatório
                                         </p>
                                       </div>
                                       <Button
                                         type="button"
                                         onClick={() => addCustomizationGroup(item.id)}
-                                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
-                                        size="sm"
+                                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md hover:shadow-lg transition-all"
+                                        size="lg"
                                       >
-                                        <Plus className="w-4 h-4 mr-1" />
-                                        Adicionar Grupo
+                                        <Plus className="w-5 h-5 mr-2" />
+                                        Novo Grupo
                                       </Button>
                                     </div>
 
                                     {item.customizationGroups.length === 0 && (
-                                      <div className="text-center py-6 text-purple-600 text-sm">
-                                        👆 Clique em "Adicionar Grupo" para criar opções personalizadas
+                                      <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-purple-200">
+                                        <span className="text-4xl mb-2 block">👆</span>
+                                        <p className="text-purple-600 font-semibold">Clique em "Novo Grupo" para começar</p>
+                                        <p className="text-xs text-gray-500 mt-1">Você pode criar quantos grupos quiser!</p>
                                       </div>
                                     )}
 
@@ -603,128 +608,139 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                       <div key={group.id} className="bg-white border-2 border-purple-100 rounded-lg p-4 mb-3">
                                         <div className="flex items-start justify-between mb-3">
                                           <div className="flex-1 space-y-3">
-                                            <div className="grid grid-cols-2 gap-3">
-                                              <div>
-                                                <Label className="text-xs font-semibold text-purple-900">Nome do Grupo *</Label>
-                                                <Input
-                                                  placeholder="Ex: Sabores, Tamanhos, Cremes..."
-                                                  value={group.name}
-                                                  onChange={(e) => updateGroupField(item.id, group.id, 'name', e.target.value)}
-                                                  className="border-purple-200"
-                                                />
-                                              </div>
-                                              <div>
-                                                <Label className="text-xs font-semibold text-purple-900">Descrição (opcional)</Label>
-                                                <Input
-                                                  placeholder="Ex: Escolha até 2 sabores"
-                                                  value={group.description}
-                                                  onChange={(e) => updateGroupField(item.id, group.id, 'description', e.target.value)}
-                                                  className="border-purple-200"
-                                                />
-                                              </div>
+                                            {/* Nome do Grupo - SIMPLES */}
+                                            <div>
+                                              <Label className="text-sm font-bold text-purple-900">📝 Nome do Grupo *</Label>
+                                              <Input
+                                                placeholder="Ex: Sabores, Tamanhos, Cremes..."
+                                                value={group.name}
+                                                onChange={(e) => updateGroupField(item.id, group.id, 'name', e.target.value)}
+                                                className="border-purple-200 mt-1 text-base"
+                                              />
+                                              <p className="text-xs text-gray-500 mt-1">💡 Dica: Use nomes simples como "Sabores", "Tamanho", "Extras"</p>
                                             </div>
 
-                                            <div className="grid grid-cols-3 gap-3">
-                                              <div className="flex items-center gap-2">
-                                                <input
-                                                  type="checkbox"
-                                                  checked={group.isRequired}
-                                                  onChange={(e) => updateGroupField(item.id, group.id, 'isRequired', e.target.checked)}
-                                                  className="w-4 h-4"
-                                                />
-                                                <Label className="text-xs">Obrigatório</Label>
-                                              </div>
-                                              <div>
-                                                <Label className="text-xs">Mín. Seleções</Label>
-                                                <Input
-                                                  type="number"
-                                                  min="0"
-                                                  value={group.minSelections}
-                                                  onChange={(e) => updateGroupField(item.id, group.id, 'minSelections', parseInt(e.target.value) || 0)}
-                                                  className="border-purple-200"
-                                                />
-                                              </div>
-                                              <div>
-                                                <Label className="text-xs">Máx. Seleções</Label>
-                                                <Input
-                                                  type="number"
-                                                  min="1"
-                                                  value={group.maxSelections}
-                                                  onChange={(e) => updateGroupField(item.id, group.id, 'maxSelections', parseInt(e.target.value) || 1)}
-                                                  className="border-purple-200"
-                                                />
-                                              </div>
-                                            </div>
-
-                                            {/* Adicionar opções ao grupo */}
-                                            <div className="border-t pt-3 mt-3">
-                                              <Label className="text-xs font-semibold text-purple-900 mb-2 block">Opções do Grupo</Label>
-                                              <div className="flex gap-2 items-end">
-                                                <div className="flex-1">
-                                                  <Label className="text-xs">Nome da Opção *</Label>
+                                            {/* Quantos pode escolher - SIMPLES */}
+                                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                                              <Label className="text-sm font-bold text-purple-900 flex items-center gap-2">
+                                                🔢 Quantos o cliente pode escolher?
+                                              </Label>
+                                              <div className="flex items-center gap-3 mt-2">
+                                                <div className="flex items-center gap-2">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={group.isRequired}
+                                                    onChange={(e) => updateGroupField(item.id, group.id, 'isRequired', e.target.checked)}
+                                                    className="w-5 h-5"
+                                                  />
+                                                  <Label className="text-sm font-semibold">Obrigatório?</Label>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                  <Label className="text-sm">Até</Label>
                                                   <Input
-                                                    placeholder="Ex: Calabresa, 500ml, Chocolate..."
-                                                    value={tempGroupOptionInputs[group.id]?.name || ''}
-                                                    onChange={(e) => setTempGroupOptionInputs({
-                                                      ...tempGroupOptionInputs,
-                                                      [group.id]: {
-                                                        name: e.target.value,
-                                                        price: tempGroupOptionInputs[group.id]?.price || ''
+                                                    type="number"
+                                                    min="1"
+                                                    value={group.maxSelections}
+                                                    onChange={(e) => {
+                                                      const val = parseInt(e.target.value) || 1;
+                                                      updateGroupField(item.id, group.id, 'maxSelections', val);
+                                                      if (group.isRequired && group.minSelections === 0) {
+                                                        updateGroupField(item.id, group.id, 'minSelections', 1);
                                                       }
-                                                    })}
-                                                    className="border-purple-200"
+                                                    }}
+                                                    className="border-purple-200 w-20 text-center font-bold"
                                                   />
+                                                  <Label className="text-sm">opções</Label>
                                                 </div>
-                                                <div className="w-32">
-                                                  <Label className="text-xs">Preço +R$</Label>
-                                                  <PriceInput
-                                                    value={tempGroupOptionInputs[group.id]?.price || ''}
-                                                    onChange={(val) => setTempGroupOptionInputs({
-                                                      ...tempGroupOptionInputs,
-                                                      [group.id]: {
-                                                        name: tempGroupOptionInputs[group.id]?.name || '',
-                                                        price: val
-                                                      }
-                                                    })}
-                                                    placeholder="Ex: 500"
-                                                  />
+                                              </div>
+                                              <p className="text-xs text-purple-600 mt-2">
+                                                💡 Exemplo: Pizza com até <strong>2 sabores</strong>, ou Tamanho <strong>obrigatório</strong> (cliente deve escolher 1)
+                                              </p>
+                                            </div>
+
+                                            {/* Adicionar opções ao grupo - SIMPLES */}
+                                            <div className="border-t-2 border-dashed border-purple-200 pt-4 mt-3">
+                                              <Label className="text-sm font-bold text-purple-900 mb-3 block">➕ Adicionar Opções</Label>
+                                              <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                                                <div className="flex gap-2 items-end">
+                                                  <div className="flex-1">
+                                                    <Label className="text-sm font-semibold">Nome da Opção</Label>
+                                                    <Input
+                                                      placeholder="Ex: Calabresa, 500ml, Chocolate..."
+                                                      value={tempGroupOptionInputs[group.id]?.name || ''}
+                                                      onChange={(e) => setTempGroupOptionInputs({
+                                                        ...tempGroupOptionInputs,
+                                                        [group.id]: {
+                                                          name: e.target.value,
+                                                          price: tempGroupOptionInputs[group.id]?.price || ''
+                                                        }
+                                                      })}
+                                                      className="border-2 mt-1 text-base"
+                                                    />
+                                                  </div>
+                                                  <div className="w-32">
+                                                    <Label className="text-sm font-semibold">+ Preço</Label>
+                                                    <PriceInput
+                                                      value={tempGroupOptionInputs[group.id]?.price || ''}
+                                                      onChange={(val) => setTempGroupOptionInputs({
+                                                        ...tempGroupOptionInputs,
+                                                        [group.id]: {
+                                                          name: tempGroupOptionInputs[group.id]?.name || '',
+                                                          price: val
+                                                        }
+                                                      })}
+                                                      placeholder="Ex: 500"
+                                                      className="mt-1"
+                                                    />
+                                                  </div>
+                                                  <Button
+                                                    type="button"
+                                                    size="lg"
+                                                    onClick={() => addOptionToGroup(
+                                                      item.id,
+                                                      group.id,
+                                                      tempGroupOptionInputs[group.id]?.name || '',
+                                                      tempGroupOptionInputs[group.id]?.price || ''
+                                                    )}
+                                                    className="bg-green-500 hover:bg-green-600 text-white font-bold h-11"
+                                                  >
+                                                    <Plus className="w-5 h-5" />
+                                                  </Button>
                                                 </div>
-                                                <Button
-                                                  type="button"
-                                                  size="sm"
-                                                  onClick={() => addOptionToGroup(
-                                                    item.id,
-                                                    group.id,
-                                                    tempGroupOptionInputs[group.id]?.name || '',
-                                                    tempGroupOptionInputs[group.id]?.price || ''
-                                                  )}
-                                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                                >
-                                                  <Plus className="w-4 h-4" />
-                                                </Button>
+                                                <p className="text-xs text-gray-500 mt-2">💰 Deixe o preço em 0 se não tiver custo adicional</p>
                                               </div>
 
-                                              {/* Lista de opções adicionadas */}
-                                              {group.options.length > 0 && (
-                                                <div className="space-y-1 mt-3">
-                                                  <div className="text-xs font-semibold text-gray-700">Opções adicionadas ({group.options.length}):</div>
-                                                  {group.options.map((option, optionIdx) => (
-                                                    <div key={optionIdx} className="flex justify-between bg-gray-50 p-2 rounded text-sm border">
-                                                      <span>
-                                                        {option.name} 
-                                                        {parseFloat(option.price) > 0 && (
-                                                          <strong className="text-green-600 ml-2">+R$ {parseFloat(option.price).toFixed(2)}</strong>
-                                                        )}
-                                                      </span>
-                                                      <button
-                                                        type="button"
-                                                        onClick={() => removeOptionFromGroup(item.id, group.id, optionIdx)}
-                                                        className="text-red-500 hover:text-red-700 font-bold"
-                                                      >
-                                                        ✕
-                                                      </button>
-                                                    </div>
-                                                  ))}
+                                              {/* Lista de opções adicionadas - VISUAL */}
+                                              {group.options.length > 0 ? (
+                                                <div className="space-y-2">
+                                                  <div className="text-sm font-bold text-purple-900">✅ Opções ({group.options.length}):</div>
+                                                  <div className="space-y-2">
+                                                    {group.options.map((option, optionIdx) => (
+                                                      <div key={optionIdx} className="flex justify-between items-center bg-white p-3 rounded-lg text-sm border-2 border-purple-100 hover:border-purple-300 transition-all">
+                                                        <span className="font-semibold">
+                                                          {option.name} 
+                                                          {parseFloat(option.price) > 0 && (
+                                                            <span className="text-green-600 ml-2 font-bold">+R$ {parseFloat(option.price).toFixed(2)}</span>
+                                                          )}
+                                                          {parseFloat(option.price) === 0 && (
+                                                            <span className="text-gray-400 ml-2 text-xs">(grátis)</span>
+                                                          )}
+                                                        </span>
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => removeOptionFromGroup(item.id, group.id, optionIdx)}
+                                                          className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full w-7 h-7 flex items-center justify-center font-bold transition-all"
+                                                          title="Remover"
+                                                        >
+                                                          ✕
+                                                        </button>
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                </div>
+                                              ) : (
+                                                <div className="text-center py-4 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-lg">
+                                                  👆 Adicione as opções acima
                                                 </div>
                                               )}
                                             </div>
@@ -732,8 +748,12 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
 
                                           <button
                                             type="button"
-                                            onClick={() => removeCustomizationGroup(item.id, group.id)}
-                                            className="ml-3 text-red-500 hover:text-red-700"
+                                            onClick={() => {
+                                              if (confirm('❌ Tem certeza que deseja remover este grupo?')) {
+                                                removeCustomizationGroup(item.id, group.id);
+                                              }
+                                            }}
+                                            className="ml-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg p-2 transition-all"
                                             title="Remover grupo"
                                           >
                                             <X className="w-5 h-5" />
