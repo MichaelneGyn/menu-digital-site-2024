@@ -10,6 +10,12 @@ interface RestaurantHeaderProps {
 }
 
 export default function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
+  // Debug: verificar logo
+  console.log('🖼️ Restaurant Header - Logo:', restaurant?.logo);
+  
+  // Adicionar timestamp para evitar cache de imagem
+  const logoUrl = restaurant?.logo ? `${restaurant.logo}?t=${Date.now()}` : null;
+  
   return (
     <header className="restaurant-header">
       <div className="header-content max-w-6xl mx-auto px-4 md:px-8">
@@ -18,13 +24,14 @@ export default function RestaurantHeader({ restaurant }: RestaurantHeaderProps) 
           <div className="flex items-center justify-between">
             <div className="logo flex items-center gap-3">
               <div className="logo-icon w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-xl flex-shrink-0">
-                {restaurant?.logo ? (
+                {logoUrl ? (
                   <div className="relative w-full h-full">
                     <Image 
-                      src={restaurant.logo} 
+                      src={logoUrl} 
                       alt={`${restaurant.name} logo`}
                       fill
                       className="object-cover rounded-full"
+                      unoptimized
                     />
                   </div>
                 ) : (
@@ -53,13 +60,14 @@ export default function RestaurantHeader({ restaurant }: RestaurantHeaderProps) 
         <div className="hidden md:flex justify-between items-center">
           <div className="logo flex items-center gap-4 cursor-pointer hover:transform hover:scale-105 transition-transform">
             <div className="logo-icon w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-2xl">
-              {restaurant?.logo ? (
+              {logoUrl ? (
                 <div className="relative w-full h-full">
                   <Image 
-                    src={restaurant.logo} 
+                    src={logoUrl} 
                     alt={`${restaurant.name} logo`}
                     fill
                     className="object-cover rounded-full"
+                    unoptimized
                   />
                 </div>
               ) : (

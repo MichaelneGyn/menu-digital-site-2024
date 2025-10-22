@@ -190,60 +190,9 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
           </div>
         </div>
 
-        {/* Busca de endereço */}
-        <div className="relative">
-          <Label htmlFor="search" className="text-sm font-medium">Buscar endereço</Label>
-          <div className="relative mt-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              id="search"
-              type="text"
-              placeholder="Digite seu endereço..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                searchAddress(e.target.value);
-              }}
-              className="pl-10"
-            />
-            {isSearching && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            )}
-          </div>
-          
-          {/* Sugestões */}
-          {suggestions.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-              {suggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  onClick={() => selectSuggestion(suggestion)}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
-                >
-                  <div className="font-medium text-sm">{suggestion.display_name}</div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Dica de preenchimento */}
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-blue-800">
-                <strong className="text-blue-900">💡 Dica:</strong> Digite seu <strong>CEP</strong> no campo abaixo para preencher automaticamente a rua, bairro e cidade!
-              </p>
-            </div>
-          </div>
-        </div>
+
+
 
         {/* Campos do endereço */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -315,11 +264,6 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
               onChange={(e) => {
                 const value = e.target.value;
                 handleInputChange('zipCode', value);
-                // Buscar endereço automaticamente quando CEP estiver completo
-                const cleanCEP = value.replace(/\D/g, '');
-                if (cleanCEP.length === 8) {
-                  fetchAddressByCEP(cleanCEP);
-                }
               }}
               placeholder="Digite seu CEP"
               maxLength={9}

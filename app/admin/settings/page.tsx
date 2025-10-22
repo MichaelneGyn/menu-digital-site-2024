@@ -161,7 +161,17 @@ function SettingsPage() {
         throw new Error(errorData.error || 'Erro ao salvar');
       }
 
-      toast.success('Configurações salvas com sucesso!');
+      toast.success('✅ Configurações salvas! A logo será atualizada no site em até 10 segundos.');
+      
+      // Forçar revalidação do cache do Next.js
+      try {
+        await fetch(`/api/revalidate?path=/${restaurant.slug}`, {
+          method: 'POST',
+        });
+      } catch (e) {
+        console.warn('Revalidação manual falhou, usando revalidação automática');
+      }
+      
       fetchRestaurant();
     } catch (error: any) {
       console.error('Erro:', error);
