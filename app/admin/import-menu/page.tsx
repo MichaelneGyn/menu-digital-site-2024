@@ -162,22 +162,9 @@ export default function ImportMenuPage() {
   };
 
   const updateItem = (id: string, field: keyof ItemForm, value: any) => {
-    setItems(items.map(item => {
-      if (item.id === id) {
-        const updated = { ...item, [field]: value };
-        
-        // Se mudou a categoria, atualiza também o categoryName
-        if (field === 'categoryId' && value) {
-          const selectedCategory = categories.find(cat => cat.id === value);
-          if (selectedCategory) {
-            updated.categoryName = selectedCategory.name;
-          }
-        }
-        
-        return updated;
-      }
-      return item;
-    }));
+    setItems(items.map(item => 
+      item.id === id ? { ...item, [field]: value } : item
+    ));
   };
 
   // Funções para manipular grupos de customização
@@ -247,48 +234,6 @@ export default function ImportMenuPage() {
     });
 
     toast.success('Opção adicionada!');
-  };
-
-  const editOptionInGroup = (itemId: string, groupId: string, optionIndex: number) => {
-    const item = items.find(i => i.id === itemId);
-    const group = item?.customizationGroups.find(g => g.id === groupId);
-    const option = group?.options[optionIndex];
-    
-    if (!option) return;
-    
-    // SEMPRE mostrar os 2 prompts
-    const newName = prompt('✏️ Editar NOME da opção:', option.name);
-    if (newName === null) return; // Cancelou
-    
-    const newPrice = prompt('💰 Editar PREÇO (em centavos):\n\nExemplos:\n• 0 = Grátis\n• 500 = R$ 5,00\n• 1000 = R$ 10,00', option.price);
-    if (newPrice === null) return; // Cancelou
-    
-    // Validar preço
-    if (isNaN(Number(newPrice))) {
-      toast.error('Preço inválido! Use apenas números (ex: 500)');
-      return;
-    }
-    
-    setItems(items.map(item => 
-      item.id === itemId 
-        ? {
-            ...item,
-            customizationGroups: item.customizationGroups.map(group =>
-              group.id === groupId 
-                ? { 
-                    ...group, 
-                    options: group.options.map((opt, idx) => 
-                      idx === optionIndex 
-                        ? { name: newName.trim(), price: newPrice }
-                        : opt
-                    )
-                  }
-                : group
-            )
-          }
-        : item
-    ));
-    toast.success('✅ Opção editada com sucesso!');
   };
 
   const removeOptionFromGroup = (itemId: string, groupId: string, optionIndex: number) => {
@@ -630,7 +575,6 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                     const categoryLower = item.categoryName.toLowerCase();
                                     
                                     const autoFillComplete = () => {
-                                      console.log('🔍 Botão Mágico clicado! Categoria:', item.categoryName, '| Lowercase:', categoryLower);
                                       const baseGroups: CustomizationGroup[] = [];
                                       
                                       if (categoryLower.includes('pizza')) {
@@ -1153,28 +1097,11 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                         toast.success('✅ Opções básicas adicionadas! Você pode editá-las.');
                                       }
                                       
-                                      console.log('📦 Grupos criados:', baseGroups.length, baseGroups);
-                                      
-                                      if (baseGroups.length === 0) {
-                                        toast.error('❌ Nenhum grupo foi criado! Categoria não reconhecida: ' + item.categoryName);
-                                        return;
-                                      }
-                                      
-                                      const updatedItems = items.map(i => {
-                                        if (i.id === item.id) {
-                                          const newGroups = [...i.customizationGroups, ...baseGroups];
-                                          console.log('🔄 Atualizando item:', i.id);
-                                          console.log('📦 Grupos anteriores:', i.customizationGroups.length);
-                                          console.log('➕ Adicionando:', baseGroups.length);
-                                          console.log('✅ Total final:', newGroups.length);
-                                          console.log('📝 Grupos finais:', newGroups);
-                                          return { ...i, customizationGroups: newGroups };
-                                        }
-                                        return i;
-                                      });
-                                      
-                                      setItems(updatedItems);
-                                      console.log('✅ Estado atualizado!');
+                                      setItems(items.map(i => 
+                                        i.id === item.id 
+                                          ? { ...i, customizationGroups: [...i.customizationGroups, ...baseGroups] }
+                                          : i
+                                      ));
                                     };
 
                                     return (
@@ -1448,24 +1375,14 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                             <span className="text-gray-400 ml-2 text-xs">(grátis)</span>
                                                           )}
                                                         </span>
-                                                        <div className="flex gap-2">
-                                                          <button
-                                                            type="button"
-                                                            onClick={() => editOptionInGroup(item.id, group.id, optionIdx)}
-                                                            className="bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full w-7 h-7 flex items-center justify-center transition-all"
-                                                            title="Editar"
-                                                          >
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                                          </button>
-                                                          <button
-                                                            type="button"
-                                                            onClick={() => removeOptionFromGroup(item.id, group.id, optionIdx)}
-                                                            className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full w-7 h-7 flex items-center justify-center font-bold transition-all"
-                                                            title="Remover"
-                                                          >
-                                                            ✕
-                                                          </button>
-                                                        </div>
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => removeOptionFromGroup(item.id, group.id, optionIdx)}
+                                                          className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full w-7 h-7 flex items-center justify-center font-bold transition-all"
+                                                          title="Remover"
+                                                        >
+                                                          ✕
+                                                        </button>
                                                       </div>
                                                     ))}
                                                   </div>
