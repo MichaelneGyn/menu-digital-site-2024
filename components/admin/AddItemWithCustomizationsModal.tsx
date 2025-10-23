@@ -433,10 +433,17 @@ export default function AddItemWithCustomizationsModal({
                         
                         toast.success('✅ Opções de Pizza adicionadas!');
                       } else if (categoryLower.includes('sanduí') || categoryLower.includes('lanche') || categoryLower.includes('burger') || categoryLower.includes('hambur')) {
-                        // Sanduíche: Sabores + Extras
+                        // Hambúrguer/Sanduíche: PONTO DA CARNE + Pão + Extras
                         setHasFlavors(true);
                         setMaxFlavors('1');
-                        setFlavors(['Pão Tradicional', 'Pão Australiano', 'Pão Integral']);
+                        setFlavors(['Ao ponto', 'Mal passado', 'Bem passado']);
+                        
+                        setHasBorders(true);
+                        setBorders([
+                          { name: 'Pão Tradicional', price: '0' },
+                          { name: 'Pão Australiano', price: '0' },
+                          { name: 'Pão Integral', price: '0' }
+                        ]);
                         
                         setHasExtras(true);
                         setExtras([
@@ -446,7 +453,7 @@ export default function AddItemWithCustomizationsModal({
                           { name: 'Salada', price: '150' }
                         ]);
                         
-                        toast.success('✅ Opções de Sanduíche adicionadas!');
+                        toast.success('✅ Hambúrguer completo: Ponto da Carne + Pão + Extras!');
                       } else if (categoryLower.includes('açaí') || categoryLower.includes('acai')) {
                         // Açaí: Tamanhos + Cremes + Frutas
                         setHasFlavors(true);

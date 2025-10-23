@@ -79,8 +79,8 @@ if ($errors.Count -eq 0) {
     exit 0
 } else {
     Write-Host "ATENCAO: Encontrados $($errors.Count) problemas:" -ForegroundColor Red
-    foreach ($error in $errors) {
-        Write-Host "- $error" -ForegroundColor Red
+    foreach ($err in $errors) {
+        Write-Host "- $err" -ForegroundColor Red
     }
     exit 1
 }

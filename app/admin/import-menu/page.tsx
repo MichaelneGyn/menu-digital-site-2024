@@ -622,7 +622,20 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                         });
                                         toast.success('🍕 Pizza completa configurada!');
                                       } else if (categoryLower.includes('sanduí') || categoryLower.includes('lanche') || categoryLower.includes('burger') || categoryLower.includes('hambur')) {
-                                        // Sanduíche completo
+                                        // Hambúrguer completo: PONTO DA CARNE + Pão + Extras
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Ponto da Carne',
+                                          description: 'Escolha o ponto',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Ao ponto', price: '0' },
+                                            { name: 'Mal passado', price: '0' },
+                                            { name: 'Bem passado', price: '0' }
+                                          ]
+                                        });
                                         baseGroups.push({
                                           id: Math.random().toString(36).substring(7),
                                           name: 'Pão',
@@ -650,7 +663,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                             { name: 'Salada', price: '150' }
                                           ]
                                         });
-                                        toast.success('🍔 Sanduíche completo configurado!');
+                                        toast.success('🍔 Hambúrguer completo: Ponto da Carne + Pão + Extras!');
                                       } else if (categoryLower.includes('açaí') || categoryLower.includes('acai')) {
                                         // Açaí completo
                                         baseGroups.push({
