@@ -162,9 +162,22 @@ export default function ImportMenuPage() {
   };
 
   const updateItem = (id: string, field: keyof ItemForm, value: any) => {
-    setItems(items.map(item => 
-      item.id === id ? { ...item, [field]: value } : item
-    ));
+    setItems(items.map(item => {
+      if (item.id === id) {
+        const updated = { ...item, [field]: value };
+        
+        // Se mudou a categoria, atualiza também o categoryName
+        if (field === 'categoryId' && value) {
+          const selectedCategory = categories.find(cat => cat.id === value);
+          if (selectedCategory) {
+            updated.categoryName = selectedCategory.name;
+          }
+        }
+        
+        return updated;
+      }
+      return item;
+    }));
   };
 
   // Funções para manipular grupos de customização
