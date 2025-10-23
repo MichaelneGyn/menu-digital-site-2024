@@ -9,7 +9,9 @@
     "lint": "next lint",
     "db:push": "prisma db push --accept-data-loss",
     "pre-deploy": "node scripts/utils/verificar-arquivos-criticos.js",
-    "check": "npm run pre-deploy && npm run lint"
+    "check": "npm run pre-deploy && npm run lint",
+    "verify-deploy": "powershell -ExecutionPolicy Bypass -File ./scripts/verify-deploy.ps1",
+    "deploy-safe": "npm run pre-deploy && echo 'Deploy iniciado - execute npm run verify-deploy após 3 minutos'"
   },
   "prisma": {
     "seed": "tsx --require dotenv/config scripts/seed.ts"
