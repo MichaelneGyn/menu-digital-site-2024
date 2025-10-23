@@ -1,0 +1,24 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.virtualcardapio.com.br"
+        }
+      ],
+      "destination": "https://virtualcardapio.com.br/:path*",
+      "permanent": true
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "NEXTAUTH_URL": "https://virtualcardapio.com.br",
+    "NEXTAUTH_URL_INTERNAL": "https://virtualcardapio.com.br"
+  }
+}

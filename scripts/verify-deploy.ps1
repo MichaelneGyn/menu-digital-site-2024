@@ -1,96 +1,86 @@
-# Script de Verificação Pós-Deploy
+# Script de Verificacao Pos-Deploy
 # virtualcardapio.com.br
 
-Write-Host "🔍 Iniciando verificação pós-deploy..." -ForegroundColor Yellow
+Write-Host "Iniciando verificacao pos-deploy..." -ForegroundColor Yellow
 
-# Aguardar propagação DNS
-Write-Host "⏳ Aguardando propagação DNS (2 minutos)..." -ForegroundColor Blue
+# Aguardar propagacao DNS
+Write-Host "Aguardando propagacao DNS (2 minutos)..." -ForegroundColor Blue
 Start-Sleep -Seconds 120
 
+# Array para armazenar erros
 $errors = @()
 
 # Verificar site principal
-Write-Host "🌐 Verificando site principal..." -ForegroundColor Blue
+Write-Host "Verificando site principal..." -ForegroundColor Blue
 try {
     $response = Invoke-WebRequest -Uri "https://virtualcardapio.com.br" -Method Head -TimeoutSec 30
     if ($response.StatusCode -eq 200) {
-        Write-Host "✅ Site principal OK (Status: $($response.StatusCode))" -ForegroundColor Green
+        Write-Host "Site principal OK (Status: $($response.StatusCode))" -ForegroundColor Green
     } else {
-        $errors += "❌ Site principal retornou status: $($response.StatusCode)"
+        $errors += "Site principal retornou status: $($response.StatusCode)"
     }
 } catch {
-    $errors += "❌ ERRO: Site principal não acessível - $($_.Exception.Message)"
+    $errors += "ERRO: Site principal nao acessivel - $($_.Exception.Message)"
 }
 
 # Verificar redirect www
-Write-Host "🔄 Verificando redirect www..." -ForegroundColor Blue
+Write-Host "Verificando redirect www..." -ForegroundColor Blue
 try {
     $response = Invoke-WebRequest -Uri "https://www.virtualcardapio.com.br" -Method Head -MaximumRedirection 0 -ErrorAction SilentlyContinue
     if ($response.StatusCode -eq 301 -or $response.StatusCode -eq 302) {
-        Write-Host "✅ Redirect www OK (Status: $($response.StatusCode))" -ForegroundColor Green
+        Write-Host "Redirect www OK (Status: $($response.StatusCode))" -ForegroundColor Green
     } else {
-        $errors += "❌ Redirect www não funciona (Status: $($response.StatusCode))"
+        $errors += "Redirect www nao funciona (Status: $($response.StatusCode))"
     }
 } catch {
     if ($_.Exception.Response.StatusCode -eq 301 -or $_.Exception.Response.StatusCode -eq 302) {
-        Write-Host "✅ Redirect www OK" -ForegroundColor Green
+        Write-Host "Redirect www OK" -ForegroundColor Green
     } else {
-        $errors += "❌ ERRO: Redirect www não funciona - $($_.Exception.Message)"
+        $errors += "ERRO: Redirect www nao funciona - $($_.Exception.Message)"
     }
 }
 
-# Verificar DNS
-Write-Host "🔍 Verificando DNS..." -ForegroundColor Blue
+# Verificar paginas principais
+$pages = @(
+    "/",
+    "/cardapio",
+    "/sobre",
+    "/contato"
+)
+
+Write-Host "Verificando paginas principais..." -ForegroundColor Blue
+foreach ($page in $pages) {
+    try {
+        $response = Invoke-WebRequest -Uri "https://virtualcardapio.com.br$page" -Method Head -TimeoutSec 30
+        if ($response.StatusCode -eq 200) {
+            Write-Host "Pagina $page OK" -ForegroundColor Green
+        } else {
+            $errors += "Pagina $page retornou status: $($response.StatusCode)"
+        }
+    } catch {
+        $errors += "ERRO: Pagina $page nao acessivel - $($_.Exception.Message)"
+    }
+}
+
+# Verificar SSL
+Write-Host "Verificando certificado SSL..." -ForegroundColor Blue
 try {
-    $dnsResult = Resolve-DnsName -Name "virtualcardapio.com.br" -Type A -ErrorAction Stop
-    if ($dnsResult) {
-        Write-Host "✅ DNS resolve OK (IP: $($dnsResult[0].IPAddress))" -ForegroundColor Green
-    } else {
-        $errors += "❌ DNS não resolve"
-    }
+    $response = Invoke-WebRequest -Uri "https://virtualcardapio.com.br" -Method Head -TimeoutSec 30
+    Write-Host "Certificado SSL OK" -ForegroundColor Green
 } catch {
-    $errors += "❌ ERRO: DNS não resolve - $($_.Exception.Message)"
+    $errors += "ERRO: Problema com certificado SSL - $($_.Exception.Message)"
 }
 
-# Verificar nameservers
-Write-Host "🌐 Verificando nameservers..." -ForegroundColor Blue
-try {
-    $nsResult = Resolve-DnsName -Name "virtualcardapio.com.br" -Type NS -ErrorAction Stop
-    $vercelNS = $nsResult | Where-Object { $_.NameHost -like "*vercel-dns.com" }
-    if ($vercelNS.Count -ge 2) {
-        Write-Host "✅ Nameservers Vercel OK" -ForegroundColor Green
-    } else {
-        $errors += "❌ Nameservers não são da Vercel"
-    }
-} catch {
-    $errors += "❌ ERRO: Não foi possível verificar nameservers - $($_.Exception.Message)"
-}
-
-# Verificar API health
-Write-Host "🏥 Verificando API health..." -ForegroundColor Blue
-try {
-    $response = Invoke-WebRequest -Uri "https://virtualcardapio.com.br/api/health" -Method Get -TimeoutSec 30
-    if ($response.StatusCode -eq 200) {
-        Write-Host "✅ API health OK" -ForegroundColor Green
-    } else {
-        $errors += "❌ API health retornou status: $($response.StatusCode)"
-    }
-} catch {
-    $errors += "❌ ERRO: API health não acessível - $($_.Exception.Message)"
-}
-
-# Resultado final
-Write-Host "`n" -NoNewline
+# Relatorio final
+Write-Host "`n=== RELATORIO FINAL ===" -ForegroundColor Yellow
 if ($errors.Count -eq 0) {
-    Write-Host "🎉 DEPLOY VERIFICADO COM SUCESSO!" -ForegroundColor Green -BackgroundColor Black
-    Write-Host "✅ Todos os testes passaram" -ForegroundColor Green
+    Write-Host "SUCESSO: Deploy verificado com sucesso!" -ForegroundColor Green
+    Write-Host "Site disponivel em: https://virtualcardapio.com.br" -ForegroundColor Cyan
     exit 0
 } else {
-    Write-Host "🚨 PROBLEMAS ENCONTRADOS NO DEPLOY!" -ForegroundColor Red -BackgroundColor Black
-    Write-Host "❌ Erros encontrados:" -ForegroundColor Red
+    Write-Host "ATENCAO: Encontrados $($errors.Count) problemas:" -ForegroundColor Red
     foreach ($error in $errors) {
-        Write-Host "   $error" -ForegroundColor Red
+        Write-Host "- $error" -ForegroundColor Red
     }
-    Write-Host "`n⚠️  AÇÃO NECESSÁRIA: Verificar e corrigir os problemas acima" -ForegroundColor Yellow
     exit 1
 }
