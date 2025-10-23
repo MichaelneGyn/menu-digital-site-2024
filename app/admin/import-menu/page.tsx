@@ -579,9 +579,6 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                             <span className="text-2xl">✨</span>
                                             Opções Personalizadas
                                           </h4>
-                                          <p className="text-xs text-purple-600 mt-1">
-                                            💡 Ou adicione manualmente grupo por grupo
-                                          </p>
                                         </div>
                                         <Button
                                           type="button"
