@@ -1,50 +1,59 @@
 # Configuração DNS - Hostinger para Vercel
 
-## 🎯 CONFIGURAÇÃO ATUAL FUNCIONANDO
+## 🎯 CONFIGURAÇÃO DEFINITIVA (SOLUÇÃO PARA RESETS)
 
 ### Domínio: virtualcardapio.com.br
 ### Provedor: Hostinger
 ### Hospedagem: Vercel
+### **Status: CONFIGURAÇÃO ALIAS/CNAME IMPLEMENTADA** ✅
 
-## ⚙️ CONFIGURAÇÃO CORRETA NA HOSTINGER
+## ⚙️ CONFIGURAÇÃO DEFINITIVA - EVITA RESETS
 
-### 1. Acessar Painel Hostinger
-- Login: [seu email]
-- Ir em "Domínios" → "Gerenciar"
+### **SOLUÇÃO IMPLEMENTADA (DEZEMBRO 2024)**
 
-### 2. Configurar Nameservers
-**OPÇÃO RECOMENDADA: Nameservers Personalizados**
+**PROBLEMA RESOLVIDO:** Site "resetava" configuração DNS automaticamente
 
-```
-Nameserver 1: ns1.vercel-dns.com
-Nameserver 2: ns2.vercel-dns.com
-```
+**SOLUÇÃO:** Usar ALIAS/CNAME ao invés de registros A
 
-**PASSOS:**
-1. Clique em "Alterar nameservers"
-2. Selecione "Nameservers personalizados"
-3. Digite os nameservers do Vercel
-4. **IMPORTANTE**: Clique em "Salvar" e aguarde confirmação
-5. Aguarde propagação (15min-24h)
-
-### 3. Configuração Alternativa (Registros A)
-**Se nameservers não funcionarem:**
-
-1. Mantenha "Nameservers da Hostinger"
-2. Vá em "Zona DNS"
-3. Configure registros A:
+### 1. Configuração Atual (DEFINITIVA)
 
 ```
-Tipo: A
-Nome: @ (ou deixe vazio)
-Valor: 76.76.21.164
-TTL: 3600
-
-Tipo: A  
-Nome: www
-Valor: 76.76.21.164
-TTL: 3600
+@ (root)     →  ALIAS   →  cname.vercel-dns.com  ✅
+www          →  CNAME   →  cname.vercel-dns.com  ✅
 ```
+
+### 2. Como Configurar no Hostinger
+
+1. **Acesse:** Painel Hostinger → DNS/Nameservers
+2. **Delete:** Todos os registros A antigos
+3. **Adicione:**
+   - **Tipo:** ALIAS (ou ANAME)
+   - **Nome:** @ (domínio raiz)
+   - **Aponta para:** cname.vercel-dns.com
+   - **TTL:** 14400
+
+4. **Adicione:**
+   - **Tipo:** CNAME
+   - **Nome:** www
+   - **Aponta para:** cname.vercel-dns.com
+   - **TTL:** 14400
+
+### 3. VANTAGENS DESTA CONFIGURAÇÃO
+
+✅ **Nunca mais "reseta"** - Vercel gerencia automaticamente
+✅ **Sempre atualizado** - IPs são gerenciados pelo Vercel
+✅ **Mais rápido** - ALIAS é superior ao registro A
+✅ **Sem manutenção** - Configuração definitiva
+
+## 🚨 CONFIGURAÇÕES ANTIGAS (NÃO USAR MAIS)
+
+### ❌ Registros A (CAUSAVAM RESETS)
+```
+@ → A → 76.76.21.164  ❌ (IP pode mudar)
+@ → A → 216.198.7.91  ❌ (IP pode mudar)
+```
+
+**PROBLEMA:** Vercel muda IPs periodicamente, causando "resets"
 
 ## 🚨 PROBLEMAS COMUNS E SOLUÇÕES
 

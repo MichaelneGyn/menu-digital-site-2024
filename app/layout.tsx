@@ -10,8 +10,8 @@ import ConditionalWhatsApp from "@/components/ConditionalWhatsApp";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Cardápio Online Editável - Sistema SaaS para Restaurantes",
-  description: "Sistema completo de cardápio online editável para restaurantes. Gerencie seu menu de forma fácil e profissional.",
+  title: "Cardápio Digital Online - Seu Restaurante na Internet",
+  description: "Cardápio digital profissional para seu restaurante. Mostre seus produtos de forma moderna e organize seus pedidos facilmente.",
 };
 
 export const viewport: Viewport = {
