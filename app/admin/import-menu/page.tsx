@@ -1160,13 +1160,21 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                         return;
                                       }
                                       
-                                      setItems(items.map(i => 
-                                        i.id === item.id 
-                                          ? { ...i, customizationGroups: [...i.customizationGroups, ...baseGroups] }
-                                          : i
-                                      ));
+                                      const updatedItems = items.map(i => {
+                                        if (i.id === item.id) {
+                                          const newGroups = [...i.customizationGroups, ...baseGroups];
+                                          console.log('🔄 Atualizando item:', i.id);
+                                          console.log('📦 Grupos anteriores:', i.customizationGroups.length);
+                                          console.log('➕ Adicionando:', baseGroups.length);
+                                          console.log('✅ Total final:', newGroups.length);
+                                          console.log('📝 Grupos finais:', newGroups);
+                                          return { ...i, customizationGroups: newGroups };
+                                        }
+                                        return i;
+                                      });
                                       
-                                      console.log('✅ Grupos adicionados ao item!');
+                                      setItems(updatedItems);
+                                      console.log('✅ Estado atualizado!');
                                     };
 
                                     return (
