@@ -402,43 +402,134 @@ export default function AddItemWithCustomizationsModal({
 
               {hasCustomizations && (
                 <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
-                  {/* Sugestões Inteligentes */}
+                  {/* Botão de Preencher Automático */}
                   {(() => {
                     const selectedCategory = categories.find(c => c.id === formData.categoryId);
                     if (!selectedCategory) return null;
                     
                     const categoryLower = selectedCategory.name.toLowerCase();
-                    let suggestions: string[] = [];
+                    
+                    // Função para preencher automaticamente
+                    const autoFill = () => {
+                      if (categoryLower.includes('pizza')) {
+                        // Pizza: Sabores + Bordas + Extras
+                        setHasFlavors(true);
+                        setMaxFlavors('2');
+                        setFlavors(['Calabresa', 'Mussarela', 'Portuguesa', 'Frango', 'Marguerita']);
+                        
+                        setHasBorders(true);
+                        setBorders([
+                          { name: 'Catupiry', price: '800' },
+                          { name: 'Cheddar', price: '800' },
+                          { name: 'Chocolate', price: '600' }
+                        ]);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Bacon', price: '500' },
+                          { name: 'Azeitona', price: '300' },
+                          { name: 'Cebola', price: '200' }
+                        ]);
+                        
+                        toast.success('✅ Opções de Pizza adicionadas!');
+                      } else if (categoryLower.includes('sanduí') || categoryLower.includes('lanche') || categoryLower.includes('burger') || categoryLower.includes('hambur')) {
+                        // Sanduíche: Sabores + Extras
+                        setHasFlavors(true);
+                        setMaxFlavors('1');
+                        setFlavors(['Pão Tradicional', 'Pão Australiano', 'Pão Integral']);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Queijo Extra', price: '300' },
+                          { name: 'Bacon', price: '500' },
+                          { name: 'Ovo', price: '200' },
+                          { name: 'Salada', price: '150' }
+                        ]);
+                        
+                        toast.success('✅ Opções de Sanduíche adicionadas!');
+                      } else if (categoryLower.includes('açaí') || categoryLower.includes('acai')) {
+                        // Açaí: Tamanhos + Cremes + Frutas
+                        setHasFlavors(true);
+                        setMaxFlavors('1');
+                        setFlavors(['300ml', '500ml', '700ml']);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Leite Ninho', price: '400' },
+                          { name: 'Nutella', price: '600' },
+                          { name: 'Morango', price: '300' },
+                          { name: 'Banana', price: '200' },
+                          { name: 'Granola', price: '200' }
+                        ]);
+                        
+                        toast.success('✅ Opções de Açaí adicionadas!');
+                      } else if (categoryLower.includes('pastel')) {
+                        // Pastel: Sabores + Extras
+                        setHasFlavors(true);
+                        setMaxFlavors('2');
+                        setFlavors(['Carne', 'Queijo', 'Pizza', 'Frango', 'Palmito']);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Catupiry', price: '300' },
+                          { name: 'Azeitona', price: '200' }
+                        ]);
+                        
+                        toast.success('✅ Opções de Pastel adicionadas!');
+                      } else if (categoryLower.includes('bebida') || categoryLower.includes('suco') || categoryLower.includes('refri')) {
+                        // Bebida: Tamanhos + Extras
+                        setHasFlavors(true);
+                        setMaxFlavors('1');
+                        setFlavors(['300ml', '500ml', '1L']);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Com Gelo', price: '0' },
+                          { name: 'Sem Açúcar', price: '0' },
+                          { name: 'Açúcar Extra', price: '0' }
+                        ]);
+                        
+                        toast.success('✅ Opções de Bebida adicionadas!');
+                      } else if (categoryLower.includes('sobremesa') || categoryLower.includes('doce')) {
+                        // Sobremesa: Sabores + Extras
+                        setHasFlavors(true);
+                        setMaxFlavors('1');
+                        setFlavors(['Chocolate', 'Morango', 'Baunilha', 'Doce de Leite']);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Cobertura Extra', price: '300' },
+                          { name: 'Granulado', price: '200' }
+                        ]);
+                        
+                        toast.success('✅ Opções de Sobremesa adicionadas!');
+                      } else {
+                        // Genérico: Apenas extras
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Extra 1', price: '300' },
+                          { name: 'Extra 2', price: '500' }
+                        ]);
+                        
+                        toast.success('✅ Opções básicas adicionadas! Você pode editá-las.');
+                      }
+                    };
 
-                    if (categoryLower.includes('pizza')) {
-                      return (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                          <p className="text-sm font-semibold text-blue-900 mb-2">💡 Sugestões para Pizza:</p>
-                          <div className="flex gap-2 flex-wrap">
-                            <button type="button" onClick={() => setHasFlavors(true)} className="px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded-full text-xs font-semibold">🍕 Sabores</button>
-                            <button type="button" onClick={() => setHasBorders(true)} className="px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded-full text-xs font-semibold">🥖 Bordas</button>
-                            <button type="button" onClick={() => setHasExtras(true)} className="px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded-full text-xs font-semibold">🧀 Extras</button>
-                          </div>
-                        </div>
-                      );
-                    } else if (categoryLower.includes('açaí') || categoryLower.includes('acai')) {
-                      return (
-                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
-                          <p className="text-sm font-semibold text-purple-900 mb-2">💡 Dica: Para Açaí, considere adicionar Sabores e Extras (cremes, frutas)</p>
-                        </div>
-                      );
-                    } else if (categoryLower.includes('sanduí') || categoryLower.includes('lanche') || categoryLower.includes('burger')) {
-                      return (
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
-                          <p className="text-sm font-semibold text-orange-900 mb-2">💡 Sugestões para Lanche:</p>
-                          <div className="flex gap-2 flex-wrap">
-                            <button type="button" onClick={() => setHasFlavors(true)} className="px-3 py-1 bg-orange-100 hover:bg-orange-200 rounded-full text-xs font-semibold">🍞 Opções de Pão</button>
-                            <button type="button" onClick={() => setHasExtras(true)} className="px-3 py-1 bg-orange-100 hover:bg-orange-200 rounded-full text-xs font-semibold">🧀 Extras</button>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
+                    return (
+                      <div className="mb-4">
+                        <button
+                          type="button"
+                          onClick={autoFill}
+                          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all"
+                        >
+                          <span className="text-2xl">⚡</span>
+                          <span>PREENCHER AUTOMATICAMENTE PARA {selectedCategory.name.toUpperCase()}</span>
+                        </button>
+                        <p className="text-xs text-gray-600 mt-2 text-center">
+                          Clique para adicionar opções típicas. Você pode editar depois!
+                        </p>
+                      </div>
+                    );
                   })()}
                   {/* Flavors */}
                   <div className="border-b pb-4">
