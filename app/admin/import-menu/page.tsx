@@ -630,6 +630,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                     const categoryLower = item.categoryName.toLowerCase();
                                     
                                     const autoFillComplete = () => {
+                                      console.log('🔍 Botão Mágico clicado! Categoria:', item.categoryName, '| Lowercase:', categoryLower);
                                       const baseGroups: CustomizationGroup[] = [];
                                       
                                       if (categoryLower.includes('pizza')) {
@@ -1152,11 +1153,20 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                         toast.success('✅ Opções básicas adicionadas! Você pode editá-las.');
                                       }
                                       
+                                      console.log('📦 Grupos criados:', baseGroups.length, baseGroups);
+                                      
+                                      if (baseGroups.length === 0) {
+                                        toast.error('❌ Nenhum grupo foi criado! Categoria não reconhecida: ' + item.categoryName);
+                                        return;
+                                      }
+                                      
                                       setItems(items.map(i => 
                                         i.id === item.id 
                                           ? { ...i, customizationGroups: [...i.customizationGroups, ...baseGroups] }
                                           : i
                                       ));
+                                      
+                                      console.log('✅ Grupos adicionados ao item!');
                                     };
 
                                     return (
