@@ -256,11 +256,18 @@ export default function ImportMenuPage() {
     
     if (!option) return;
     
-    const newName = prompt('Editar nome da opção:', option.name);
+    // SEMPRE mostrar os 2 prompts
+    const newName = prompt('✏️ Editar NOME da opção:', option.name);
     if (newName === null) return; // Cancelou
     
-    const newPrice = prompt('Editar preço (em centavos, ex: 500 = R$ 5,00):', option.price);
+    const newPrice = prompt('💰 Editar PREÇO (em centavos):\n\nExemplos:\n• 0 = Grátis\n• 500 = R$ 5,00\n• 1000 = R$ 10,00', option.price);
     if (newPrice === null) return; // Cancelou
+    
+    // Validar preço
+    if (isNaN(Number(newPrice))) {
+      toast.error('Preço inválido! Use apenas números (ex: 500)');
+      return;
+    }
     
     setItems(items.map(item => 
       item.id === itemId 
@@ -281,7 +288,7 @@ export default function ImportMenuPage() {
           }
         : item
     ));
-    toast.success('Opção editada!');
+    toast.success('✅ Opção editada com sucesso!');
   };
 
   const removeOptionFromGroup = (itemId: string, groupId: string, optionIndex: number) => {
