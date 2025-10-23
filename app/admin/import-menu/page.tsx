@@ -249,6 +249,41 @@ export default function ImportMenuPage() {
     toast.success('Opção adicionada!');
   };
 
+  const editOptionInGroup = (itemId: string, groupId: string, optionIndex: number) => {
+    const item = items.find(i => i.id === itemId);
+    const group = item?.customizationGroups.find(g => g.id === groupId);
+    const option = group?.options[optionIndex];
+    
+    if (!option) return;
+    
+    const newName = prompt('Editar nome da opção:', option.name);
+    if (newName === null) return; // Cancelou
+    
+    const newPrice = prompt('Editar preço (em centavos, ex: 500 = R$ 5,00):', option.price);
+    if (newPrice === null) return; // Cancelou
+    
+    setItems(items.map(item => 
+      item.id === itemId 
+        ? {
+            ...item,
+            customizationGroups: item.customizationGroups.map(group =>
+              group.id === groupId 
+                ? { 
+                    ...group, 
+                    options: group.options.map((opt, idx) => 
+                      idx === optionIndex 
+                        ? { name: newName.trim(), price: newPrice }
+                        : opt
+                    )
+                  }
+                : group
+            )
+          }
+        : item
+    ));
+    toast.success('Opção editada!');
+  };
+
   const removeOptionFromGroup = (itemId: string, groupId: string, optionIndex: number) => {
     setItems(items.map(item => 
       item.id === itemId 
@@ -1388,14 +1423,24 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                             <span className="text-gray-400 ml-2 text-xs">(grátis)</span>
                                                           )}
                                                         </span>
-                                                        <button
-                                                          type="button"
-                                                          onClick={() => removeOptionFromGroup(item.id, group.id, optionIdx)}
-                                                          className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full w-7 h-7 flex items-center justify-center font-bold transition-all"
-                                                          title="Remover"
-                                                        >
-                                                          ✕
-                                                        </button>
+                                                        <div className="flex gap-2">
+                                                          <button
+                                                            type="button"
+                                                            onClick={() => editOptionInGroup(item.id, group.id, optionIdx)}
+                                                            className="bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full w-7 h-7 flex items-center justify-center transition-all"
+                                                            title="Editar"
+                                                          >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                                          </button>
+                                                          <button
+                                                            type="button"
+                                                            onClick={() => removeOptionFromGroup(item.id, group.id, optionIdx)}
+                                                            className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full w-7 h-7 flex items-center justify-center font-bold transition-all"
+                                                            title="Remover"
+                                                          >
+                                                            ✕
+                                                          </button>
+                                                        </div>
                                                       </div>
                                                     ))}
                                                   </div>
