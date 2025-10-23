@@ -570,6 +570,247 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                               {item.hasCustomizations && (
                                 <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
                                   
+                                  {/* BOTÃO MÁGICO DE PREENCHIMENTO AUTOMÁTICO */}
+                                  {(() => {
+                                    const categoryLower = item.categoryName.toLowerCase();
+                                    
+                                    const autoFillComplete = () => {
+                                      const baseGroups: CustomizationGroup[] = [];
+                                      
+                                      if (categoryLower.includes('pizza')) {
+                                        // Pizza completa com opções preenchidas
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Sabores',
+                                          description: 'Escolha até 2 sabores',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 2,
+                                          options: [
+                                            { name: 'Calabresa', price: '0' },
+                                            { name: 'Mussarela', price: '0' },
+                                            { name: 'Portuguesa', price: '0' },
+                                            { name: 'Frango', price: '0' },
+                                            { name: 'Marguerita', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Bordas',
+                                          description: 'Escolha a borda',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Catupiry', price: '800' },
+                                            { name: 'Cheddar', price: '800' },
+                                            { name: 'Chocolate', price: '600' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Extras',
+                                          description: 'Adicione extras',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 5,
+                                          options: [
+                                            { name: 'Bacon', price: '500' },
+                                            { name: 'Azeitona', price: '300' },
+                                            { name: 'Cebola', price: '200' }
+                                          ]
+                                        });
+                                        toast.success('🍕 Pizza completa configurada!');
+                                      } else if (categoryLower.includes('sanduí') || categoryLower.includes('lanche') || categoryLower.includes('burger') || categoryLower.includes('hambur')) {
+                                        // Sanduíche completo
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Pão',
+                                          description: 'Escolha o pão',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Pão Tradicional', price: '0' },
+                                            { name: 'Pão Australiano', price: '0' },
+                                            { name: 'Pão Integral', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Extras',
+                                          description: 'Adicione extras',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 5,
+                                          options: [
+                                            { name: 'Queijo Extra', price: '300' },
+                                            { name: 'Bacon', price: '500' },
+                                            { name: 'Ovo', price: '200' },
+                                            { name: 'Salada', price: '150' }
+                                          ]
+                                        });
+                                        toast.success('🍔 Sanduíche completo configurado!');
+                                      } else if (categoryLower.includes('açaí') || categoryLower.includes('acai')) {
+                                        // Açaí completo
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Tamanho',
+                                          description: 'Escolha o tamanho',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: '300ml', price: '0' },
+                                            { name: '500ml', price: '0' },
+                                            { name: '700ml', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Extras',
+                                          description: 'Adicione complementos',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 5,
+                                          options: [
+                                            { name: 'Leite Ninho', price: '400' },
+                                            { name: 'Nutella', price: '600' },
+                                            { name: 'Morango', price: '300' },
+                                            { name: 'Banana', price: '200' },
+                                            { name: 'Granola', price: '200' }
+                                          ]
+                                        });
+                                        toast.success('🍇 Açaí completo configurado!');
+                                      } else if (categoryLower.includes('pastel')) {
+                                        // Pastel completo
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Sabores',
+                                          description: 'Escolha até 2 sabores',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 2,
+                                          options: [
+                                            { name: 'Carne', price: '0' },
+                                            { name: 'Queijo', price: '0' },
+                                            { name: 'Pizza', price: '0' },
+                                            { name: 'Frango', price: '0' },
+                                            { name: 'Palmito', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Extras',
+                                          description: 'Adicione extras',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 2,
+                                          options: [
+                                            { name: 'Catupiry', price: '300' },
+                                            { name: 'Azeitona', price: '200' }
+                                          ]
+                                        });
+                                        toast.success('🥟 Pastel completo configurado!');
+                                      } else if (categoryLower.includes('bebida') || categoryLower.includes('suco') || categoryLower.includes('refri')) {
+                                        // Bebida completa
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Tamanho',
+                                          description: 'Escolha o tamanho',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: '300ml', price: '0' },
+                                            { name: '500ml', price: '0' },
+                                            { name: '1L', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Opções',
+                                          description: 'Personalize',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 3,
+                                          options: [
+                                            { name: 'Com Gelo', price: '0' },
+                                            { name: 'Sem Açúcar', price: '0' },
+                                            { name: 'Açúcar Extra', price: '0' }
+                                          ]
+                                        });
+                                        toast.success('🥤 Bebida completa configurada!');
+                                      } else if (categoryLower.includes('sobremesa') || categoryLower.includes('doce')) {
+                                        // Sobremesa completa
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Sabores',
+                                          description: 'Escolha o sabor',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Chocolate', price: '0' },
+                                            { name: 'Morango', price: '0' },
+                                            { name: 'Baunilha', price: '0' },
+                                            { name: 'Doce de Leite', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Extras',
+                                          description: 'Adicione extras',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 3,
+                                          options: [
+                                            { name: 'Cobertura Extra', price: '300' },
+                                            { name: 'Granulado', price: '200' }
+                                          ]
+                                        });
+                                        toast.success('🍰 Sobremesa completa configurada!');
+                                      } else {
+                                        // Genérico
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Extras',
+                                          description: 'Adicione extras',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 5,
+                                          options: [
+                                            { name: 'Extra 1', price: '300' },
+                                            { name: 'Extra 2', price: '500' }
+                                          ]
+                                        });
+                                        toast.success('✅ Opções básicas adicionadas! Você pode editá-las.');
+                                      }
+                                      
+                                      setItems(items.map(i => 
+                                        i.id === item.id 
+                                          ? { ...i, customizationGroups: [...i.customizationGroups, ...baseGroups] }
+                                          : i
+                                      ));
+                                    };
+
+                                    return (
+                                      <div className="mb-4">
+                                        <button
+                                          type="button"
+                                          onClick={autoFillComplete}
+                                          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg flex items-center justify-center gap-3 transition-all"
+                                        >
+                                          <span className="text-3xl">⚡</span>
+                                          <span className="text-lg">PREENCHER AUTOMATICAMENTE PARA {item.categoryName.toUpperCase()}</span>
+                                        </button>
+                                        <p className="text-xs text-gray-600 mt-2 text-center">
+                                          Clique para adicionar TODOS os grupos com opções já preenchidas! Você pode editar depois.
+                                        </p>
+                                      </div>
+                                    );
+                                  })()}
+                                  
                                   {/* NOVO SISTEMA FLEXÍVEL DE GRUPOS - SIMPLIFICADO */}
                                   <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-5 mb-4 shadow-sm">
                                     <div className="mb-4">
@@ -580,7 +821,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                             Opções Personalizadas
                                           </h4>
                                           <p className="text-xs text-purple-600 mt-1">
-                                            💡 Sugestões baseadas na categoria <strong>{item.categoryName || 'do produto'}</strong>
+                                            💡 Ou adicione manualmente grupo por grupo
                                           </p>
                                         </div>
                                         <Button
