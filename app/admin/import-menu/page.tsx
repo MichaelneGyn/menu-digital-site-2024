@@ -783,6 +783,303 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                           ]
                                         });
                                         toast.success('🍰 Sobremesa completa configurada!');
+                                      } else if (categoryLower.includes('taco') || categoryLower.includes('mexican') || categoryLower.includes('burrito')) {
+                                        // Tacos/Mexicano completo
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Proteína',
+                                          description: 'Escolha a proteína',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Carne', price: '0' },
+                                            { name: 'Frango', price: '0' },
+                                            { name: 'Porco', price: '0' },
+                                            { name: 'Vegetariano', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Molhos',
+                                          description: 'Escolha o molho',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 2,
+                                          options: [
+                                            { name: 'Molho Picante', price: '0' },
+                                            { name: 'Guacamole', price: '300' },
+                                            { name: 'Sour Cream', price: '200' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Extras',
+                                          description: 'Adicione extras',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 5,
+                                          options: [
+                                            { name: 'Queijo Extra', price: '300' },
+                                            { name: 'Jalapeño', price: '200' },
+                                            { name: 'Nachos', price: '400' }
+                                          ]
+                                        });
+                                        toast.success('🌮 Mexicano completo: Proteína + Molhos + Extras!');
+                                      } else if (categoryLower.includes('massa') || categoryLower.includes('macarrão') || categoryLower.includes('espaguete') || categoryLower.includes('penne')) {
+                                        // Massas completo
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Tipo de Massa',
+                                          description: 'Escolha a massa',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Espaguete', price: '0' },
+                                            { name: 'Penne', price: '0' },
+                                            { name: 'Fettuccine', price: '0' },
+                                            { name: 'Parafuso', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Molho',
+                                          description: 'Escolha o molho',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Molho Bolonhesa', price: '0' },
+                                            { name: 'Molho Branco', price: '0' },
+                                            { name: 'Molho 4 Queijos', price: '300' },
+                                            { name: 'Molho Pesto', price: '400' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Extras',
+                                          description: 'Adicione extras',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 5,
+                                          options: [
+                                            { name: 'Queijo Ralado Extra', price: '200' },
+                                            { name: 'Bacon', price: '500' },
+                                            { name: 'Azeitona', price: '300' }
+                                          ]
+                                        });
+                                        toast.success('🍝 Massa completa: Tipo + Molho + Extras!');
+                                      } else if (categoryLower.includes('salada')) {
+                                        // Saladas completo
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Base',
+                                          description: 'Escolha a base',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Alface', price: '0' },
+                                            { name: 'Mix de Folhas', price: '0' },
+                                            { name: 'Rúcula', price: '0' },
+                                            { name: 'Agrião', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Proteína',
+                                          description: 'Escolha a proteína',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Sem Proteína', price: '0' },
+                                            { name: 'Frango Grelhado', price: '600' },
+                                            { name: 'Atum', price: '700' },
+                                            { name: 'Camarão', price: '1000' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Extras',
+                                          description: 'Adicione extras',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 5,
+                                          options: [
+                                            { name: 'Tomate Cereja', price: '200' },
+                                            { name: 'Queijo Feta', price: '400' },
+                                            { name: 'Croutons', price: '200' },
+                                            { name: 'Molho Extra', price: '150' }
+                                          ]
+                                        });
+                                        toast.success('🥗 Salada completa: Base + Proteína + Extras!');
+                                      } else if (categoryLower.includes('sushi') || categoryLower.includes('japonês') || categoryLower.includes('japones') || categoryLower.includes('temaki')) {
+                                        // Sushi/Japonês completo
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Tipo',
+                                          description: 'Escolha o tipo',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Salmão', price: '0' },
+                                            { name: 'Atum', price: '0' },
+                                            { name: 'Philadelphia', price: '0' },
+                                            { name: 'Hot Roll', price: '0' },
+                                            { name: 'Skin', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Adicionais',
+                                          description: 'Adicione extras',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 5,
+                                          options: [
+                                            { name: 'Cream Cheese Extra', price: '300' },
+                                            { name: 'Cebolinha', price: '0' },
+                                            { name: 'Gergelim', price: '0' },
+                                            { name: 'Shoyu Extra', price: '0' },
+                                            { name: 'Wasabi Extra', price: '0' }
+                                          ]
+                                        });
+                                        toast.success('🍣 Japonês completo: Tipos + Adicionais!');
+                                      } else if (categoryLower.includes('wrap')) {
+                                        // Wraps completo
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Recheio',
+                                          description: 'Escolha o recheio',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Frango', price: '0' },
+                                            { name: 'Carne', price: '0' },
+                                            { name: 'Vegetariano', price: '0' },
+                                            { name: 'Caesar', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Molhos',
+                                          description: 'Escolha o molho',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 2,
+                                          options: [
+                                            { name: 'Molho Caesar', price: '0' },
+                                            { name: 'Molho Barbecue', price: '0' },
+                                            { name: 'Molho Ranch', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Extras',
+                                          description: 'Adicione extras',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 5,
+                                          options: [
+                                            { name: 'Queijo Extra', price: '300' },
+                                            { name: 'Bacon', price: '500' },
+                                            { name: 'Alface/Tomate', price: '150' }
+                                          ]
+                                        });
+                                        toast.success('🌯 Wrap completo: Recheio + Molhos + Extras!');
+                                      } else if (categoryLower.includes('prato') || categoryLower.includes('executivo') || categoryLower.includes('refeição')) {
+                                        // Pratos Executivos completo
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Proteína',
+                                          description: 'Escolha a proteína',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Frango Grelhado', price: '0' },
+                                            { name: 'Bife Acebolado', price: '0' },
+                                            { name: 'Peixe Grelhado', price: '0' },
+                                            { name: 'Feijoada', price: '0' },
+                                            { name: 'Picanha', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Acompanhamentos',
+                                          description: 'Escolha o acompanhamento',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Arroz e Feijão', price: '0' },
+                                            { name: 'Arroz e Salada', price: '0' },
+                                            { name: 'Purê', price: '0' },
+                                            { name: 'Batata Frita', price: '300' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Extras',
+                                          description: 'Adicione extras',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 5,
+                                          options: [
+                                            { name: 'Farofa', price: '200' },
+                                            { name: 'Vinagrete', price: '150' },
+                                            { name: 'Molho Extra', price: '200' }
+                                          ]
+                                        });
+                                        toast.success('🍽️ Prato Executivo: Proteína + Acompanhamentos!');
+                                      } else if (categoryLower.includes('bolo') || categoryLower.includes('torta') || categoryLower.includes('confeitaria')) {
+                                        // Bolos/Confeitaria completo
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Sabor',
+                                          description: 'Escolha o sabor',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Chocolate', price: '0' },
+                                            { name: 'Morango', price: '0' },
+                                            { name: 'Limão', price: '0' },
+                                            { name: 'Red Velvet', price: '0' },
+                                            { name: 'Cenoura', price: '0' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Recheio',
+                                          description: 'Escolha o recheio',
+                                          isRequired: true,
+                                          minSelections: 1,
+                                          maxSelections: 1,
+                                          options: [
+                                            { name: 'Recheio Brigadeiro', price: '0' },
+                                            { name: 'Recheio Doce de Leite', price: '0' },
+                                            { name: 'Recheio Frutas', price: '300' }
+                                          ]
+                                        });
+                                        baseGroups.push({
+                                          id: Math.random().toString(36).substring(7),
+                                          name: 'Extras',
+                                          description: 'Adicione extras',
+                                          isRequired: false,
+                                          minSelections: 0,
+                                          maxSelections: 3,
+                                          options: [
+                                            { name: 'Cobertura Extra', price: '400' },
+                                            { name: 'Granulado', price: '200' },
+                                            { name: 'Chantilly', price: '300' }
+                                          ]
+                                        });
+                                        toast.success('🧁 Confeitaria: Sabores + Recheios + Coberturas!');
                                       } else {
                                         // Genérico
                                         baseGroups.push({

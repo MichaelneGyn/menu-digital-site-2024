@@ -510,6 +510,152 @@ export default function AddItemWithCustomizationsModal({
                         ]);
                         
                         toast.success('✅ Opções de Sobremesa adicionadas!');
+                      } else if (categoryLower.includes('taco') || categoryLower.includes('mexican') || categoryLower.includes('burrito')) {
+                        // Tacos/Mexicano: Proteína + Molhos + Extras
+                        setHasFlavors(true);
+                        setMaxFlavors('1');
+                        setFlavors(['Carne', 'Frango', 'Porco', 'Vegetariano']);
+                        
+                        setHasBorders(true);
+                        setBorders([
+                          { name: 'Molho Picante', price: '0' },
+                          { name: 'Guacamole', price: '300' },
+                          { name: 'Sour Cream', price: '200' }
+                        ]);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Queijo Extra', price: '300' },
+                          { name: 'Jalapeño', price: '200' },
+                          { name: 'Nachos', price: '400' }
+                        ]);
+                        
+                        toast.success('🌮 Mexicano completo: Proteína + Molhos + Extras!');
+                      } else if (categoryLower.includes('massa') || categoryLower.includes('macarrão') || categoryLower.includes('espaguete') || categoryLower.includes('penne')) {
+                        // Massas: Tipo + Molho + Extras
+                        setHasFlavors(true);
+                        setMaxFlavors('1');
+                        setFlavors(['Espaguete', 'Penne', 'Fettuccine', 'Parafuso']);
+                        
+                        setHasBorders(true);
+                        setBorders([
+                          { name: 'Molho Bolonhesa', price: '0' },
+                          { name: 'Molho Branco', price: '0' },
+                          { name: 'Molho 4 Queijos', price: '300' },
+                          { name: 'Molho Pesto', price: '400' }
+                        ]);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Queijo Ralado Extra', price: '200' },
+                          { name: 'Bacon', price: '500' },
+                          { name: 'Azeitona', price: '300' }
+                        ]);
+                        
+                        toast.success('🍝 Massa completa: Tipo + Molho + Extras!');
+                      } else if (categoryLower.includes('salada')) {
+                        // Saladas: Base + Proteína + Extras
+                        setHasFlavors(true);
+                        setMaxFlavors('1');
+                        setFlavors(['Alface', 'Mix de Folhas', 'Rúcula', 'Agrião']);
+                        
+                        setHasBorders(true);
+                        setBorders([
+                          { name: 'Sem Proteína', price: '0' },
+                          { name: 'Frango Grelhado', price: '600' },
+                          { name: 'Atum', price: '700' },
+                          { name: 'Camarão', price: '1000' }
+                        ]);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Tomate Cereja', price: '200' },
+                          { name: 'Queijo Feta', price: '400' },
+                          { name: 'Croutons', price: '200' },
+                          { name: 'Molho Extra', price: '150' }
+                        ]);
+                        
+                        toast.success('🥗 Salada completa: Base + Proteína + Extras!');
+                      } else if (categoryLower.includes('sushi') || categoryLower.includes('japonês') || categoryLower.includes('japones') || categoryLower.includes('temaki')) {
+                        // Sushi/Japonês: Tipo + Adicionais
+                        setHasFlavors(true);
+                        setMaxFlavors('1');
+                        setFlavors(['Salmão', 'Atum', 'Philadelphia', 'Hot Roll', 'Skin']);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Cream Cheese Extra', price: '300' },
+                          { name: 'Cebolinha', price: '0' },
+                          { name: 'Gergelim', price: '0' },
+                          { name: 'Shoyu Extra', price: '0' },
+                          { name: 'Wasabi Extra', price: '0' }
+                        ]);
+                        
+                        toast.success('🍣 Japonês completo: Tipos + Adicionais!');
+                      } else if (categoryLower.includes('wrap')) {
+                        // Wraps: Recheio + Molhos + Extras
+                        setHasFlavors(true);
+                        setMaxFlavors('1');
+                        setFlavors(['Frango', 'Carne', 'Vegetariano', 'Caesar']);
+                        
+                        setHasBorders(true);
+                        setBorders([
+                          { name: 'Molho Caesar', price: '0' },
+                          { name: 'Molho Barbecue', price: '0' },
+                          { name: 'Molho Ranch', price: '0' }
+                        ]);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Queijo Extra', price: '300' },
+                          { name: 'Bacon', price: '500' },
+                          { name: 'Alface/Tomate', price: '150' }
+                        ]);
+                        
+                        toast.success('🌯 Wrap completo: Recheio + Molhos + Extras!');
+                      } else if (categoryLower.includes('prato') || categoryLower.includes('executivo') || categoryLower.includes('refeição')) {
+                        // Pratos Executivos: Proteína + Acompanhamentos
+                        setHasFlavors(true);
+                        setMaxFlavors('1');
+                        setFlavors(['Frango Grelhado', 'Bife Acebolado', 'Peixe Grelhado', 'Feijoada', 'Picanha']);
+                        
+                        setHasBorders(true);
+                        setBorders([
+                          { name: 'Arroz e Feijão', price: '0' },
+                          { name: 'Arroz e Salada', price: '0' },
+                          { name: 'Purê', price: '0' },
+                          { name: 'Batata Frita', price: '300' }
+                        ]);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Farofa', price: '200' },
+                          { name: 'Vinagrete', price: '150' },
+                          { name: 'Molho Extra', price: '200' }
+                        ]);
+                        
+                        toast.success('🍽️ Prato Executivo: Proteína + Acompanhamentos!');
+                      } else if (categoryLower.includes('bolo') || categoryLower.includes('torta') || categoryLower.includes('confeitaria')) {
+                        // Bolos/Confeitaria: Sabores + Recheios + Coberturas
+                        setHasFlavors(true);
+                        setMaxFlavors('1');
+                        setFlavors(['Chocolate', 'Morango', 'Limão', 'Red Velvet', 'Cenoura']);
+                        
+                        setHasBorders(true);
+                        setBorders([
+                          { name: 'Recheio Brigadeiro', price: '0' },
+                          { name: 'Recheio Doce de Leite', price: '0' },
+                          { name: 'Recheio Frutas', price: '300' }
+                        ]);
+                        
+                        setHasExtras(true);
+                        setExtras([
+                          { name: 'Cobertura Extra', price: '400' },
+                          { name: 'Granulado', price: '200' },
+                          { name: 'Chantilly', price: '300' }
+                        ]);
+                        
+                        toast.success('🧁 Confeitaria: Sabores + Recheios + Coberturas!');
                       } else {
                         // Genérico: Apenas extras
                         setHasExtras(true);
