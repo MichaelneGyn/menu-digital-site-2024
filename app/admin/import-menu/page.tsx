@@ -187,6 +187,245 @@ export default function ImportMenuPage() {
     ));
   };
 
+  // Sugestões rápidas baseadas na categoria
+  const applyQuickSuggestions = (itemId: string) => {
+    const item = items.find(i => i.id === itemId);
+    if (!item) return;
+
+    const categoryName = item.categoryName.toLowerCase();
+    let suggestedGroups: CustomizationGroup[] = [];
+
+    // Pizza
+    if (categoryName.includes('pizza')) {
+      suggestedGroups = [
+        {
+          id: `temp-${Date.now()}-1`,
+          name: 'Escolha o sabor da Pizza',
+          description: '',
+          isRequired: true,
+          minSelections: 1,
+          maxSelections: 2,
+          options: [],
+        },
+        {
+          id: `temp-${Date.now()}-2`,
+          name: 'Bordas',
+          description: '',
+          isRequired: false,
+          minSelections: 0,
+          maxSelections: 1,
+          options: [],
+        },
+        {
+          id: `temp-${Date.now()}-3`,
+          name: 'Extras',
+          description: '',
+          isRequired: false,
+          minSelections: 0,
+          maxSelections: 10,
+          options: [],
+        },
+      ];
+    }
+    // Hambúrguer, Lanche, Burger
+    else if (categoryName.includes('hambur') || categoryName.includes('lanche') || categoryName.includes('burger') || categoryName.includes('sanduíche') || categoryName.includes('sanduiche')) {
+      suggestedGroups = [
+        {
+          id: `temp-${Date.now()}-1`,
+          name: 'Ponto da Carne',
+          description: '',
+          isRequired: true,
+          minSelections: 1,
+          maxSelections: 1,
+          options: [],
+        },
+        {
+          id: `temp-${Date.now()}-2`,
+          name: 'Molhos',
+          description: '',
+          isRequired: false,
+          minSelections: 0,
+          maxSelections: 3,
+          options: [],
+        },
+      ];
+    }
+    // Pastel
+    else if (categoryName.includes('pastel')) {
+      suggestedGroups = [
+        {
+          id: `temp-${Date.now()}-1`,
+          name: 'Escolha o Sabor/Recheio',
+          description: '',
+          isRequired: true,
+          minSelections: 1,
+          maxSelections: 1,
+          options: [],
+        },
+        {
+          id: `temp-${Date.now()}-2`,
+          name: 'Tamanho',
+          description: '',
+          isRequired: false,
+          minSelections: 0,
+          maxSelections: 1,
+          options: [],
+        },
+      ];
+    }
+    // Suco, Bebida
+    else if (categoryName.includes('suco') || categoryName.includes('bebida')) {
+      suggestedGroups = [
+        {
+          id: `temp-${Date.now()}-1`,
+          name: 'Sabor',
+          description: '',
+          isRequired: true,
+          minSelections: 1,
+          maxSelections: 1,
+          options: [],
+        },
+        {
+          id: `temp-${Date.now()}-2`,
+          name: 'Tamanho',
+          description: '',
+          isRequired: false,
+          minSelections: 0,
+          maxSelections: 1,
+          options: [],
+        },
+      ];
+    }
+    // Massa, Macarrão
+    else if (categoryName.includes('massa') || categoryName.includes('macarrão') || categoryName.includes('macarrao')) {
+      suggestedGroups = [
+        {
+          id: `temp-${Date.now()}-1`,
+          name: 'Escolha sua massa',
+          description: '',
+          isRequired: true,
+          minSelections: 1,
+          maxSelections: 1,
+          options: [],
+        },
+        {
+          id: `temp-${Date.now()}-2`,
+          name: 'Como refogar?',
+          description: '',
+          isRequired: true,
+          minSelections: 1,
+          maxSelections: 1,
+          options: [],
+        },
+        {
+          id: `temp-${Date.now()}-3`,
+          name: 'Molho extra?',
+          description: '',
+          isRequired: false,
+          minSelections: 0,
+          maxSelections: 1,
+          options: [],
+        },
+        {
+          id: `temp-${Date.now()}-4`,
+          name: 'Adicionais',
+          description: '',
+          isRequired: false,
+          minSelections: 0,
+          maxSelections: 5,
+          options: [],
+        },
+      ];
+    }
+    // Sorvete, Açaí, Creme
+    else if (categoryName.includes('sorvete') || categoryName.includes('açaí') || categoryName.includes('acai') || categoryName.includes('creme')) {
+      suggestedGroups = [
+        {
+          id: `temp-${Date.now()}-1`,
+          name: 'Sabor',
+          description: '',
+          isRequired: true,
+          minSelections: 1,
+          maxSelections: 2,
+          options: [],
+        },
+        {
+          id: `temp-${Date.now()}-2`,
+          name: 'Tamanho',
+          description: '',
+          isRequired: true,
+          minSelections: 1,
+          maxSelections: 1,
+          options: [],
+        },
+        {
+          id: `temp-${Date.now()}-3`,
+          name: 'Adicionais/Toppings',
+          description: '',
+          isRequired: false,
+          minSelections: 0,
+          maxSelections: 10,
+          options: [],
+        },
+      ];
+    }
+    // Doces, Sobremesa
+    else if (categoryName.includes('doce') || categoryName.includes('sobremesa')) {
+      suggestedGroups = [
+        {
+          id: `temp-${Date.now()}-1`,
+          name: 'Sabor/Tipo',
+          description: '',
+          isRequired: true,
+          minSelections: 1,
+          maxSelections: 1,
+          options: [],
+        },
+        {
+          id: `temp-${Date.now()}-2`,
+          name: 'Cobertura',
+          description: '',
+          isRequired: false,
+          minSelections: 0,
+          maxSelections: 1,
+          options: [],
+        },
+        {
+          id: `temp-${Date.now()}-3`,
+          name: 'Adicionais',
+          description: '',
+          isRequired: false,
+          minSelections: 0,
+          maxSelections: 5,
+          options: [],
+        },
+      ];
+    }
+    // Genérico - se não encontrar categoria específica
+    else {
+      suggestedGroups = [
+        {
+          id: `temp-${Date.now()}-1`,
+          name: 'Opções',
+          description: '',
+          isRequired: true,
+          minSelections: 1,
+          maxSelections: 1,
+          options: [],
+        },
+      ];
+    }
+
+    // Adicionar grupos sugeridos ao item
+    setItems(items.map(i => 
+      i.id === itemId 
+        ? { ...i, customizationGroups: [...i.customizationGroups, ...suggestedGroups] }
+        : i
+    ));
+
+    toast.success(`${suggestedGroups.length} grupos sugeridos adicionados! Você pode editar ou remover.`);
+  };
+
   const removeCustomizationGroup = (itemId: string, groupId: string) => {
     setItems(items.map(item => 
       item.id === itemId 
@@ -591,22 +830,38 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                       </h4>
                                       <p className="text-xs text-purple-600 mt-1">Configure sabores, bordas, tamanhos, extras, etc.</p>
                                     </div>
-                                    <Button
-                                      type="button"
-                                      onClick={() => addCustomizationGroup(item.id)}
-                                      className="bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md"
-                                      size="sm"
-                                    >
-                                      <Plus className="w-4 h-4 mr-2" />
-                                      Criar Grupo
-                                    </Button>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        type="button"
+                                        onClick={() => applyQuickSuggestions(item.id)}
+                                        className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-bold shadow-lg"
+                                        size="sm"
+                                      >
+                                        <span className="mr-2">⚡</span>
+                                        Sugestões Rápidas
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        onClick={() => addCustomizationGroup(item.id)}
+                                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md"
+                                        size="sm"
+                                      >
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Criar Grupo
+                                      </Button>
+                                    </div>
                                   </div>
 
                                   {item.customizationGroups.length === 0 && (
-                                    <div className="text-center py-6 bg-white rounded-lg border-2 border-dashed border-purple-200">
-                                      <span className="text-3xl mb-2 block">👆</span>
-                                      <p className="text-purple-600 font-semibold">Clique em "Criar Grupo" para começar</p>
-                                      <p className="text-xs text-gray-500 mt-1">Ex: "Escolha o sabor", "Bordas", "Bebidas do Combo"</p>
+                                    <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-purple-200">
+                                      <span className="text-4xl mb-3 block">⚡</span>
+                                      <p className="text-purple-900 font-bold text-lg mb-2">Use "Sugestões Rápidas"!</p>
+                                      <p className="text-purple-600 text-sm mb-1">
+                                        O sistema cria grupos automaticamente baseado na categoria
+                                      </p>
+                                      <p className="text-xs text-gray-500 mt-3">
+                                        💡 Ou clique em "Criar Grupo" para fazer manualmente
+                                      </p>
                                     </div>
                                   )}
 
