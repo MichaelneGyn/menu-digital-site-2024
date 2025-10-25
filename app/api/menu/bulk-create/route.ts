@@ -6,6 +6,10 @@ import { uploadFileToSupabase } from '@/lib/supabase-storage';
 import { uploadFileToCloudinary } from '@/lib/cloudinary';
 import { uploadFile } from '@/lib/s3';
 
+// Ensure Node runtime and disable static optimization so logs appear
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 /**
  * Cria múltiplos itens do menu de uma vez
  */
@@ -47,17 +51,19 @@ export async function POST(req: NextRequest) {
       const description = formData.get(`items[${index}][description]`) as string || '';
       const price = parseFloat(formData.get(`items[${index}][price]`) as string);
       const categoryId = formData.get(`items[${index}][categoryId]`) as string;
-      const isPromo = formData.get(`items[${index}][isPromo]`) === 'true';
       const originalPriceStr = formData.get(`items[${index}][originalPrice]`) as string;
       const originalPrice = originalPriceStr ? parseFloat(originalPriceStr) : undefined;
       const imageFile = formData.get(`items[${index}][image]`) as File | null;
+      const preUploadedImageUrl = formData.get(`items[${index}][imageUrl]`) as string | null;
 
-      // Upload de imagem (se houver) - Usa Supabase/Cloudinary/S3
+      // Upload de imagem (se houver) - Usa Supabase/Cloudinary/S3.
+      // Prefer pre-uploaded URL if provided (from /api/upload)
       let imagePath: string | null = null;
-      
-      console.log(`🔍 [BulkCreate] Item "${name}" - imageFile:`, imageFile ? `${imageFile.name} (${imageFile.size} bytes)` : 'NULL');
-      
-      if (imageFile && imageFile.size > 0) {
+
+      if (preUploadedImageUrl && typeof preUploadedImageUrl === 'string' && preUploadedImageUrl.length > 0) {
+        imagePath = preUploadedImageUrl;
+        console.log(`✅ [BulkCreate] Usando URL de imagem já enviada: ${imagePath}`);
+      } else if (imageFile && imageFile.size > 0) {
         const bytes = await imageFile.arrayBuffer();
         const buffer = Buffer.from(bytes);
         
@@ -94,7 +100,7 @@ export async function POST(req: NextRequest) {
                 console.log('✅ [BulkCreate] S3 upload bem-sucedido! URL:', imagePath);
               } else {
                 console.error('❌ [BulkCreate] Nenhum storage configurado (Supabase/Cloudinary/S3)');
-                // Se não há storage configurado, NÃO cria o item com imagem null
+                // Se não há storage configurado, retorna erro explícito
                 throw new Error('Sistema de storage não configurado. Configure Supabase, Cloudinary ou S3.');
               }
             }
@@ -105,12 +111,13 @@ export async function POST(req: NextRequest) {
           throw new Error(`Erro ao fazer upload da imagem "${imageFile.name}": ${error.message}`);
         }
       } else {
-        console.log(`⚠️ [BulkCreate] Item "${name}" criado SEM imagem (imageFile vazio ou null)`);
+        console.log(`⚠️ [BulkCreate] Item "${name}" sem imagem: nenhum URL pré-enviado e nenhum arquivo recebido.`);
       }
       
       console.log(`💾 [BulkCreate] Item "${name}" será salvo com imagem:`, imagePath || 'NULL');
 
       // Get customizations data
+      const isPromo = formData.get(`items[${index}][isPromo]`) === 'true';
       const hasCustomizations = formData.get(`items[${index}][hasCustomizations]`) === 'true';
       const flavorsStr = formData.get(`items[${index}][flavors]`) as string;
       const maxFlavors = formData.get(`items[${index}][maxFlavors]`) as string;
