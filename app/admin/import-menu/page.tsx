@@ -192,13 +192,17 @@ export default function ImportMenuPage() {
     const item = items.find(i => i.id === itemId);
     if (!item) return;
 
+    console.log('🔍 DEBUG - Item completo:', item);
+    console.log('🔍 DEBUG - categoryId:', item.categoryId);
+    console.log('🔍 DEBUG - categoryName:', item.categoryName);
+
     if (!item.categoryName) {
       toast.error('⚠️ Selecione uma CATEGORIA primeiro!');
       return;
     }
 
     const categoryName = item.categoryName.toLowerCase();
-    console.log('🔍 Categoria detectada:', item.categoryName, '→', categoryName);
+    console.log('✅ Categoria detectada:', item.categoryName, '→', categoryName);
     let suggestedGroups: CustomizationGroup[] = [];
     let categoryDetected = '';
 
