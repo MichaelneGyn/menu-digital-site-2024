@@ -776,7 +776,11 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                 <select
                                   className="w-full p-2 border rounded-md"
                                   value={item.categoryId}
-                                  onChange={(e) => updateItem(item.id, 'categoryId', e.target.value)}
+                                  onChange={(e) => {
+                                    const selectedCategory = categories.find(cat => cat.id === e.target.value);
+                                    updateItem(item.id, 'categoryId', e.target.value);
+                                    updateItem(item.id, 'categoryName', selectedCategory?.name || '');
+                                  }}
                                 >
                                   <option value="">Selecione...</option>
                                   {categories.map(cat => (
