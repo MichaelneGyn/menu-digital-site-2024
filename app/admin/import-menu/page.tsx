@@ -192,11 +192,19 @@ export default function ImportMenuPage() {
     const item = items.find(i => i.id === itemId);
     if (!item) return;
 
+    if (!item.categoryName) {
+      toast.error('⚠️ Selecione uma CATEGORIA primeiro!');
+      return;
+    }
+
     const categoryName = item.categoryName.toLowerCase();
+    console.log('🔍 Categoria detectada:', item.categoryName, '→', categoryName);
     let suggestedGroups: CustomizationGroup[] = [];
+    let categoryDetected = '';
 
     // Pizza
     if (categoryName.includes('pizza')) {
+      categoryDetected = 'Pizza';
       suggestedGroups = [
         {
           id: `temp-${Date.now()}-1`,
@@ -229,6 +237,7 @@ export default function ImportMenuPage() {
     }
     // Hambúrguer, Lanche, Burger
     else if (categoryName.includes('hambur') || categoryName.includes('lanche') || categoryName.includes('burger') || categoryName.includes('sanduíche') || categoryName.includes('sanduiche')) {
+      categoryDetected = 'Hambúrguer/Lanche';
       suggestedGroups = [
         {
           id: `temp-${Date.now()}-1`,
@@ -252,6 +261,7 @@ export default function ImportMenuPage() {
     }
     // Pastel
     else if (categoryName.includes('pastel')) {
+      categoryDetected = 'Pastel';
       suggestedGroups = [
         {
           id: `temp-${Date.now()}-1`,
@@ -274,7 +284,8 @@ export default function ImportMenuPage() {
       ];
     }
     // Suco, Bebida
-    else if (categoryName.includes('suco') || categoryName.includes('bebida')) {
+    else if (categoryName.includes('suco') || categoryName.includes('bebida') || categoryName.includes('drink')) {
+      categoryDetected = 'Bebida/Suco';
       suggestedGroups = [
         {
           id: `temp-${Date.now()}-1`,
@@ -298,6 +309,7 @@ export default function ImportMenuPage() {
     }
     // Massa, Macarrão
     else if (categoryName.includes('massa') || categoryName.includes('macarrão') || categoryName.includes('macarrao')) {
+      categoryDetected = 'Massa';
       suggestedGroups = [
         {
           id: `temp-${Date.now()}-1`,
@@ -339,6 +351,7 @@ export default function ImportMenuPage() {
     }
     // Sorvete, Açaí, Creme
     else if (categoryName.includes('sorvete') || categoryName.includes('açaí') || categoryName.includes('acai') || categoryName.includes('creme')) {
+      categoryDetected = 'Sorvete/Açaí';
       suggestedGroups = [
         {
           id: `temp-${Date.now()}-1`,
@@ -371,6 +384,7 @@ export default function ImportMenuPage() {
     }
     // Doces, Sobremesa
     else if (categoryName.includes('doce') || categoryName.includes('sobremesa')) {
+      categoryDetected = 'Doces/Sobremesa';
       suggestedGroups = [
         {
           id: `temp-${Date.now()}-1`,
@@ -403,6 +417,7 @@ export default function ImportMenuPage() {
     }
     // Genérico - se não encontrar categoria específica
     else {
+      categoryDetected = 'Genérico';
       suggestedGroups = [
         {
           id: `temp-${Date.now()}-1`,
@@ -423,7 +438,12 @@ export default function ImportMenuPage() {
         : i
     ));
 
-    toast.success(`${suggestedGroups.length} grupos sugeridos adicionados! Você pode editar ou remover.`);
+    console.log('✅ Categoria reconhecida:', categoryDetected);
+    console.log('📋 Grupos criados:', suggestedGroups.length);
+    
+    toast.success(`✅ ${suggestedGroups.length} grupos de "${categoryDetected}" adicionados! Edite conforme necessário.`, {
+      duration: 4000,
+    });
   };
 
   const removeCustomizationGroup = (itemId: string, groupId: string) => {
