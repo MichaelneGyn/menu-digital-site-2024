@@ -19,19 +19,6 @@ type ImportResult = {
   items: Array<{ name: string; price: number }>;
 };
 
-type CustomizationGroup = {
-  id: string;
-  name: string; // Ex: "Sabores", "Tamanho", "Cremes", etc.
-  description: string;
-  isRequired: boolean;
-  minSelections: number;
-  maxSelections: number;
-  options: Array<{
-    name: string;
-    price: string;
-  }>;
-};
-
 type ItemForm = {
   id: string;
   name: string;
@@ -43,10 +30,8 @@ type ItemForm = {
   imagePreview: string;
   isPromo: boolean;
   originalPrice: string;
-  // Customizations - NOVO SISTEMA FLEXÍVEL
+  // Customizations
   hasCustomizations: boolean;
-  customizationGroups: CustomizationGroup[];
-  // Legacy (manter compatibilidade)
   hasFlavors: boolean;
   flavors: string[];
   maxFlavors: string;
@@ -81,9 +66,6 @@ export default function ImportMenuPage() {
   const [tempFlavorInputs, setTempFlavorInputs] = useState<Record<string, string>>({});
   const [tempBorderInputs, setTempBorderInputs] = useState<Record<string, {name: string; price: string}>>({});
   const [tempExtraInputs, setTempExtraInputs] = useState<Record<string, {name: string; price: string}>>({});
-  
-  // Novo sistema flexível de grupos
-  const [tempGroupOptionInputs, setTempGroupOptionInputs] = useState<Record<string, {name: string; price: string}>>({});
 
   // Carrega categorias ao montar
   useEffect(() => {
@@ -104,10 +86,8 @@ export default function ImportMenuPage() {
       imagePreview: '',
       isPromo: false,
       originalPrice: '',
-      // Customizations - NOVO SISTEMA FLEXÍVEL
+      // Customizations
       hasCustomizations: false,
-      customizationGroups: [],
-      // Legacy (compatibilidade)
       hasFlavors: false,
       flavors: [],
       maxFlavors: '2',
@@ -164,90 +144,6 @@ export default function ImportMenuPage() {
   const updateItem = (id: string, field: keyof ItemForm, value: any) => {
     setItems(items.map(item => 
       item.id === id ? { ...item, [field]: value } : item
-    ));
-  };
-
-  // Funções para manipular grupos de customização
-  const addCustomizationGroup = (itemId: string) => {
-    const newGroup: CustomizationGroup = {
-      id: Math.random().toString(36).substring(7),
-      name: '',
-      description: '',
-      isRequired: false,
-      minSelections: 0,
-      maxSelections: 1,
-      options: []
-    };
-    
-    setItems(items.map(item => 
-      item.id === itemId 
-        ? { ...item, customizationGroups: [...item.customizationGroups, newGroup] }
-        : item
-    ));
-    toast.success('Grupo de personalização adicionado!');
-  };
-
-  const removeCustomizationGroup = (itemId: string, groupId: string) => {
-    setItems(items.map(item => 
-      item.id === itemId 
-        ? { ...item, customizationGroups: item.customizationGroups.filter(g => g.id !== groupId) }
-        : item
-    ));
-  };
-
-  const updateGroupField = (itemId: string, groupId: string, field: keyof CustomizationGroup, value: any) => {
-    setItems(items.map(item => 
-      item.id === itemId 
-        ? {
-            ...item,
-            customizationGroups: item.customizationGroups.map(group =>
-              group.id === groupId ? { ...group, [field]: value } : group
-            )
-          }
-        : item
-    ));
-  };
-
-  const addOptionToGroup = (itemId: string, groupId: string, optionName: string, optionPrice: string) => {
-    if (!optionName.trim()) {
-      toast.error('Digite o nome da opção');
-      return;
-    }
-
-    setItems(items.map(item => 
-      item.id === itemId 
-        ? {
-            ...item,
-            customizationGroups: item.customizationGroups.map(group =>
-              group.id === groupId 
-                ? { ...group, options: [...group.options, { name: optionName.trim(), price: optionPrice || '0' }] }
-                : group
-            )
-          }
-        : item
-    ));
-
-    // Limpar input temporário
-    setTempGroupOptionInputs({
-      ...tempGroupOptionInputs,
-      [groupId]: { name: '', price: '' }
-    });
-
-    toast.success('Opção adicionada!');
-  };
-
-  const removeOptionFromGroup = (itemId: string, groupId: string, optionIndex: number) => {
-    setItems(items.map(item => 
-      item.id === itemId 
-        ? {
-            ...item,
-            customizationGroups: item.customizationGroups.map(group =>
-              group.id === groupId 
-                ? { ...group, options: group.options.filter((_, idx) => idx !== optionIndex) }
-                : group
-            )
-          }
-        : item
     ));
   };
 
@@ -569,7 +465,6 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
 
                               {item.hasCustomizations && (
                                 <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
-
                                   {/* Sabores */}
                                   <div className="border-b pb-3">
                                     <label className="flex items-center gap-2 mb-2">
@@ -623,7 +518,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                             }}
                                             className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
                                           >
-                                            <Plus className="w-4 h-4" />
+                                            ➕
                                           </Button>
                                         </div>
                                         {item.flavors.length > 0 && (
@@ -711,7 +606,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                             }}
                                             className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
                                           >
-                                            <Plus className="w-4 h-4" />
+                                            ➕
                                           </Button>
                                         </div>
                                         {item.borders.length > 0 && (
@@ -799,7 +694,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                             }}
                                             className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
                                           >
-                                            <Plus className="w-4 h-4" />
+                                            ➕
                                           </Button>
                                         </div>
                                         {item.extras.length > 0 && (

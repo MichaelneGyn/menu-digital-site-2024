@@ -4,21 +4,21 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 const STATUS_MESSAGES = {
-  PENDING: 'Pedido recebido e aguardando confirmacao',
+  PENDING: 'Pedido recebido e aguardando confirmação',
   CONFIRMED: 'Pedido confirmado! Estamos preparando seu pedido',
-  PREPARING: 'Seu pedido esta sendo preparado na cozinha',
+  PREPARING: 'Seu pedido está sendo preparado na cozinha',
   READY: 'Pedido pronto! Saindo para entrega',
   DELIVERED: 'Pedido entregue com sucesso!',
   CANCELLED: 'Pedido cancelado',
 };
 
 const STATUS_EMOJIS = {
-  PENDING: 'PENDENTE',
-  CONFIRMED: 'CONFIRMADO',
-  PREPARING: 'PREPARANDO',
-  READY: 'PRONTO',
-  DELIVERED: 'ENTREGUE',
-  CANCELLED: 'CANCELADO',
+  PENDING: '⏳',
+  CONFIRMED: '✅',
+  PREPARING: '👨‍🍳',
+  READY: '🎉',
+  DELIVERED: '🚚',
+  CANCELLED: '❌',
 };
 
 /**

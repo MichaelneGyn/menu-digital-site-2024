@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
 
     // Log para debug
     const timestamp = new Date().toLocaleString('pt-BR');
-    console.log(`[${timestamp}] GARCOM CHAMADO - Mesa ${tableNumber} - ${waiterCall.restaurant.name}`);
+    console.log(`[${timestamp}] 🔔 GARÇOM CHAMADO - Mesa ${tableNumber} - ${waiterCall.restaurant.name}`);
 
     return NextResponse.json({
       success: true,

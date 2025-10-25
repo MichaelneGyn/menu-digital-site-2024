@@ -6,25 +6,6 @@ Execute TODA VEZ que fizer deploy em produção (Vercel).
 
 ## 🚀 **ANTES DE DIVULGAR PARA CLIENTES:**
 
-### **0. VERIFICAÇÃO DNS/DOMÍNIO (2 min) - CRÍTICO!**
-```
-✅ [ ] Domínio principal funciona (virtualcardapio.com.br)
-✅ [ ] Nameservers corretos (Vercel)
-✅ [ ] SSL ativo (https://)
-✅ [ ] Sem erro de timeout
-```
-
-**Teste:**
-1. Acesse: `https://virtualcardapio.com.br`
-2. Deve carregar sem erro
-3. Verificar SSL (cadeado verde)
-4. Comando: `nslookup -type=NS virtualcardapio.com.br`
-5. Deve mostrar: `ns1.vercel-dns.com` e `ns2.vercel-dns.com`
-
-**⚠️ SE FALHAR:** Verificar configuração DNS na Hostinger imediatamente!
-
----
-
 ### **1. Autenticação (5 min)**
 ```
 ✅ [ ] Login funciona (admin)
