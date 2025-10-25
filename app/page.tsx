@@ -409,56 +409,58 @@ export default function HomePage() {
             <div className="grid md:grid-cols-3 gap-4 p-6 bg-gradient-to-r from-red-50 to-green-50 rounded-lg">
               <div className="text-center">
                 <p className="text-sm text-gray-600">Faturamento/mês</p>
-                <p className="text-xl font-bold">R$ {monthlyRevenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
+                <p className="text-2xl font-bold text-blue-600">R$ {monthlyRevenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
               </div>
               <div className="text-center">
-                <p className="text-sm text-gray-600">Custo iFood Total*</p>
-                <p className="text-xl font-bold text-red-600">- R$ {ifoodTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
+                <p className="text-sm text-gray-600">iFood cobraria</p>
                 <p className="text-xs text-gray-500 mt-1">*26,2% + R$ 150/mês</p>
+                <p className="text-2xl font-bold text-red-600">R$ {ifoodTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Nosso sistema</p>
-                <p className="text-xl font-bold text-green-600">R$ {ourPrice.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-green-600">R$ 197,00</p>
               </div>
             </div>
             
-            <div className="mt-6 p-6 bg-green-100 border-2 border-green-400 rounded-lg">
-              <p className="text-lg mb-2">💚 Você economizaria:</p>
-              <p className="text-4xl font-bold text-green-600 mb-2">R$ {savings.toLocaleString('pt-BR', {minimumFractionDigits: 2})}/mês</p>
-              <p className="text-2xl font-bold text-green-700">R$ {yearSavings.toLocaleString('pt-BR', {minimumFractionDigits: 2})}/ano</p>
-            </div>
+            {savings > 0 && (
+              <div className="mt-6 p-4 bg-green-100 rounded-lg text-center">
+                <p className="text-lg mb-2">💚 Você economizaria:</p>
+                <p className="text-4xl font-bold text-green-600 mb-2">R$ {savings.toLocaleString('pt-BR', {minimumFractionDigits: 2})}/mês</p>
+                <p className="text-xl text-green-700">R$ {yearSavings.toLocaleString('pt-BR', {minimumFractionDigits: 2})}/ano</p>
+              </div>
+            )}
           </div>
 
           {/* FAQ */}
-          <div className="mt-16 text-left">
+          <div className="mt-16 text-left max-w-3xl mx-auto">
             <h2 className="text-2xl font-bold mb-6 text-center">❓ Perguntas Frequentes</h2>
             <div className="space-y-4">
-              <details className="p-4 bg-white rounded-lg shadow-sm border">
+              <details className="bg-white p-4 rounded-lg shadow-sm border">
                 <summary className="font-semibold cursor-pointer">Como funciona o teste grátis?</summary>
                 <p className="mt-3 text-gray-600">🔥 <strong>Primeiros 50 clientes:</strong> 15 dias grátis! Depois: 7 dias grátis. Você cria sua conta e tem acesso completo ao sistema. Não pedimos cartão de crédito. Após o período, você decide se quer continuar.</p>
               </details>
               
-              <details className="p-4 bg-white rounded-lg shadow-sm border">
-                <summary className="font-semibold cursor-pointer">Preciso pagar taxa por pedido?</summary>
+              <details className="bg-white p-4 rounded-lg shadow-sm border">
+                <summary className="font-semibold cursor-pointer">Vocês cobram taxa por pedido?</summary>
                 <p className="mt-3 text-gray-600">NÃO! Você paga apenas a mensalidade fixa (a partir de R$ 197/mês). Zero taxa por pedido, ao contrário do iFood que cobra 27%.</p>
               </details>
               
-              <details className="p-4 bg-white rounded-lg shadow-sm border">
-                <summary className="font-semibold cursor-pointer">Posso cancelar a qualquer momento?</summary>
+              <details className="bg-white p-4 rounded-lg shadow-sm border">
+                <summary className="font-semibold cursor-pointer">Posso cancelar quando quiser?</summary>
                 <p className="mt-3 text-gray-600">Sim! Não há fidelidade. Você pode cancelar quando quiser sem multa ou burocracia.</p>
               </details>
               
-              <details className="p-4 bg-white rounded-lg shadow-sm border">
+              <details className="bg-white p-4 rounded-lg shadow-sm border">
                 <summary className="font-semibold cursor-pointer">Vocês têm integração com Mercado Pago?</summary>
                 <p className="mt-3 text-gray-600">Sim! No plano Premium você tem integração completa com Mercado Pago para pagamentos automáticos via PIX e cartão.</p>
               </details>
               
-              <details className="p-4 bg-white rounded-lg shadow-sm border">
-                <summary className="font-semibold cursor-pointer">Meus dados ficam comigo?</summary>
+              <details className="bg-white p-4 rounded-lg shadow-sm border">
+                <summary className="font-semibold cursor-pointer">Os dados dos clientes são meus?</summary>
                 <p className="mt-3 text-gray-600">SIM! Ao contrário do iFood, VOCÊ é dono dos dados dos seus clientes. Todos os contatos, histórico e informações são 100% seus.</p>
               </details>
               
-              <details className="p-4 bg-white rounded-lg shadow-sm border">
+              <details className="bg-white p-4 rounded-lg shadow-sm border">
                 <summary className="font-semibold cursor-pointer">Preciso de conhecimento técnico?</summary>
                 <p className="mt-3 text-gray-600">Não! O sistema é super intuitivo. Se você sabe usar WhatsApp, vai saber usar nosso sistema. Além disso, oferecemos suporte completo.</p>
               </details>
@@ -466,93 +468,97 @@ export default function HomePage() {
           </div>
 
           {/* Formulário de Contato */}
-          <div id="contato" className="mt-16 p-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl shadow-lg">
+          <div className="mt-16 p-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
             <h2 className="text-2xl font-bold mb-4">📞 Ficou com dúvida?</h2>
             <p className="text-gray-600 mb-6">Entre em contato conosco! Responderemos em até 24 horas.</p>
             
-            <form onSubmit={handleContactSubmit} className="space-y-4 max-w-md mx-auto">
-              <div className="text-left">
-                <label className="block text-sm font-medium mb-1">Nome do Restaurante *</label>
-                <input
-                  type="text"
-                  required
-                  value={restaurantName}
-                  onChange={(e) => setRestaurantName(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ex: Pizzaria Bella"
-                />
+            <form onSubmit={handleContactSubmit} className="max-w-2xl mx-auto space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Nome do Restaurante *</label>
+                  <input
+                    type="text"
+                    value={restaurantName}
+                    onChange={(e) => setRestaurantName(e.target.value)}
+                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Pizzaria do João"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Seu Nome *</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="João Silva"
+                    required
+                  />
+                </div>
               </div>
               
-              <div className="text-left">
-                <label className="block text-sm font-medium mb-1">Seu Nome *</label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="João Silva"
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">WhatsApp *</label>
+                  <input
+                    type="tel"
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="(11) 99999-9999"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email *</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="joao@pizzaria.com"
+                    required
+                  />
+                </div>
               </div>
               
-              <div className="text-left">
-                <label className="block text-sm font-medium mb-1">WhatsApp *</label>
-                <input
-                  type="tel"
-                  required
-                  value={whatsapp}
-                  onChange={(e) => setWhatsapp(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="(11) 98888-8888"
-                />
-              </div>
-              
-              <div className="text-left">
-                <label className="block text-sm font-medium mb-1">Email *</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="contato@seurestaurante.com.br"
-                />
-              </div>
-              
-              <div className="text-left">
-                <label className="block text-sm font-medium mb-1">Mensagem</label>
+              <div>
+                <label className="block text-sm font-medium mb-1">Mensagem (opcional)</label>
                 <textarea
-                  rows={4}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Conte-nos mais sobre seu restaurante e suas necessidades..."
-                ></textarea>
+                  rows={4}
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Conte-nos sobre seu restaurante e suas necessidades..."
+                />
               </div>
               
-              <Button type="submit" size="lg" className="w-full cta-button-primary" disabled={sending}>
+              <Button 
+                type="submit" 
+                disabled={sending}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg"
+              >
                 {sending ? '📤 Enviando...' : '📧 Enviar Mensagem'}
               </Button>
-              
-              <p className="text-xs text-gray-500 text-center">
-                Email: <a href="mailto:virtualcardapio@gmail.com" className="text-blue-600 underline">virtualcardapio@gmail.com</a>
-              </p>
-              <p className="text-xs text-gray-400 text-center mt-1">
-                💬 Veja o botão verde no canto da tela para falar conosco no WhatsApp!
-              </p>
             </form>
+            
+            <p className="text-center text-sm text-gray-600 mt-4">
+              💬 Veja o botão verde no canto da tela para falar conosco no WhatsApp!
+            </p>
           </div>
 
           {/* CTA Final */}
-          <div className="mt-16">
-            <Link href="/auth/login" className="inline-block">
-              <Button size="lg" className="cta-button-primary text-lg py-6 px-8">
+          <div className="mt-16 text-center">
+            <Link href="/auth/login">
+              <Button size="lg" className="cta-button-primary text-xl py-8 px-12">
                 {isPromoActive ? '🔥 Começar Agora - 15 DIAS GRÁTIS' : '🚀 Começar Teste Grátis'}
               </Button>
             </Link>
-            <p className="text-xs text-gray-500 mt-3">
+            <p className="text-gray-600 mt-4">
               Junte-se aos restaurantes que economizam milhares por mês!
             </p>
+          </div>
           </div>
         </div>
       </div>
