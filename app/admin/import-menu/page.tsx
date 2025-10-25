@@ -163,6 +163,7 @@ export default function ImportMenuPage() {
   };
 
   const updateItem = (id: string, field: keyof ItemForm, value: any) => {
+    console.log(`📝 updateItem - campo: ${String(field)}, valor:`, value);
     setItems(items.map(item => 
       item.id === id ? { ...item, [field]: value } : item
     ));
@@ -781,8 +782,14 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                   className="w-full p-2 border rounded-md"
                                   value={item.categoryId}
                                   onChange={(e) => {
-                                    const selectedCategory = categories.find(cat => cat.id === e.target.value);
-                                    updateItem(item.id, 'categoryId', e.target.value);
+                                    const selectedCategoryId = e.target.value;
+                                    const selectedCategory = categories.find(cat => cat.id === selectedCategoryId);
+                                    
+                                    console.log('🔄 Categoria selecionada:');
+                                    console.log('   - ID:', selectedCategoryId);
+                                    console.log('   - Nome:', selectedCategory?.name);
+                                    
+                                    updateItem(item.id, 'categoryId', selectedCategoryId);
                                     updateItem(item.id, 'categoryName', selectedCategory?.name || '');
                                   }}
                                 >
