@@ -5,8 +5,8 @@ import { Resend } from 'resend';
 const CONTACT_EMAIL = 'virtualcardapio@gmail.com';
 const CONTACT_WHATSAPP = '5562981105064'; // WhatsApp Virtual Cardápio
 
-// Inicializar Resend (precisa configurar RESEND_API_KEY no .env)
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Inicializar Resend apenas se a API key estiver disponível
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     console.log('Email:', email);
 
     // Enviar email usando Resend
-    if (process.env.RESEND_API_KEY) {
+    if (resend) {
       try {
         await resend.emails.send({
           from: 'Virtual Cardápio <onboarding@resend.dev>', // Email padrão do Resend (grátis)
