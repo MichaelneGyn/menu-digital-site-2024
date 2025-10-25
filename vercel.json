@@ -3,6 +3,11 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "framework": "nextjs",
+  "git": {
+    "deploymentEnabled": {
+      "master": true
+    }
+  },
   "redirects": [
     {
       "source": "/:path*",
