@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { use } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Bell, ShoppingCart, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 
 type Table = {
   id: string;
@@ -18,24 +18,19 @@ type Table = {
   };
 };
 
-// Fixed: Using useParams() instead of use() to avoid Next.js 15 compatibility issues
-export default function TableQRCodePage() {
-  const params = useParams();
-  const qrCode = params?.qrCode as string;
-  
+export default function TableQRCodePage({ params }: { params: Promise<{ qrCode: string }> }) {
+  const resolvedParams = use(params);
   const [table, setTable] = useState<Table | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCallingWaiter, setIsCallingWaiter] = useState(false);
 
   useEffect(() => {
-    if (qrCode) {
-      loadTable();
-    }
-  }, [qrCode]);
+    loadTable();
+  }, [resolvedParams.qrCode]);
 
   const loadTable = async () => {
     try {
-      const res = await fetch(`/api/tables/public?qrCode=${qrCode}`);
+      const res = await fetch(`/api/tables/public?qrCode=${resolvedParams.qrCode}`);
       if (!res.ok) {
         throw new Error('Mesa não encontrada');
       }
@@ -59,7 +54,6 @@ export default function TableQRCodePage() {
         body: JSON.stringify({
           restaurantId: table.restaurantId,
           tableNumber: table.number,
-          tableId: table.id,
         }),
       });
 
@@ -176,8 +170,8 @@ export default function TableQRCodePage() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-sm text-gray-500">
-          <p>✨ Powered by Virtual Cardápio</p>
-          <p className="mt-1">Plataforma de Pedidos Online</p>
+          <p>✨ Powered by MenuRapido</p>
+          <p className="mt-1">Cardápio Digital Inteligente</p>
         </div>
       </div>
     </div>
