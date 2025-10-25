@@ -75,18 +75,15 @@ export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
         {item?.isPromo && item?.promoTag && (
           <span className="promo-tag">{item.promoTag}</span>
         )}
-        
         {item?.image && (
           <div className="product-image-container">
             <Image
               src={
-                item.image?.startsWith('/') 
-                  ? item.image 
-                  : item.image?.startsWith('http') 
+                item.image?.startsWith('http')
                     ? item.image 
                     : item.image
                       ? `/api/image?key=${encodeURIComponent(item.image)}`
-                      : 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'
+                      : '/placeholder-food.png'
               }
               alt={item?.name || 'Produto'}
               fill

@@ -789,8 +789,16 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                     console.log('   - ID:', selectedCategoryId);
                                     console.log('   - Nome:', selectedCategory?.name);
                                     
-                                    updateItem(item.id, 'categoryId', selectedCategoryId);
-                                    updateItem(item.id, 'categoryName', selectedCategory?.name || '');
+                                    // Atualizar ambos os campos em uma única operação
+                                    setItems(items.map(i => 
+                                      i.id === item.id 
+                                        ? { 
+                                            ...i, 
+                                            categoryId: selectedCategoryId,
+                                            categoryName: selectedCategory?.name || ''
+                                          }
+                                        : i
+                                    ));
                                   }}
                                 >
                                   <option value="">Selecione...</option>

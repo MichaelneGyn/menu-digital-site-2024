@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
+import { uploadFileToSupabase } from '@/lib/supabase-storage';
+import { uploadFileToCloudinary } from '@/lib/cloudinary';
+import { uploadFile } from '@/lib/s3';
 
 /**
  * Cria múltiplos itens do menu de uma vez
@@ -51,25 +52,63 @@ export async function POST(req: NextRequest) {
       const originalPrice = originalPriceStr ? parseFloat(originalPriceStr) : undefined;
       const imageFile = formData.get(`items[${index}][image]`) as File | null;
 
-      // Upload de imagem (se houver)
+      // Upload de imagem (se houver) - Usa Supabase/Cloudinary/S3
       let imagePath: string | null = null;
+      
+      console.log(`🔍 [BulkCreate] Item "${name}" - imageFile:`, imageFile ? `${imageFile.name} (${imageFile.size} bytes)` : 'NULL');
+      
       if (imageFile && imageFile.size > 0) {
         const bytes = await imageFile.arrayBuffer();
         const buffer = Buffer.from(bytes);
         
-        // Gera nome único para a imagem
-        const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-        const filename = `${uniqueSuffix}-${imageFile.name.replace(/\s/g, '-')}`;
-        const filepath = join(process.cwd(), 'public', 'uploads', filename);
+        console.log(`📤 [BulkCreate] Iniciando upload da imagem "${imageFile.name}" (${buffer.length} bytes)`);
         
         try {
-          await writeFile(filepath, buffer);
-          imagePath = `/uploads/${filename}`;
-        } catch (error) {
-          console.error('Erro ao salvar imagem:', error);
-          // Deixa como null se falhar
+          // PRIORIDADE 1: Supabase Storage
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+          const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+          
+          if (supabaseUrl && supabaseKey) {
+            console.log('📸 [BulkCreate] Usando Supabase Storage...');
+            imagePath = await uploadFileToSupabase(buffer, imageFile.name);
+            console.log('✅ [BulkCreate] Supabase upload bem-sucedido! URL:', imagePath);
+          }
+          // PRIORIDADE 2: Cloudinary
+          else {
+            const cloudinaryName = process.env.CLOUDINARY_CLOUD_NAME;
+            const cloudinaryKey = process.env.CLOUDINARY_API_KEY;
+            const cloudinarySecret = process.env.CLOUDINARY_API_SECRET;
+            
+            if (cloudinaryName && cloudinaryKey && cloudinarySecret) {
+              console.log('📸 [BulkCreate] Usando Cloudinary...');
+              imagePath = await uploadFileToCloudinary(buffer, imageFile.name);
+              console.log('✅ [BulkCreate] Cloudinary upload bem-sucedido! URL:', imagePath);
+            }
+            // PRIORIDADE 3: AWS S3
+            else {
+              const awsBucket = process.env.AWS_BUCKET_NAME;
+              if (awsBucket) {
+                console.log('📸 [BulkCreate] Usando AWS S3...');
+                const s3Key = await uploadFile(buffer, imageFile.name);
+                imagePath = `/api/image?key=${encodeURIComponent(s3Key)}`;
+                console.log('✅ [BulkCreate] S3 upload bem-sucedido! URL:', imagePath);
+              } else {
+                console.error('❌ [BulkCreate] Nenhum storage configurado (Supabase/Cloudinary/S3)');
+                // Se não há storage configurado, NÃO cria o item com imagem null
+                throw new Error('Sistema de storage não configurado. Configure Supabase, Cloudinary ou S3.');
+              }
+            }
+          }
+        } catch (error: any) {
+          console.error('❌ [BulkCreate] Erro ao fazer upload da imagem:', error);
+          // Se o usuário forneceu uma imagem mas o upload falhou, retorna erro
+          throw new Error(`Erro ao fazer upload da imagem "${imageFile.name}": ${error.message}`);
         }
+      } else {
+        console.log(`⚠️ [BulkCreate] Item "${name}" criado SEM imagem (imageFile vazio ou null)`);
       }
+      
+      console.log(`💾 [BulkCreate] Item "${name}" será salvo com imagem:`, imagePath || 'NULL');
 
       // Get customizations data
       const hasCustomizations = formData.get(`items[${index}][hasCustomizations]`) === 'true';

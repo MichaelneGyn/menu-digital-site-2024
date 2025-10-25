@@ -480,19 +480,26 @@ function AdminDashboard() {
                         ✕
                       </button>
                     </div>
-                    <img 
-                      src={
-                        item.image?.startsWith('/') 
-                          ? item.image 
-                          : item.image?.startsWith('http') 
+                    {item.image ? (
+                      <img 
+                        src={
+                          item.image?.startsWith('/') 
                             ? item.image 
-                            : item.image
-                              ? `/api/image?key=${encodeURIComponent(item.image)}`
-                              : 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'
-                      } 
-                      alt={item.name}
-                      className="w-full h-32 object-contain bg-white rounded-md mb-3"
-                    />
+                            : item.image?.startsWith('http') 
+                              ? item.image 
+                              : `/api/image?key=${encodeURIComponent(item.image)}`
+                        } 
+                        alt={item.name}
+                        className="w-full h-32 object-contain bg-white rounded-md mb-3"
+                      />
+                    ) : (
+                      <div className="w-full h-32 flex items-center justify-center bg-gray-100 rounded-md mb-3">
+                        <div className="text-center text-gray-400">
+                          <span className="text-4xl">📷</span>
+                          <p className="text-xs mt-1">Sem imagem</p>
+                        </div>
+                      </div>
+                    )}
                     <h3 className="font-semibold">{item.name}</h3>
                     <p className="text-sm text-gray-600 mb-2">{item.description}</p>
                     <div className="flex justify-between items-center">

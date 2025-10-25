@@ -122,19 +122,9 @@ export default function AddItemWithCustomizationsModal({
     setIsLoading(true);
 
     try {
-      // Imagens padrão variadas
-      const defaultImages = [
-        'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800', // Pizza
-        'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800', // Burger  
-        'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800', // Pizza 2
-        'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800', // Salad
-        'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800', // Sandwich
-        'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=800', // Pasta
-      ];
-      
-      let imageUrl = defaultImages[Math.floor(Math.random() * defaultImages.length)];
+      let imageUrl: string | null = null;
 
-      // Tentar upload da imagem (falha silenciosamente)
+      // Upload da imagem (se o usuário escolheu uma)
       if (selectedImage) {
         try {
           const uploadData = new FormData();
@@ -154,12 +144,17 @@ export default function AddItemWithCustomizationsModal({
               console.log('✅ Upload bem-sucedido:', imageUrl);
             }
           } else {
-            // Falha no upload - continua com imagem padrão
-            console.warn('⚠️ Upload falhou (status:', uploadResponse.status, '), usando imagem padrão');
+            // Se o usuário escolheu uma imagem mas o upload falhou, mostra erro
+            const errorData = await uploadResponse.json();
+            toast.error(errorData.error || 'Erro ao fazer upload da imagem');
+            setIsLoading(false);
+            return;
           }
-        } catch (uploadError) {
-          // Exceção no upload - continua com imagem padrão
-          console.warn('⚠️ Erro no upload, usando imagem padrão:', uploadError);
+        } catch (uploadError: any) {
+          // Se o upload falhou, mostra erro ao usuário
+          toast.error(uploadError?.message || 'Erro ao fazer upload da imagem');
+          setIsLoading(false);
+          return;
         }
       }
 
