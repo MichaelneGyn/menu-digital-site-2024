@@ -185,30 +185,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: message }, { status: 500 });
       }
     } else {
-      // Tenta S3 primeiro; se falhar, usa imagem padrão
+      // Tenta S3 primeiro; se falhar, em DEV salva localmente
       try {
         cloud_storage_path = await uploadFile(buffer, file.name);
         imageUrl = `/api/image?key=${encodeURIComponent(cloud_storage_path)}`;
       } catch (err: any) {
         console.error('Falha ao enviar para S3:', err);
         
-        // Se S3 não está configurado, retorna URL de imagem padrão (Unsplash)
-        if (err?.message?.includes('AWS_BUCKET_NAME') || err?.message?.includes('não configurado')) {
-          console.warn('⚠️ AWS S3 não configurado. Usando imagem padrão do Unsplash.');
-          
-          // Usar diferentes imagens padrão baseadas no tipo de arquivo
-          const defaultImages = [
-            'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800', // Pizza
-            'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800', // Burger
-            'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800', // Pizza 2
-            'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800', // Salad
-          ];
-          
-          // Seleciona uma imagem aleatória
-          imageUrl = defaultImages[Math.floor(Math.random() * defaultImages.length)];
-          
-          console.info('✅ Usando imagem padrão:', imageUrl);
-        } else if (isDev) {
+        if (isDev) {
           // Em desenvolvimento, tenta salvar localmente
           try {
             const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
@@ -219,14 +203,16 @@ export async function POST(request: NextRequest) {
             imageUrl = `/uploads/${baseName}`;
             console.info('Upload salvo localmente (fallback) em:', filePath);
           } catch (localErr: any) {
-            // Se falhar local também, usa imagem padrão
-            console.warn('⚠️ Fallback local falhou. Usando imagem padrão.');
-            imageUrl = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800';
+            // NUNCA substitui a imagem do usuário por imagens genéricas
+            return NextResponse.json({ 
+              error: 'Erro ao salvar imagem. Verifique as configurações de storage.' 
+            }, { status: 500 });
           }
         } else {
-          // Em produção sem S3, usa imagem padrão
-          console.warn('⚠️ Produção sem S3 configurado. Usando imagem padrão.');
-          imageUrl = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800';
+          // Em produção, retorna erro se não conseguir fazer upload
+          return NextResponse.json({ 
+            error: 'Erro ao fazer upload da imagem. Verifique as configurações de storage (Supabase/Cloudinary/S3).' 
+          }, { status: 500 });
         }
       }
     }

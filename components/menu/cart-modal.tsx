@@ -226,19 +226,16 @@ export default function CartModal({
                 <div className="item-image">
                   <img 
                     src={
-                      item.image?.startsWith('/') 
+                      item.image?.startsWith('http')
                         ? item.image 
-                        : item.image?.startsWith('http') 
-                          ? item.image 
-                          : item.image
-                            ? `/api/image?key=${encodeURIComponent(item.image)}`
-                            : 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'
+                        : item.image
+                          ? `/api/image?key=${encodeURIComponent(item.image)}`
+                          : '/placeholder-food.png'
                     }
                     alt={item.name || 'Produto'}
                   />
                 </div>
               
-              <div className="item-details">
                 <h4>{item.name}</h4>
                 
                 {item.customization?.flavors?.length && (
@@ -288,7 +285,6 @@ export default function CartModal({
                   {formatPrice(Number(item.price) * item.quantity)}
                 </div>
               </div>
-            </div>
             );
           })}
         </div>
