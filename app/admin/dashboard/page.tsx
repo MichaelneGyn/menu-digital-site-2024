@@ -300,16 +300,6 @@ function AdminDashboard() {
                     <span className="text-xs text-purple-600 font-semibold">NOVO</span>
                   </button>
 
-                  {/* Gerenciar Personalizações */}
-                  <button
-                    onClick={() => router.push('/admin/customizations')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-pink-50 to-purple-50 border-pink-300"
-                  >
-                    <span className="text-xl sm:text-2xl">🎨</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Personalizações</span>
-                    <span className="text-xs text-pink-600 font-semibold">NOVO</span>
-                  </button>
-
                   {/* Configurações */}
                   <button
                     onClick={() => router.push('/admin/settings')}
