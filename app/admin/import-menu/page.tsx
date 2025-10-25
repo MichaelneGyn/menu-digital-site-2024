@@ -218,7 +218,7 @@ export default function ImportMenuPage() {
     const newOption: CustomizationOption = {
       id: `opt-${Date.now()}`,
       name: optionName.trim(),
-      price: optionPrice || '0',
+      price: optionPrice || '0.00',
     };
 
     setItems(items.map(item => {
@@ -238,7 +238,7 @@ export default function ImportMenuPage() {
     // Limpar inputs temporários
     setTempGroupInputs({
       ...tempGroupInputs,
-      [groupId]: { optionName: '', optionPrice: '0' }
+      [groupId]: { optionName: '', optionPrice: '0.00' }
     });
 
     toast.success('Opção adicionada!');
@@ -669,7 +669,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                   ...tempGroupInputs,
                                                   [group.id]: {
                                                     optionName: e.target.value,
-                                                    optionPrice: tempGroupInputs[group.id]?.optionPrice || '0'
+                                                    optionPrice: tempGroupInputs[group.id]?.optionPrice || '0.00'
                                                   }
                                                 })}
                                                 onKeyPress={(e) => {
@@ -679,14 +679,14 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                       item.id,
                                                       group.id,
                                                       tempGroupInputs[group.id]?.optionName || '',
-                                                      tempGroupInputs[group.id]?.optionPrice || '0'
+                                                      tempGroupInputs[group.id]?.optionPrice || '0.00'
                                                     );
                                                   }
                                                 }}
                                                 className="flex-1"
                                               />
                                               <PriceInput
-                                                value={tempGroupInputs[group.id]?.optionPrice || '0'}
+                                                value={tempGroupInputs[group.id]?.optionPrice || '0.00'}
                                                 onChange={(val) => setTempGroupInputs({
                                                   ...tempGroupInputs,
                                                   [group.id]: {
@@ -703,7 +703,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                   item.id,
                                                   group.id,
                                                   tempGroupInputs[group.id]?.optionName || '',
-                                                  tempGroupInputs[group.id]?.optionPrice || '0'
+                                                  tempGroupInputs[group.id]?.optionPrice || '0.00'
                                                 )}
                                                 className="bg-green-500 hover:bg-green-600"
                                                 size="sm"
@@ -726,7 +726,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                       {option.name}
                                                       {parseFloat(option.price) > 0 && (
                                                         <span className="text-green-600 ml-2">
-                                                          +R$ {(parseFloat(option.price) / 100).toFixed(2)}
+                                                          +R$ {parseFloat(option.price).toFixed(2)}
                                                         </span>
                                                       )}
                                                       {parseFloat(option.price) === 0 && (
