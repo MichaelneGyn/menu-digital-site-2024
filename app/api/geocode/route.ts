@@ -36,18 +36,18 @@ export async function GET(request: NextRequest) {
     );
 
     if (!response.ok) {
-      console.error('[Geocode] OpenStreetMap error:', response.status);
+      console.error('❌ [Geocode] OpenStreetMap error:', response.status);
       
       // Se OpenStreetMap falhar, retorna array vazio ao invés de erro
       return NextResponse.json([]);
     }
 
     const data = await response.json();
-    console.log('[Geocode] Found results:', data.length);
+    console.log('✅ [Geocode] Found results:', data.length);
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error('[Geocode] Error:', error);
+    console.error('❌ [Geocode] Error:', error);
     
     // Retorna array vazio ao invés de erro 500
     // Isso evita quebrar a UX se geocoding falhar

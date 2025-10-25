@@ -19,6 +19,7 @@ export async function userIsAdmin(email?: string) {
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma as any),
   secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true, // Necessário para desenvolvimento local e Vercel
   debug: process.env.NODE_ENV === 'development', // Debug apenas em desenvolvimento
   providers: [
     CredentialsProvider({
@@ -28,14 +29,10 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        const isDev = process.env.NODE_ENV === 'development';
-        
-        if (isDev) {
-          console.log('🔐 Tentativa de login:', { email: credentials?.email });
-        }
+        console.log('🔐 Tentativa de login:', { email: credentials?.email });
         
         if (!credentials?.email || !credentials?.password) {
-          if (isDev) console.log('❌ Credenciais inválidas');
+          console.log('❌ Credenciais inválidas');
           return null;
         }
 
@@ -45,12 +42,10 @@ export const authOptions: NextAuthOptions = {
             include: { restaurants: true }
           });
 
-          if (isDev) {
-            console.log('👤 Usuário encontrado:', user ? 'Sim' : 'Não');
-          }
+          console.log('👤 Usuário encontrado:', user ? 'Sim' : 'Não');
 
           if (!user?.password) {
-            if (isDev) console.log('❌ Usuário não tem senha');
+            console.log('❌ Usuário não tem senha');
             return null;
           }
 
@@ -59,31 +54,20 @@ export const authOptions: NextAuthOptions = {
             user.password
           );
 
-          if (isDev) {
-            console.log('🔑 Senha válida:', isPasswordValid ? 'Sim' : 'Não');
-          }
+          console.log('🔑 Senha válida:', isPasswordValid ? 'Sim' : 'Não');
 
           if (!isPasswordValid) {
             return null;
           }
 
-          if (isDev) {
-            console.log('✅ Login bem-sucedido para:', user.email);
-          }
-          
+          console.log('✅ Login bem-sucedido para:', user.email);
           return {
             id: user.id,
             email: user.email,
             name: user.name,
           };
         } catch (error) {
-          // Log erro sempre para debug
-          console.error('❌ Erro na autenticação:', {
-            message: error instanceof Error ? error.message : 'Erro desconhecido',
-            code: (error as any)?.code,
-            // Não loga stack trace em produção por segurança
-            ...(isDev && { stack: error instanceof Error ? error.stack : undefined })
-          });
+          console.error('❌ Erro na autenticação:', error);
           return null;
         }
       }
@@ -117,3 +101,6 @@ export const authOptions: NextAuthOptions = {
     signIn: '/auth/login',
   },
 };
+
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
