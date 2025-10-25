@@ -215,11 +215,16 @@ export default function ImportMenuPage() {
       return;
     }
 
+    console.log('🔵 addOptionToGroup - optionPrice recebido:', optionPrice);
+    console.log('🔵 addOptionToGroup - tipo:', typeof optionPrice);
+
     const newOption: CustomizationOption = {
       id: `opt-${Date.now()}`,
       name: optionName.trim(),
       price: optionPrice || '0.00',
     };
+
+    console.log('✅ newOption criada:', newOption);
 
     setItems(items.map(item => {
       if (item.id === itemId) {
