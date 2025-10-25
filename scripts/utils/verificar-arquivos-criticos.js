@@ -19,7 +19,6 @@ const ARQUIVOS_CRITICOS = [
   
   // Dashboard
   'app/admin/dashboard/page.tsx',
-  'app/dashboard/page.tsx',
   
   // APIs críticas
   'app/api/orders/create/route.ts',
