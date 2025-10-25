@@ -551,9 +551,46 @@ export default function ImportMenuPage() {
 
     setIsSaving(true);
     try {
+      // PASSO 1: Fazer upload de todas as imagens PRIMEIRO
+      console.log('📤 [Import] Iniciando upload de imagens...');
+      const itemsWithImageUrls = await Promise.all(
+        items.map(async (item, index) => {
+          if (!item.image) {
+            console.log(`⚠️ [Import] Item ${index} "${item.name}" sem imagem`);
+            return { ...item, imageUrl: null };
+          }
+
+          try {
+            console.log(`📸 [Import] Fazendo upload da imagem do item "${item.name}"...`);
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', item.image);
+
+            const uploadRes = await fetch('/api/upload', {
+              method: 'POST',
+              body: uploadFormData,
+            });
+
+            if (!uploadRes.ok) {
+              const errorData = await uploadRes.json();
+              throw new Error(errorData.error || 'Erro no upload');
+            }
+
+            const uploadResult = await uploadRes.json();
+            console.log(`✅ [Import] Upload bem-sucedido para "${item.name}":`, uploadResult.image_url);
+            return { ...item, imageUrl: uploadResult.image_url };
+          } catch (error: any) {
+            console.error(`❌ [Import] Erro ao fazer upload da imagem "${item.name}":`, error);
+            toast.error(`Erro ao fazer upload da imagem de "${item.name}": ${error.message}`);
+            throw error; // Interrompe o processo se algum upload falhar
+          }
+        })
+      );
+
+      // PASSO 2: Enviar dados com as URLs das imagens para bulk-create
+      console.log('💾 [Import] Criando itens no banco de dados...');
       const formData = new FormData();
       
-      items.forEach((item, index) => {
+      itemsWithImageUrls.forEach((item, index) => {
         formData.append(`items[${index}][name]`, item.name);
         formData.append(`items[${index}][description]`, item.description);
         formData.append(`items[${index}][price]`, item.price);
@@ -562,8 +599,9 @@ export default function ImportMenuPage() {
         if (item.originalPrice) {
           formData.append(`items[${index}][originalPrice]`, item.originalPrice);
         }
-        if (item.image) {
-          formData.append(`items[${index}][image]`, item.image);
+        // Envia a URL da imagem (não o arquivo)
+        if (item.imageUrl) {
+          formData.append(`items[${index}][imageUrl]`, item.imageUrl);
         }
         
         // Customizations
@@ -588,10 +626,12 @@ export default function ImportMenuPage() {
       });
 
       if (!res.ok) {
-        throw new Error('Erro ao salvar itens');
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Erro ao salvar itens');
       }
 
       const data = await res.json();
+      console.log('✅ [Import] Itens criados com sucesso!', data);
       toast.success(`✅ ${data.count} itens adicionados com sucesso!`);
       
       // Redireciona para o dashboard
@@ -599,6 +639,7 @@ export default function ImportMenuPage() {
         router.push('/admin/dashboard');
       }, 1500);
     } catch (error: any) {
+      console.error('❌ [Import] Erro:', error);
       toast.error(error.message || 'Erro ao salvar itens');
     } finally {
       setIsSaving(false);
