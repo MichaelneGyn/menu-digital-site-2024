@@ -21,9 +21,10 @@ export default function HomePage() {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   
-  const PROMO_LIMIT = 50; // Limite de usuários para promoção
+  const PROMO_LIMIT = 10; // Limite de usuários para promoção (PRIMEIROS 10)
   const spotsLeft = Math.max(0, PROMO_LIMIT - totalUsers);
   const isPromoActive = totalUsers < PROMO_LIMIT;
+  const soldCount = PROMO_LIMIT - spotsLeft; // Quantos já foram vendidos
   
   useEffect(() => {
     // Buscar total de usuários
@@ -90,15 +91,6 @@ export default function HomePage() {
       <div className="min-h-screen page-transition pt-16">
         <div className="max-w-4xl mx-auto text-center p-8">
           <div className="hero-section-landing">
-          {/* Badge Promocional */}
-          {isPromoActive && !loading && (
-            <div className="inline-block mb-6 animate-bounce">
-              <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg">
-                🔥 LANÇAMENTO: 15 DIAS GRÁTIS • Primeiros 50!
-              </div>
-            </div>
-          )}
-          
           <h1 className="landing-main-title">
             Plataforma de Pedidos Online para Restaurantes
           </h1>
@@ -106,59 +98,40 @@ export default function HomePage() {
             Seu próprio sistema de delivery e gestão, sem comissão. Como o iFood, mas 100% seu.
           </p>
           
-          <div className="flex flex-col items-center gap-4 mb-8">
-            {/* Contador de Vagas */}
-            {isPromoActive && !loading && (
-              <div className="bg-white border-2 border-orange-500 rounded-lg p-4 shadow-lg mb-2 w-full max-w-md">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">⏰ Oferta por tempo limitado</p>
-                  <div className="flex items-center justify-center gap-2 text-2xl font-bold text-orange-600">
-                    <span className="text-4xl">{spotsLeft}</span>
-                    <div className="text-left text-sm">
-                      <div>vagas</div>
-                      <div>restantes</div>
-                    </div>
-                  </div>
-                  <div className="mt-2 bg-gray-200 rounded-full h-2 overflow-hidden">
-                    <div 
-                      className="bg-gradient-to-r from-orange-500 to-red-500 h-full transition-all duration-500"
-                      style={{ width: `${((PROMO_LIMIT - spotsLeft) / PROMO_LIMIT) * 100}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">{PROMO_LIMIT - spotsLeft} de {PROMO_LIMIT} vagas preenchidas</p>
-                </div>
-              </div>
-            )}
-            
+          <div className="flex flex-col items-center gap-3 mb-8">
             <Link href="/auth/login" className="w-full max-w-md">
-              <Button size="lg" className="cta-button-primary w-full text-lg py-6 relative overflow-hidden group">
-                <span className="relative z-10">🔥 GARANTIR R$ 69,90/MÊS</span>
-                <span className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 group-hover:opacity-20 transition-opacity"></span>
+              <Button size="lg" className="w-full text-lg py-6 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold shadow-lg">
+                🔥 GARANTIR R$ 69,90/MÊS
               </Button>
             </Link>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-600">
               ✅ 15 dias grátis • ✅ Sem cartão de crédito • ✅ Cancele quando quiser
             </p>
+            {isPromoActive && !loading && (
+              <p className="text-sm font-bold text-red-600 animate-pulse">
+                🔥 Só {spotsLeft} vagas! Após isso, preço sobe para R$ 89,90
+              </p>
+            )}
           </div>
 
-          {/* Benefícios Principais */}
+          {/* 3 Cards Vermelhos Grandes */}
           <div className="grid md:grid-cols-3 gap-6 mt-16">
-            <div className="feature-card-old">
-              <div className="feature-icon-old text-4xl">🚀</div>
-              <h3 className="feature-title-old">Sistema de Pedidos Online</h3>
-              <p className="feature-description-old">Clientes fazem pedidos pelo celular (delivery, retirada ou mesa). Seu próprio sistema, sem intermediários.</p>
+            <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-8 text-white shadow-xl hover:shadow-2xl transition-shadow">
+              <div className="text-6xl mb-4 text-center">🚀</div>
+              <h3 className="text-2xl font-bold mb-3 text-center">Sistema de Pedidos Online</h3>
+              <p className="text-sm text-white/90 text-center leading-relaxed">Clientes fazem pedidos pelo celular (delivery, retirada ou mesa). Seu próprio sistema, sem intermediários.</p>
             </div>
             
-            <div className="feature-card-old">
-              <div className="feature-icon-old text-4xl">📊</div>
-              <h3 className="feature-title-old">Painel de Gestão Completo</h3>
-              <p className="feature-description-old">Kitchen Display, comandas, relatórios e controle total em tempo real. Como o iFood, mas melhor.</p>
+            <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-8 text-white shadow-xl hover:shadow-2xl transition-shadow">
+              <div className="text-6xl mb-4 text-center">📊</div>
+              <h3 className="text-2xl font-bold mb-3 text-center">Painel de Gestão Completo</h3>
+              <p className="text-sm text-white/90 text-center leading-relaxed">Kitchen Display, comandas, relatórios e controle total em tempo real. Como o iFood, mas melhor.</p>
             </div>
             
-            <div className="feature-card-old">
-              <div className="feature-icon-old text-4xl">💰</div>
-              <h3 className="feature-title-old">Zero Comissão por Pedido</h3>
-              <p className="feature-description-old">Sem taxa de 27% como iFood. Pague apenas R$ 119,90/mês fixo e fique com 100% das vendas!</p>
+            <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-8 text-white shadow-xl hover:shadow-2xl transition-shadow">
+              <div className="text-6xl mb-4 text-center">💰</div>
+              <h3 className="text-2xl font-bold mb-3 text-center">Zero Comissão por Pedido</h3>
+              <p className="text-sm text-white/90 text-center leading-relaxed">Sem taxa de 27% como iFood. Pague apenas R$ 119,90/mês fixo e fique com 100% das vendas!</p>
             </div>
           </div>
 
@@ -260,16 +233,53 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Card Plano Completo */}
+            {/* Banner Promocional */}
+            {isPromoActive && !loading && (
+              <div className="max-w-3xl mx-auto mb-8 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-xl shadow-sm">
+                <p className="text-center text-sm font-bold text-orange-700">
+                  🔥 PRIMEIROS 10: R$ 69,90/mês • Só {spotsLeft} vagas! (Preço normal: R$ 89,90)
+                </p>
+              </div>
+            )}
+
+            {/* Card Plano Completo - LARANJA */}
             <div className="max-w-2xl mx-auto">
-              <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl shadow-2xl border-4 border-orange-400 p-8 relative">
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-2xl p-8 relative">
+                {/* Badge de Vagas Vendidas */}
+                {isPromoActive && !loading && (
+                  <div className="absolute top-6 right-6 bg-yellow-400 text-orange-900 px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
+                    {soldCount} vendidas
+                  </div>
+                )}
+                
                 <div className="text-center text-white">
                   <h3 className="text-3xl font-bold mb-2">Plano Completo</h3>
-                  <p className="text-xs text-orange-100 mb-3">Tudo incluído, sem limites artificiais</p>
-                  <div className="text-6xl font-bold mb-1">
-                    <span className="text-4xl align-top">R$</span> 89<span className="text-4xl">,90</span>
+                  <p className="text-sm text-orange-100 mb-3">Tudo incluído, sem limites artificiais</p>
+                  
+                  {/* Contador de Vagas */}
+                  {isPromoActive && !loading && (
+                    <div className="mb-4 flex items-center justify-center gap-2">
+                      <span className="text-4xl font-bold">{spotsLeft}</span>
+                      <span className="text-sm">de {PROMO_LIMIT} vagas</span>
+                    </div>
+                  )}
+                  
+                  {/* Box do Preço */}
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-6">
+                    <p className="text-xs text-orange-100 uppercase tracking-wide mb-2">APÓS PERÍODO DE TESTE:</p>
+                    <div className="text-7xl font-bold mb-2">
+                      <span className="text-5xl align-top">R$</span> 69<span className="text-5xl">,90</span>
+                    </div>
+                    <p className="text-orange-100 text-base mb-4">/mês</p>
+                    
+                    {isPromoActive && !loading && (
+                      <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg transition-colors">
+                        🔥 PRIMEIROS 10: Só {spotsLeft} vagas!
+                      </button>
+                    )}
+                    
+                    <p className="text-xs text-orange-100 mt-3">* Após os 10 primeiros clientes haverá reajuste de preço</p>
                   </div>
-                  <p className="text-orange-100 text-sm mb-6">/mês</p>
                   <ul className="text-left space-y-3 mb-8">
                     <li className="flex items-start gap-2">
                       <span className="text-yellow-300 mt-1 font-bold text-lg">✓</span>
@@ -335,6 +345,16 @@ export default function HomePage() {
                   </Link>
                 </div>
               </div>
+            </div>
+            
+            {/* Banner Verde Informativo */}
+            <div className="max-w-3xl mx-auto mt-8 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl shadow-sm">
+              <p className="text-center text-sm text-gray-700">
+                🎁 <strong>15 DIAS GRÁTIS</strong> • Sem cartão de crédito • 🔥 <strong>PRIMEIROS 10: R$ 69,90/mês</strong>
+              </p>
+              <p className="text-center text-xs text-gray-600 mt-1">
+                🔥 Se cancelar e retornar, paga preço normal (R$ 89,90/mês)
+              </p>
             </div>
           </div>
 
