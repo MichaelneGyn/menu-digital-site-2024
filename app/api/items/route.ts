@@ -9,13 +9,14 @@ import { z } from 'zod';
 const createItemSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   description: z.string().min(1, 'Descrição é obrigatória'),
-  price: z.number().positive('Preço deve ser positivo'),
+  price: z.number().min(0, 'Preço deve ser maior ou igual a zero'), // ✅ Permite 0 para produtos com preço variável
   categoryId: z.string().min(1, 'Categoria é obrigatória'),
   restaurantId: z.string().min(1, 'Restaurante é obrigatório'),
   image: z.union([z.string(), z.null()]).optional(), // ✅ IMAGEM OPCIONAL - aceita string ou null
   isPromo: z.boolean().optional().default(false),
   oldPrice: z.number().positive().optional(),
   promoTag: z.string().optional(),
+  hasCustomizations: z.boolean().optional().default(false), // ✅ Flag de personalização
 });
 
 export async function DELETE(request: NextRequest) {
