@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import { Upload, Save, ImageIcon, AlertTriangle, ArrowLeft, Sparkles } from 'lucide-react';
 import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
 import Link from 'next/link';
-import LogoGallery from '@/components/LogoGallery';
+import LogoGalleryFlat from '@/components/LogoGalleryFlat';
 
 type Restaurant = {
   id: string;
@@ -261,15 +261,18 @@ function SettingsPage() {
               </Button>
             </div>
 
-            {/* Galeria de Logos */}
+            {/* Galeria de Logos Profissionais */}
             {showLogoGallery ? (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
-                <LogoGallery
-                  onSelectLogo={(logoSvg, logoName) => {
-                    // Converter SVG para data URL
-                    const svgBlob = new Blob([logoSvg], { type: 'image/svg+xml' });
-                    const url = URL.createObjectURL(svgBlob);
-                    const dataUrl = `data:image/svg+xml;base64,${btoa(logoSvg)}`;
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gradient-to-br from-gray-50 to-white">
+                <LogoGalleryFlat
+                  onSelectLogo={(logoSvg: string, logoName: string) => {
+                    // Converter SVG para data URL (usando encodeURIComponent para caracteres especiais)
+                    const encodedSvg = encodeURIComponent(logoSvg);
+                    const dataUrl = `data:image/svg+xml,${encodedSvg}`;
+                    
+                    console.log('💾 Salvando logo:', logoName);
+                    console.log('📊 Data URL length:', dataUrl.length);
+                    console.log('🔗 Data URL preview:', dataUrl.substring(0, 150) + '...');
                     
                     setFormData({ ...formData, logo: dataUrl });
                     setLogoPreview(dataUrl);

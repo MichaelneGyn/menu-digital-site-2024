@@ -42,6 +42,7 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingCEP, setIsLoadingCEP] = useState(false);
 
   useEffect(() => {
     if (selectedAddress) {
@@ -76,25 +77,48 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
       const cleanCEP = cep.replace(/\D/g, '');
       if (cleanCEP.length !== 8) return;
       
-      toast.loading('Buscando endereço...', { id: 'cep-search' });
+      setIsLoadingCEP(true);
+      toast.loading('🔍 Buscando endereço...', { id: 'cep-search' });
       
       const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
+      
+      if (!response.ok) {
+        throw new Error('Erro ao buscar CEP');
+      }
+      
       const data = await response.json();
       
       if (data && !data.erro) {
         setAddress(prev => ({
           ...prev,
-          street: data.logradouro || prev.street,
-          neighborhood: data.bairro || prev.neighborhood,
-          city: data.localidade || prev.city,
-          zipCode: data.cep || prev.zipCode
+          street: data.logradouro || '',
+          neighborhood: data.bairro || '',
+          city: data.localidade || '',
+          zipCode: cleanCEP
         }));
-        toast.success('Endereço encontrado!', { id: 'cep-search' });
+        toast.success('✅ Endereço preenchido! Só falta o número.', { 
+          id: 'cep-search',
+          duration: 3000
+        });
+        
+        // Focar no campo número após preencher
+        setTimeout(() => {
+          document.getElementById('number')?.focus();
+        }, 100);
       } else {
-        toast.error('CEP não encontrado', { id: 'cep-search' });
+        toast.error('❌ CEP não encontrado. Verifique e tente novamente.', { 
+          id: 'cep-search',
+          duration: 4000
+        });
       }
     } catch (error) {
-      toast.error('Erro ao buscar CEP', { id: 'cep-search' });
+      console.error('Erro ao buscar CEP:', error);
+      toast.error('❌ Erro ao buscar CEP. Tente novamente.', { 
+        id: 'cep-search',
+        duration: 4000
+      });
+    } finally {
+      setIsLoadingCEP(false);
     }
   };
 
@@ -230,16 +254,22 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
         </div>
 
         {/* Dica de preenchimento */}
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-          <div className="flex">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-lg shadow-sm">
+          <div className="flex items-start">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              <svg className="h-6 w-6 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <div className="ml-3">
-              <p className="text-sm text-blue-800">
-                <strong className="text-blue-900">💡 Dica:</strong> Digite seu <strong>CEP</strong> no campo abaixo para preencher automaticamente a rua, bairro e cidade!
+            <div className="ml-3 flex-1">
+              <h3 className="text-sm font-bold text-blue-900 mb-1">
+                🚀 Preenchimento Rápido!
+              </h3>
+              <p className="text-sm text-blue-800 leading-relaxed">
+                Digite seu <strong className="font-bold bg-yellow-200 px-1 rounded">CEP</strong> no campo abaixo e a <strong>rua, bairro e cidade</strong> serão preenchidos automaticamente!
+              </p>
+              <p className="text-xs text-blue-700 mt-2 italic">
+                Você só precisa digitar o número da casa 😊
               </p>
             </div>
           </div>
@@ -306,25 +336,65 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
             />
           </div>
           
-          <div>
-            <Label htmlFor="zipCode">CEP *</Label>
-            <Input
-              id="zipCode"
-              type="text"
-              value={address.zipCode}
-              onChange={(e) => {
-                const value = e.target.value;
-                handleInputChange('zipCode', value);
-                // Buscar endereço automaticamente quando CEP estiver completo
-                const cleanCEP = value.replace(/\D/g, '');
-                if (cleanCEP.length === 8) {
-                  fetchAddressByCEP(cleanCEP);
-                }
-              }}
-              placeholder="Digite seu CEP"
-              maxLength={9}
-              required
-            />
+          <div className="md:col-span-2">
+            <Label htmlFor="zipCode" className="flex items-center gap-2">
+              CEP * 
+              <span className="text-xs text-gray-500 font-normal">
+                (preenche automaticamente)
+              </span>
+            </Label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  id="zipCode"
+                  type="text"
+                  value={address.zipCode}
+                  onChange={(e) => {
+                    let value = e.target.value;
+                    // Aplicar máscara de CEP: 00000-000
+                    value = value.replace(/\D/g, '');
+                    if (value.length > 5) {
+                      value = value.slice(0, 5) + '-' + value.slice(5, 8);
+                    }
+                    handleInputChange('zipCode', value);
+                    
+                    // Buscar automaticamente quando completar 8 dígitos
+                    const cleanCEP = value.replace(/\D/g, '');
+                    if (cleanCEP.length === 8) {
+                      fetchAddressByCEP(cleanCEP);
+                    }
+                  }}
+                  placeholder="00000-000"
+                  maxLength={9}
+                  className={isLoadingCEP ? 'pr-10' : ''}
+                  required
+                />
+                {isLoadingCEP && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
+              </div>
+              <Button
+                type="button"
+                onClick={() => {
+                  const cleanCEP = address.zipCode.replace(/\D/g, '');
+                  if (cleanCEP.length === 8) {
+                    fetchAddressByCEP(cleanCEP);
+                  } else {
+                    toast.error('Digite um CEP válido com 8 dígitos');
+                  }
+                }}
+                disabled={isLoadingCEP}
+                variant="outline"
+                className="shrink-0"
+              >
+                <Search className="w-4 h-4" />
+              </Button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              💡 Digite apenas os números. Ex: 01310100
+            </p>
           </div>
         </div>
 

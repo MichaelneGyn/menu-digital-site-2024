@@ -12,15 +12,23 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*.amazonaws.com', // AWS S3
+        hostname: '*.amazonaws.com',
       },
       {
         protocol: 'https',
-        hostname: '*.supabase.co', // Supabase Storage
+        hostname: '*.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
       },
       {
         protocol: 'http',
-        hostname: 'localhost', // Dev local
+        hostname: 'localhost',
       },
     ],
   },
@@ -51,17 +59,17 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: [
-              "default-src 'self'", // Padrão: apenas origem própria
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com", // Scripts: próprio + inline (Next.js precisa)
-              "style-src 'self' 'unsafe-inline'", // Estilos: próprio + inline (Tailwind precisa)
-              "img-src 'self' data: https: blob:", // Imagens: qualquer HTTPS + data URLs + blobs
-              "font-src 'self' data:", // Fontes: próprio + data URLs
-              "connect-src 'self' https://*.supabase.co https://vercel.live wss://*.supabase.co", // APIs: próprio + Supabase + Vercel
-              "frame-src 'self' https://vercel.live", // iFrames: próprio + Vercel (analytics)
-              "object-src 'none'", // Sem plugins (Flash, etc) - SEGURANÇA
-              "base-uri 'self'", // Previne injeção de <base> tag
-              "form-action 'self'", // Forms só podem submeter para próprio domínio
-              "upgrade-insecure-requests", // Force HTTPS
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https: blob: https://*.supabase.co https://*.googleapis.com https://*.googleusercontent.com",
+              "font-src 'self' data:",
+              "connect-src 'self' https://*.supabase.co https://vercel.live wss://*.supabase.co https://viacep.com.br https://nominatim.openstreetmap.org",
+              "frame-src 'self' https://vercel.live",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "upgrade-insecure-requests",
             ].join('; ')
           },
         ],

@@ -237,6 +237,22 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
     setCartItems(prevItems => prevItems.filter(item => item.cartId !== cartId));
   };
 
+  // Adicionar item simples ao carrinho (para upsell)
+  const handleAddItemToCart = (item: ClientMenuItem) => {
+    const cartId = `${item.id}-${Date.now()}`;
+    const newCartItem: CartItem = {
+      ...item,
+      quantity: 1,
+      customization: undefined,
+      cartId,
+      price: Number(item.price)
+    };
+
+    setCartItems(prevItems => [...prevItems, newCartItem]);
+    setNotificationMessage(`${item.name} adicionado ao carrinho`);
+    setShowNotification(true);
+  };
+
   const getTotalItems = () => {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
   };
@@ -332,6 +348,7 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
           onClose={() => setShowCartModal(false)}
           onUpdateItem={handleUpdateCartItem}
           onRemoveItem={handleRemoveCartItem}
+          onAddItem={handleAddItemToCart}
         />
       )}
       
