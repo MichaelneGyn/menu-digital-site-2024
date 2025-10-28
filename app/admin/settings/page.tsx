@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import toast from 'react-hot-toast';
-import { Upload, Save, ImageIcon, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Upload, Save, ImageIcon, AlertTriangle, ArrowLeft, Sparkles } from 'lucide-react';
 import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
 import Link from 'next/link';
+import LogoGallery from '@/components/LogoGallery';
 
 type Restaurant = {
   id: string;
@@ -34,6 +35,7 @@ function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [showLogoGallery, setShowLogoGallery] = useState(false);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -235,62 +237,106 @@ function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Logo Upload */}
-            <div>
-              <Label htmlFor="logo">Logo do Restaurante</Label>
-              <div className="mt-2 flex items-center gap-4">
-                {/* Preview do Logo */}
-                <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50">
-                  {logoPreview ? (
-                    <img 
-                      src={logoPreview} 
-                      alt="Logo preview" 
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <ImageIcon className="w-8 h-8 text-gray-400" />
-                  )}
-                </div>
+            {/* Toggle entre Galeria e Upload */}
+            <div className="flex gap-2 mb-4">
+              <Button
+                type="button"
+                variant={showLogoGallery ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowLogoGallery(true)}
+                className="flex-1"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Galeria de Logos
+              </Button>
+              <Button
+                type="button"
+                variant={!showLogoGallery ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowLogoGallery(false)}
+                className="flex-1"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Personalizado
+              </Button>
+            </div>
 
-                {/* Botão Upload */}
-                <div className="flex-1">
-                  <input
-                    type="file"
-                    id="logo-upload"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleLogoUpload}
-                  />
-                  <label htmlFor="logo-upload">
-                    <Button type="button" variant="outline" size="sm" asChild>
-                      <span className="cursor-pointer">
-                        <Upload className="w-4 h-4 mr-2" />
-                        Fazer Upload
-                      </span>
-                    </Button>
-                  </label>
-                  <p className="text-xs text-gray-500 mt-1">
-                    PNG, JPG ou SVG (máx 5MB)
-                  </p>
-                  
-                  {/* Ou URL manual */}
-                  <div className="mt-3">
-                    <Label htmlFor="logoUrl" className="text-xs">Ou cole a URL da imagem:</Label>
-                    <Input
-                      id="logoUrl"
-                      type="url"
-                      placeholder="https://exemplo.com/logo.png"
-                      value={formData.logo}
-                      onChange={(e) => {
-                        setFormData({ ...formData, logo: e.target.value });
-                        setLogoPreview(e.target.value);
-                      }}
-                      className="mt-1"
+            {/* Galeria de Logos */}
+            {showLogoGallery ? (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
+                <LogoGallery
+                  onSelectLogo={(logoSvg, logoName) => {
+                    // Converter SVG para data URL
+                    const svgBlob = new Blob([logoSvg], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(svgBlob);
+                    const dataUrl = `data:image/svg+xml;base64,${btoa(logoSvg)}`;
+                    
+                    setFormData({ ...formData, logo: dataUrl });
+                    setLogoPreview(dataUrl);
+                    toast.success(`✅ Logo "${logoName}" selecionado! Clique em Salvar para aplicar.`);
+                  }}
+                  currentLogo={formData.logo}
+                  primaryColor={formData.primaryColor}
+                />
+              </div>
+            ) : (
+              /* Upload Personalizado */
+              <div>
+                <Label htmlFor="logo">Logo do Restaurante</Label>
+                <div className="mt-2 flex items-center gap-4">
+                  {/* Preview do Logo */}
+                  <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50">
+                    {logoPreview ? (
+                      <img 
+                        src={logoPreview} 
+                        alt="Logo preview" 
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <ImageIcon className="w-8 h-8 text-gray-400" />
+                    )}
+                  </div>
+
+                  {/* Botão Upload */}
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      id="logo-upload"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLogoUpload}
                     />
+                    <label htmlFor="logo-upload">
+                      <Button type="button" variant="outline" size="sm" asChild>
+                        <span className="cursor-pointer">
+                          <Upload className="w-4 h-4 mr-2" />
+                          Fazer Upload
+                        </span>
+                      </Button>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">
+                      PNG, JPG ou SVG (máx 5MB)
+                    </p>
+                    
+                    {/* Ou URL manual */}
+                    <div className="mt-3">
+                      <Label htmlFor="logoUrl" className="text-xs">Ou cole a URL da imagem:</Label>
+                      <Input
+                        id="logoUrl"
+                        type="url"
+                        placeholder="https://exemplo.com/logo.png"
+                        value={formData.logo}
+                        onChange={(e) => {
+                          setFormData({ ...formData, logo: e.target.value });
+                          setLogoPreview(e.target.value);
+                        }}
+                        className="mt-1"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Slogan/Descrição */}
             <div>

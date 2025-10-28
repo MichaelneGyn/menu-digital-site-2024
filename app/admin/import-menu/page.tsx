@@ -164,7 +164,8 @@ export default function ImportMenuPage() {
 
   const updateItem = (id: string, field: keyof ItemForm, value: any) => {
     console.log(`📝 updateItem - campo: ${String(field)}, valor:`, value);
-    setItems(items.map(item => 
+    // ✅ Usa função callback para garantir estado mais recente
+    setItems(prevItems => prevItems.map(item => 
       item.id === id ? { ...item, [field]: value } : item
     ));
   };
@@ -553,6 +554,11 @@ export default function ImportMenuPage() {
     try {
       // PASSO 1: Fazer upload de todas as imagens PRIMEIRO
       console.log('📤 [Import] Iniciando upload de imagens...');
+      console.log('🔍 [Import] Total de itens:', items.length);
+      items.forEach((item, idx) => {
+        console.log(`   Item ${idx}: "${item.name}" - Tem imagem?`, !!item.image, item.image?.name || 'N/A');
+      });
+      
       const itemsWithImageUrls = await Promise.all(
         items.map(async (item, index) => {
           if (!item.image) {
@@ -577,6 +583,8 @@ export default function ImportMenuPage() {
 
             const uploadResult = await uploadRes.json();
             console.log(`✅ [Import] Upload bem-sucedido para "${item.name}":`, uploadResult.image_url);
+            console.log(`🔍 [Import] Tipo da URL:`, typeof uploadResult.image_url);
+            console.log(`🔍 [Import] URL começa com http?`, uploadResult.image_url?.startsWith('http'));
             return { ...item, imageUrl: uploadResult.image_url };
           } catch (error: any) {
             console.error(`❌ [Import] Erro ao fazer upload da imagem "${item.name}":`, error);
@@ -604,19 +612,13 @@ export default function ImportMenuPage() {
           formData.append(`items[${index}][imageUrl]`, item.imageUrl);
         }
         
-        // Customizations
-        if (item.hasCustomizations) {
+        // Customizations - NOVO SISTEMA DE GRUPOS
+        if (item.hasCustomizations && item.customizationGroups && item.customizationGroups.length > 0) {
           formData.append(`items[${index}][hasCustomizations]`, 'true');
-          if (item.hasFlavors && item.flavors.length > 0) {
-            formData.append(`items[${index}][flavors]`, JSON.stringify(item.flavors));
-            formData.append(`items[${index}][maxFlavors]`, item.maxFlavors);
-          }
-          if (item.hasBorders && item.borders.length > 0) {
-            formData.append(`items[${index}][borders]`, JSON.stringify(item.borders));
-          }
-          if (item.hasExtras && item.extras.length > 0) {
-            formData.append(`items[${index}][extras]`, JSON.stringify(item.extras));
-          }
+          formData.append(`items[${index}][customizationGroups]`, JSON.stringify(item.customizationGroups));
+          console.log(`📦 [Import] Item "${item.name}" tem ${item.customizationGroups.length} grupos de personalização`);
+        } else if (item.hasCustomizations) {
+          console.warn(`⚠️ [Import] Item "${item.name}" marcado com personalização mas SEM GRUPOS criados!`);
         }
       });
 
@@ -851,20 +853,44 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                 </select>
                               </div>
 
-                              {/* Imagem */}
+                              {/* Imagem - PREVIEW MELHORADO */}
                               <div>
                                 <Label>Imagem (opcional)</Label>
-                                <Input
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={(e) => handleImageChange(item.id, e)}
-                                />
-                                {item.imagePreview && (
-                                  <img 
-                                    src={item.imagePreview} 
-                                    alt="Preview" 
-                                    className="mt-2 h-20 w-20 object-cover rounded"
-                                  />
+                                {item.imagePreview ? (
+                                  <div className="relative border-2 border-green-500 rounded-lg overflow-hidden mt-2">
+                                    <img 
+                                      src={item.imagePreview} 
+                                      alt="Preview" 
+                                      className="w-full h-32 object-cover"
+                                    />
+                                    <div className="absolute top-0 left-0 bg-green-500 text-white px-2 py-1 text-xs font-bold">
+                                      ✓ ANEXADA
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        updateItem(item.id, 'image', null);
+                                        updateItem(item.id, 'imagePreview', '');
+                                      }}
+                                      className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full shadow-lg"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:border-blue-400 transition-colors cursor-pointer">
+                                    <label className="cursor-pointer block">
+                                      <span className="text-sm text-blue-600 hover:text-blue-700">📸 Escolher imagem</span>
+                                      <Input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleImageChange(item.id, e)}
+                                        className="hidden"
+                                      />
+                                    </label>
+                                  </div>
                                 )}
                               </div>
                             </div>

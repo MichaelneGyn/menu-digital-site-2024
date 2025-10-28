@@ -21,6 +21,9 @@ export default function HomePage() {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   
+  // Animated counter states
+  const [displaySpotsLeft, setDisplaySpotsLeft] = useState(10);
+  
   const PROMO_LIMIT = 10; // Limite de usuários para promoção (PRIMEIROS 10)
   const spotsLeft = Math.max(0, PROMO_LIMIT - totalUsers);
   const isPromoActive = totalUsers < PROMO_LIMIT;
@@ -38,6 +41,35 @@ export default function HomePage() {
         setLoading(false);
       });
   }, []);
+  
+  // Animated counter effect
+  useEffect(() => {
+    if (loading) return;
+    
+    const duration = 1500; // 1.5 segundos
+    const steps = 30;
+    const stepDuration = duration / steps;
+    const start = 10;
+    const end = spotsLeft;
+    const diff = end - start;
+    
+    let currentStep = 0;
+    const timer = setInterval(() => {
+      currentStep++;
+      const progress = currentStep / steps;
+      const easeOut = 1 - Math.pow(1 - progress, 3); // Easing function
+      const value = Math.round(start + (diff * easeOut));
+      
+      setDisplaySpotsLeft(value);
+      
+      if (currentStep >= steps) {
+        clearInterval(timer);
+        setDisplaySpotsLeft(spotsLeft);
+      }
+    }, stepDuration);
+    
+    return () => clearInterval(timer);
+  }, [loading, spotsLeft]);
   
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,7 +141,7 @@ export default function HomePage() {
             </p>
             {isPromoActive && !loading && (
               <p className="text-sm font-bold text-red-600 animate-pulse">
-                🔥 Só {spotsLeft} vagas! Após isso, preço sobe para R$ 89,90
+                🔥 Só {displaySpotsLeft} vagas! Após isso, preço sobe para R$ 89,90
               </p>
             )}
           </div>
@@ -237,18 +269,49 @@ export default function HomePage() {
             {isPromoActive && !loading && (
               <div className="max-w-3xl mx-auto mb-8 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-xl shadow-sm">
                 <p className="text-center text-sm font-bold text-orange-700">
-                  🔥 PRIMEIROS 10: R$ 69,90/mês • Só {spotsLeft} vagas! (Preço normal: R$ 89,90)
+                  🔥 PRIMEIROS 10: R$ 69,90/mês • Só {displaySpotsLeft} vagas! (Preço normal: R$ 89,90)
                 </p>
               </div>
             )}
 
             {/* Card Plano Completo - LARANJA */}
             <div className="max-w-2xl mx-auto">
-              <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-2xl p-8 relative">
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-2xl p-8 relative hover:shadow-orange-500/50 transition-all duration-500" 
+                   style={{ 
+                     animationDelay: '0.2s',
+                     opacity: 0,
+                     animation: 'fadeInUp 0.8s ease-out forwards, glowPulse 3s ease-in-out infinite'
+                   }}>
+                <style dangerouslySetInnerHTML={{
+                  __html: `
+                    @keyframes fadeInUp {
+                      0% {
+                        opacity: 0;
+                        transform: translateY(30px);
+                      }
+                      100% {
+                        opacity: 1;
+                        transform: translateY(0);
+                      }
+                    }
+                    @keyframes glowPulse {
+                      0%, 100% {
+                        box-shadow: 0 20px 60px rgba(249, 115, 22, 0.4), 
+                                    0 0 40px rgba(251, 146, 60, 0.3),
+                                    inset 0 0 60px rgba(255, 255, 255, 0.1);
+                      }
+                      50% {
+                        box-shadow: 0 25px 80px rgba(249, 115, 22, 0.6), 
+                                    0 0 60px rgba(251, 146, 60, 0.5),
+                                    inset 0 0 80px rgba(255, 255, 255, 0.15);
+                      }
+                    }
+                  `
+                }} />
                 {/* Badge de Vagas Vendidas */}
                 {isPromoActive && !loading && (
-                  <div className="absolute top-6 right-6 bg-yellow-400 text-orange-900 px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
-                    {soldCount} vendidas
+                  <div className="absolute top-6 right-6 bg-yellow-400 text-orange-900 px-4 py-1.5 rounded-full text-sm font-bold shadow-lg animate-pulse-slow">
+                    <span className="inline-block animate-bounce-subtle">🔥</span> {soldCount} vendidas
                   </div>
                 )}
                 
@@ -256,11 +319,110 @@ export default function HomePage() {
                   <h3 className="text-3xl font-bold mb-2">Plano Completo</h3>
                   <p className="text-sm text-orange-100 mb-3">Tudo incluído, sem limites artificiais</p>
                   
-                  {/* Contador de Vagas */}
+                  {/* Contador de Vagas com Barra de Progresso */}
                   {isPromoActive && !loading && (
-                    <div className="mb-4 flex items-center justify-center gap-2">
-                      <span className="text-4xl font-bold">{spotsLeft}</span>
-                      <span className="text-sm">de {PROMO_LIMIT} vagas</span>
+                    <div className="mb-4">
+                      <div className="flex items-center justify-start gap-2 mb-3">
+                        <span className="text-5xl font-bold animate-number-pop">{displaySpotsLeft}</span>
+                        <span className="text-sm">de {PROMO_LIMIT} vagas</span>
+                      </div>
+                      {/* Barra de Progresso Horizontal com Animação ULTRA */}
+                      <div className="w-full bg-orange-300/30 rounded-full h-4 overflow-hidden shadow-inner">
+                        <div 
+                          className="h-full transition-all duration-1000 ease-out relative overflow-hidden"
+                          style={{ 
+                            width: `${(soldCount / PROMO_LIMIT) * 100}%`,
+                            background: 'linear-gradient(90deg, #fbbf24 0%, #f59e0b 25%, #fbbf24 50%, #f59e0b 75%, #fbbf24 100%)',
+                            backgroundSize: '200% 100%',
+                            animation: 'gradientShift 3s ease infinite',
+                            boxShadow: '0 0 20px rgba(251, 191, 36, 0.6), inset 0 2px 4px rgba(255,255,255,0.3)'
+                          }}
+                        >
+                          <div 
+                            className="absolute inset-0 w-full h-full"
+                            style={{
+                              background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, transparent 100%)',
+                              animation: 'shimmer 1.5s infinite linear',
+                              filter: 'blur(2px)'
+                            }}
+                          />
+                          <div 
+                            className="absolute inset-0 w-full h-full"
+                            style={{
+                              background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)',
+                              backgroundSize: '10px 10px',
+                              animation: 'sparkle 2s infinite'
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <style dangerouslySetInnerHTML={{
+                        __html: `
+                          @keyframes shimmer {
+                            0% {
+                              transform: translateX(-100%);
+                            }
+                            100% {
+                              transform: translateX(200%);
+                            }
+                          }
+                          @keyframes gradientShift {
+                            0%, 100% {
+                              background-position: 0% 50%;
+                            }
+                            50% {
+                              background-position: 100% 50%;
+                            }
+                          }
+                          @keyframes sparkle {
+                            0%, 100% {
+                              opacity: 0.3;
+                            }
+                            50% {
+                              opacity: 0.8;
+                            }
+                          }
+                          .animate-pulse-slow {
+                            animation: pulseSlow 2s ease-in-out infinite;
+                          }
+                          .animate-bounce-subtle {
+                            animation: bounceSubtle 1s ease-in-out infinite;
+                          }
+                          @keyframes pulseSlow {
+                            0%, 100% {
+                              transform: scale(1);
+                              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                            }
+                            50% {
+                              transform: scale(1.05);
+                              box-shadow: 0 6px 20px rgba(251, 191, 36, 0.5);
+                            }
+                          }
+                          @keyframes bounceSubtle {
+                            0%, 100% {
+                              transform: translateY(0);
+                            }
+                            50% {
+                              transform: translateY(-3px);
+                            }
+                          }
+                          @keyframes numberPop {
+                            0% {
+                              transform: scale(1);
+                            }
+                            50% {
+                              transform: scale(1.1);
+                              color: #fbbf24;
+                            }
+                            100% {
+                              transform: scale(1);
+                            }
+                          }
+                          .animate-number-pop {
+                            animation: numberPop 0.5s ease-out;
+                          }
+                        `
+                      }} />
                     </div>
                   )}
                   
@@ -273,10 +435,30 @@ export default function HomePage() {
                     <p className="text-orange-100 text-base mb-4">/mês</p>
                     
                     {isPromoActive && !loading && (
-                      <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg transition-colors">
-                        🔥 PRIMEIROS 10: Só {spotsLeft} vagas!
+                      <button className="relative bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-700 hover:via-red-600 hover:to-red-700 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-red-500/50 overflow-hidden group">
+                        <span className="relative z-10 flex items-center gap-2">
+                          <span className="animate-pulse">🔥</span>
+                          PRIMEIROS 10: Só {displaySpotsLeft} vagas!
+                          <span className="animate-pulse">🔥</span>
+                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30 transition-opacity duration-300 transform -skew-x-12 group-hover:animate-wave"></div>
                       </button>
                     )}
+                    <style dangerouslySetInnerHTML={{
+                      __html: `
+                        @keyframes wave {
+                          0% {
+                            transform: translateX(-100%) skewX(-12deg);
+                          }
+                          100% {
+                            transform: translateX(200%) skewX(-12deg);
+                          }
+                        }
+                        .group:hover .animate-wave {
+                          animation: wave 0.8s ease-in-out;
+                        }
+                      `
+                    }} />
                     
                     <p className="text-xs text-orange-100 mt-3">* Após os 10 primeiros clientes haverá reajuste de preço</p>
                   </div>

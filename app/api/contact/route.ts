@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
 // Email e WhatsApp de contato oficial
-const CONTACT_EMAIL = 'virtualcardapio@gmail.com';
+const CONTACT_EMAIL = 'vituralcardapio@gmail.com'; // ✅ Email corporativo correto
 const CONTACT_WHATSAPP = '5562981105064'; // WhatsApp Virtual Cardápio
 
 // Inicializar Resend apenas se a API key estiver disponível
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       try {
         await resend.emails.send({
           from: 'Virtual Cardápio <onboarding@resend.dev>', // Email padrão do Resend (grátis)
-          to: CONTACT_EMAIL, // Seu Gmail: virtualcardapio@gmail.com
+          to: CONTACT_EMAIL, // ✅ Seu Gmail: vituralcardapio@gmail.com
           replyTo: email, // Email do cliente (você pode responder direto)
           subject: `🔔 Novo Contato: ${restaurantName}`,
           html: `
