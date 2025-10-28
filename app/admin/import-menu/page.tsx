@@ -543,10 +543,17 @@ export default function ImportMenuPage() {
   };
 
   const saveAllItems = async () => {
-    // Validação
-    const invalid = items.filter(item => !item.name || !item.price || !item.categoryId);
+    // Validação: Nome e Categoria sempre obrigatórios
+    // Preço só obrigatório se NÃO tem personalização
+    const invalid = items.filter(item => {
+      if (!item.name || !item.categoryId) return true;
+      // Se não tem personalização, preço é obrigatório
+      if (!item.hasCustomizations && (!item.price || parseFloat(item.price) <= 0)) return true;
+      return false;
+    });
+    
     if (invalid.length > 0) {
-      toast.error('Preencha Nome, Preço e Categoria de todos os itens');
+      toast.error('Preencha Nome e Categoria de todos os itens. Preço é obrigatório apenas para itens sem personalização.');
       return;
     }
 
@@ -601,7 +608,8 @@ export default function ImportMenuPage() {
       itemsWithImageUrls.forEach((item, index) => {
         formData.append(`items[${index}][name]`, item.name);
         formData.append(`items[${index}][description]`, item.description);
-        formData.append(`items[${index}][price]`, item.price);
+        // Se tem personalização e preço vazio, envia 0
+        formData.append(`items[${index}][price]`, item.price || '0');
         formData.append(`items[${index}][categoryId]`, item.categoryId);
         formData.append(`items[${index}][isPromo]`, String(item.isPromo));
         if (item.originalPrice) {
@@ -797,12 +805,19 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
 
                               {/* Preço */}
                               <div>
-                                <Label>Preço (R$) *</Label>
+                                <Label>
+                                  {item.hasCustomizations ? 'Preço (R$) - opcional se varia por sabor' : 'Preço (R$) *'}
+                                </Label>
                                 <PriceInput
                                   value={item.price}
                                   onChange={(val) => updateItem(item.id, 'price', val)}
-                                  placeholder="Digite: 1490 = R$ 14,90"
+                                  placeholder={item.hasCustomizations ? "Deixe vazio se o preço varia" : "Digite: 1490 = R$ 14,90"}
                                 />
+                                {item.hasCustomizations && (
+                                  <p className="text-xs text-orange-600 mt-1">
+                                    💡 Se deixar vazio, o preço virá das opções de personalização
+                                  </p>
+                                )}
                               </div>
                             </div>
 
@@ -1081,7 +1096,15 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                 <Plus className="w-4 h-4" />
                                               </Button>
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-1">💰 Use 0 se não tiver custo adicional</p>
+                                            {!item.price || parseFloat(item.price) === 0 ? (
+                                              <p className="text-xs text-orange-600 mt-1 font-semibold">
+                                                🎯 Produto sem preço base: O preço da opção será o preço final do produto
+                                              </p>
+                                            ) : (
+                                              <p className="text-xs text-gray-500 mt-1">
+                                                💰 Use 0 se não tiver custo adicional. Ex: Calabresa (R$ 0), Bacon (+R$ 3)
+                                              </p>
+                                            )}
 
                                             {/* Lista de Opções */}
                                             {group.options.length > 0 && (
@@ -1095,12 +1118,16 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                                     <span className="text-sm font-semibold">
                                                       {option.name}
                                                       {parseFloat(option.price) > 0 && (
-                                                        <span className="text-green-600 ml-2">
-                                                          +R$ {parseFloat(option.price).toFixed(2)}
+                                                        <span className={!item.price || parseFloat(item.price) === 0 ? "text-blue-600 ml-2" : "text-green-600 ml-2"}>
+                                                          {!item.price || parseFloat(item.price) === 0 
+                                                            ? `R$ ${parseFloat(option.price).toFixed(2)}`
+                                                            : `+R$ ${parseFloat(option.price).toFixed(2)}`}
                                                         </span>
                                                       )}
                                                       {parseFloat(option.price) === 0 && (
-                                                        <span className="text-gray-400 ml-2 text-xs">(grátis)</span>
+                                                        <span className="text-gray-400 ml-2 text-xs">
+                                                          {!item.price || parseFloat(item.price) === 0 ? '(sem preço)' : '(grátis)'}
+                                                        </span>
                                                       )}
                                                     </span>
                                                     <button
