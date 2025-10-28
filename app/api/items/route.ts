@@ -12,7 +12,7 @@ const createItemSchema = z.object({
   price: z.number().positive('Preço deve ser positivo'),
   categoryId: z.string().min(1, 'Categoria é obrigatória'),
   restaurantId: z.string().min(1, 'Restaurante é obrigatório'),
-  image: z.string().min(1, 'Imagem é obrigatória'),
+  image: z.union([z.string(), z.null()]).optional(), // ✅ IMAGEM OPCIONAL - aceita string ou null
   isPromo: z.boolean().optional().default(false),
   oldPrice: z.number().positive().optional(),
   promoTag: z.string().optional(),

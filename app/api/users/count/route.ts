@@ -8,17 +8,17 @@ export async function GET() {
     
     return NextResponse.json({ 
       count,
-      limit: 50, // Limite da promoção
-      spotsLeft: Math.max(0, 50 - count),
-      promoActive: count < 50
+      limit: 10, // 🔒 Limite alinhado com USER_LIMIT em signup/route.ts
+      spotsLeft: Math.max(0, 10 - count),
+      promoActive: count < 10
     });
   } catch (error) {
     console.error('Erro ao contar usuários:', error);
     // Retorna 0 em caso de erro para não quebrar a página
     return NextResponse.json({ 
       count: 0,
-      limit: 50,
-      spotsLeft: 50,
+      limit: 10, // 🔒 Limite alinhado com USER_LIMIT
+      spotsLeft: 10,
       promoActive: true
     });
   }

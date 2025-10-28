@@ -108,12 +108,12 @@ export async function POST(request: NextRequest) {
 
       // Verificar quantos usuários já existem para definir período de trial
       const totalUsers = await tx.user.count();
-      const PROMO_LIMIT = 50; // Primeiros 50 clientes
+      const PROMO_LIMIT = 10; // 🔒 Primeiros 10 clientes (alinhado com USER_LIMIT)
       
-      // Se é um dos primeiros 50: 15 dias grátis, senão: 7 dias
+      // Se é um dos primeiros 10: 15 dias grátis, senão: 7 dias
       // totalUsers conta INCLUINDO o usuário recém-criado acima, então:
-      // Se totalUsers = 1-50 (<=  50): este é o usuário 1-50 → 15 dias
-      // Se totalUsers = 51+ (> 50): este é o usuário 51+ → 7 dias
+      // Se totalUsers = 1-10 (<=  10): este é o usuário 1-10 → 15 dias
+      // Se totalUsers = 11+ (> 10): este é o usuário 11+ → 7 dias
       const trialDays = totalUsers <= PROMO_LIMIT ? 15 : 7;
       
       const trialEndsAt = new Date();

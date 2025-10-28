@@ -63,6 +63,9 @@ export async function POST(req: NextRequest) {
       if (preUploadedImageUrl && typeof preUploadedImageUrl === 'string' && preUploadedImageUrl.length > 0) {
         imagePath = preUploadedImageUrl;
         console.log(`✅ [BulkCreate] Usando URL de imagem já enviada: ${imagePath}`);
+        console.log(`🔍 [BulkCreate] Tipo da URL:`, typeof imagePath);
+        console.log(`🔍 [BulkCreate] URL começa com http?`, imagePath.startsWith('http'));
+        console.log(`🔍 [BulkCreate] Tamanho da URL:`, imagePath.length, 'caracteres');
       } else if (imageFile && imageFile.size > 0) {
         const bytes = await imageFile.arrayBuffer();
         const buffer = Buffer.from(bytes);
@@ -115,14 +118,17 @@ export async function POST(req: NextRequest) {
       }
       
       console.log(`💾 [BulkCreate] Item "${name}" será salvo com imagem:`, imagePath || 'NULL');
+      if (imagePath) {
+        console.log(`📊 [BulkCreate] Estatísticas da imagem:`);
+        console.log(`   - É URL válida? ${imagePath.startsWith('http')}`);
+        console.log(`   - É Base64? ${imagePath.startsWith('data:')}`);
+        console.log(`   - Tamanho: ${imagePath.length} caracteres`);
+      }
 
       // Get customizations data
       const isPromo = formData.get(`items[${index}][isPromo]`) === 'true';
       const hasCustomizations = formData.get(`items[${index}][hasCustomizations]`) === 'true';
-      const flavorsStr = formData.get(`items[${index}][flavors]`) as string;
-      const maxFlavors = formData.get(`items[${index}][maxFlavors]`) as string;
-      const bordersStr = formData.get(`items[${index}][borders]`) as string;
-      const extrasStr = formData.get(`items[${index}][extras]`) as string;
+      const customizationGroupsStr = formData.get(`items[${index}][customizationGroups]`) as string;
 
       items.push({
         name,
@@ -134,10 +140,7 @@ export async function POST(req: NextRequest) {
         isPromo,
         originalPrice,
         hasCustomizations,
-        flavorsStr,
-        maxFlavors,
-        bordersStr,
-        extrasStr,
+        customizationGroupsStr,
       });
 
       index++;
@@ -153,7 +156,7 @@ export async function POST(req: NextRequest) {
     // Cria itens individualmente para pegar os IDs
     const createdItems = [];
     for (const itemData of items) {
-      const { hasCustomizations, flavorsStr, maxFlavors, bordersStr, extrasStr, ...itemCreateData } = itemData;
+      const { hasCustomizations, customizationGroupsStr, ...itemCreateData } = itemData;
       
       const createdItem = await prisma.menuItem.create({
         data: itemCreateData,
@@ -161,113 +164,40 @@ export async function POST(req: NextRequest) {
       
       createdItems.push(createdItem);
 
-      // Create customization groups if needed
-      if (hasCustomizations) {
-        const groups = [];
-
-        // Flavors group
-        if (flavorsStr) {
-          try {
-            const flavors = JSON.parse(flavorsStr);
-            if (flavors.length > 0) {
-              const flavorsGroup = await prisma.customizationGroup.create({
-                data: {
-                  name: 'Sabores',
-                  description: `Escolha até ${maxFlavors || '2'} ${parseInt(maxFlavors || '2') > 1 ? 'sabores' : 'sabor'}`,
-                  isRequired: true,
-                  minSelections: 1,
-                  maxSelections: parseInt(maxFlavors || '2'),
-                  sortOrder: 0,
-                  isActive: true,
-                  restaurantId: restaurant.id,
-                  options: {
-                    create: flavors.map((flavor: string, i: number) => ({
-                      name: flavor,
-                      price: 0,
-                      isActive: true,
-                      sortOrder: i,
-                    })),
-                  },
-                  menuItems: {
-                    connect: { id: createdItem.id },
-                  },
+      // Create customization groups if needed (NOVO SISTEMA)
+      if (hasCustomizations && customizationGroupsStr) {
+        try {
+          const customizationGroups = JSON.parse(customizationGroupsStr);
+          console.log(`📦 [BulkCreate] Criando ${customizationGroups.length} grupos para "${createdItem.name}"`);
+          
+          for (const group of customizationGroups) {
+            await prisma.customizationGroup.create({
+              data: {
+                name: group.name,
+                description: group.description || '',
+                isRequired: group.isRequired || false,
+                minSelections: group.minSelections || 0,
+                maxSelections: group.maxSelections || null,
+                sortOrder: group.sortOrder || 0,
+                isActive: true,
+                restaurantId: restaurant.id,
+                options: {
+                  create: (group.options || []).map((option: any, i: number) => ({
+                    name: option.name,
+                    price: parseFloat(option.price || '0'),
+                    isActive: true,
+                    sortOrder: i,
+                  })),
                 },
-              });
-              groups.push(flavorsGroup.id);
-            }
-          } catch (e) {
-            console.error('Error parsing flavors:', e);
-          }
-        }
-
-        // Borders group
-        if (bordersStr) {
-          try {
-            const borders = JSON.parse(bordersStr);
-            if (borders.length > 0) {
-              const bordersGroup = await prisma.customizationGroup.create({
-                data: {
-                  name: 'Bordas',
-                  description: 'Escolha uma borda',
-                  isRequired: false,
-                  minSelections: 0,
-                  maxSelections: 1,
-                  sortOrder: 1,
-                  isActive: true,
-                  restaurantId: restaurant.id,
-                  options: {
-                    create: borders.map((border: any, i: number) => ({
-                      name: border.name,
-                      price: parseFloat(border.price || '0'),
-                      isActive: true,
-                      sortOrder: i,
-                    })),
-                  },
-                  menuItems: {
-                    connect: { id: createdItem.id },
-                  },
+                menuItems: {
+                  connect: { id: createdItem.id },
                 },
-              });
-              groups.push(bordersGroup.id);
-            }
-          } catch (e) {
-            console.error('Error parsing borders:', e);
+              },
+            });
           }
-        }
-
-        // Extras group
-        if (extrasStr) {
-          try {
-            const extras = JSON.parse(extrasStr);
-            if (extras.length > 0) {
-              const extrasGroup = await prisma.customizationGroup.create({
-                data: {
-                  name: 'Extras',
-                  description: 'Adicione extras ao seu pedido',
-                  isRequired: false,
-                  minSelections: 0,
-                  maxSelections: null,
-                  sortOrder: 2,
-                  isActive: true,
-                  restaurantId: restaurant.id,
-                  options: {
-                    create: extras.map((extra: any, i: number) => ({
-                      name: extra.name,
-                      price: parseFloat(extra.price || '0'),
-                      isActive: true,
-                      sortOrder: i,
-                    })),
-                  },
-                  menuItems: {
-                    connect: { id: createdItem.id },
-                  },
-                },
-              });
-              groups.push(extrasGroup.id);
-            }
-          } catch (e) {
-            console.error('Error parsing extras:', e);
-          }
+          console.log(`✅ [BulkCreate] Grupos criados com sucesso para "${createdItem.name}"`);
+        } catch (e) {
+          console.error(`❌ [BulkCreate] Erro ao criar grupos de personalização para "${createdItem.name}":`, e);
         }
       }
     }

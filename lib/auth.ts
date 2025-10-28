@@ -28,10 +28,15 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        console.log('🔐 Tentativa de login:', { email: credentials?.email });
+        // 🔒 SEGURANÇA: Logs apenas em desenvolvimento
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔐 Tentativa de login:', { email: credentials?.email });
+        }
         
         if (!credentials?.email || !credentials?.password) {
-          console.log('❌ Credenciais inválidas');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('❌ Credenciais inválidas');
+          }
           return null;
         }
 
@@ -41,10 +46,14 @@ export const authOptions: NextAuthOptions = {
             include: { restaurants: true }
           });
 
-          console.log('👤 Usuário encontrado:', user ? 'Sim' : 'Não');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('👤 Usuário encontrado:', user ? 'Sim' : 'Não');
+          }
 
           if (!user?.password) {
-            console.log('❌ Usuário não tem senha');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('❌ Usuário não tem senha');
+            }
             return null;
           }
 
@@ -53,20 +62,26 @@ export const authOptions: NextAuthOptions = {
             user.password
           );
 
-          console.log('🔑 Senha válida:', isPasswordValid ? 'Sim' : 'Não');
+          // 🔒 Não logar resultado de validação em produção (facilita brute force)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔑 Senha válida:', isPasswordValid ? 'Sim' : 'Não');
+          }
 
           if (!isPasswordValid) {
             return null;
           }
 
-          console.log('✅ Login bem-sucedido para:', user.email);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ Login bem-sucedido para:', user.email);
+          }
           return {
             id: user.id,
             email: user.email,
             name: user.name,
           };
         } catch (error) {
-          console.error('❌ Erro na autenticação:', error);
+          // 🔒 Sempre logar erros (mas sem expor detalhes sensíveis)
+          console.error('❌ Erro na autenticação:', process.env.NODE_ENV === 'development' ? error : 'Erro interno');
           return null;
         }
       }
