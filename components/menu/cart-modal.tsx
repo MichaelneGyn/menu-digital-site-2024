@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { X, Plus, Minus, ShoppingCart, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ClientRestaurant } from '@/lib/restaurant';
+import { ClientRestaurant, ClientMenuItem } from '@/lib/restaurant';
 import { CartItem } from './menu-page';
 import toast from 'react-hot-toast';
 import CheckoutFlow from '@/components/delivery/checkout-flow';
@@ -16,6 +16,7 @@ interface CartModalProps {
   onClose: () => void;
   onUpdateItem: (cartId: string, quantity: number) => void;
   onRemoveItem: (cartId: string) => void;
+  onAddItem: (item: ClientMenuItem) => void;
 }
 
 export default function CartModal({ 
@@ -23,7 +24,8 @@ export default function CartModal({
   restaurant, 
   onClose, 
   onUpdateItem, 
-  onRemoveItem 
+  onRemoveItem,
+  onAddItem
 }: CartModalProps) {
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -177,6 +179,7 @@ export default function CartModal({
             restaurant={restaurant}
             onBack={() => setStep('cart')}
             onClose={onClose}
+            onAddItem={onAddItem}
           />
         </div>
       </div>

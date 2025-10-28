@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -9,8 +9,9 @@ import { ShoppingCart, MapPin, CreditCard, MessageCircle, Check, CheckCircle2, P
 import AddressForm from './address-form';
 import PaymentOptions, { PaymentMethod } from './payment-options';
 import DeliveryInfo from './delivery-info';
+import UpsellSuggestions from '../menu/upsell-suggestions';
 import toast from 'react-hot-toast';
-import { ClientRestaurant } from '@/lib/restaurant';
+import { ClientRestaurant, ClientMenuItem } from '@/lib/restaurant';
 
 interface CartItem {
   id: string;
@@ -46,15 +47,17 @@ interface CheckoutFlowProps {
   restaurant: ClientRestaurant;
   onBack: () => void;
   onClose: () => void;
+  onAddItem?: (item: ClientMenuItem) => void;
 }
 
-type CheckoutStep = 'cart' | 'address' | 'payment' | 'confirmation' | 'success';
+type CheckoutStep = 'cart' | 'address' | 'upsell' | 'payment' | 'confirmation' | 'success';
 
 export default function CheckoutFlow({ 
   items, 
   restaurant, 
   onBack, 
-  onClose 
+  onClose,
+  onAddItem
 }: CheckoutFlowProps) {
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('cart');
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
@@ -87,9 +90,16 @@ export default function CheckoutFlow({
   
   const total = subtotal + deliveryConfig.deliveryFee - discount;
 
+  // Pular etapa de upsell se não tiver onAddItem
+  useEffect(() => {
+    if (currentStep === 'upsell' && !onAddItem) {
+      setCurrentStep('payment');
+    }
+  }, [currentStep, onAddItem]);
+
   const handleAddressSelect = (address: Address) => {
     setSelectedAddress(address);
-    setCurrentStep('payment');
+    setCurrentStep('upsell');
   };
 
   const handlePaymentSelect = (paymentData: PaymentData) => {
@@ -464,6 +474,50 @@ export default function CheckoutFlow({
         </div>
       )}
 
+      {/* NOVA ETAPA: Upsell após confirmar endereço */}
+      {currentStep === 'upsell' && (
+        <div className="space-y-4">
+          {onAddItem ? (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-center text-xl">
+                    🎉 Aproveite Ofertas Especiais!
+                  </CardTitle>
+                  <p className="text-center text-sm text-gray-600">
+                    Antes de finalizar, que tal aproveitar essas ofertas exclusivas?
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <UpsellSuggestions
+                    restaurantId={restaurant.id}
+                    onAddToCart={onAddItem}
+                    showAsModal={false}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Botões de ação */}
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentStep('address')}
+                  className="flex-1 h-12 text-base font-semibold"
+                >
+                  ← Voltar
+                </Button>
+                <Button
+                  onClick={() => setCurrentStep('payment')}
+                  className="flex-1 bg-green-600 hover:bg-green-700 h-12 text-base font-semibold"
+                >
+                  Continuar para Pagamento →
+                </Button>
+              </div>
+            </>
+          ) : null}
+        </div>
+      )}
+
       {currentStep === 'payment' && (
         <div className="space-y-4">
           <PaymentOptions
@@ -472,12 +526,13 @@ export default function CheckoutFlow({
             totalAmount={total}
             restaurant={restaurant}
           />
+          
           <Button
             variant="outline"
-            onClick={() => setCurrentStep('address')}
+            onClick={() => setCurrentStep('upsell')}
             className="w-full h-12 text-base font-semibold"
           >
-            ← Voltar ao Endereço
+            ← Voltar
           </Button>
         </div>
       )}

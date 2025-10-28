@@ -108,6 +108,7 @@ model Restaurant {
   tables              Table[]
   waiterCalls         WaiterCall[]
   customizationGroups CustomizationGroup[]
+  upsellRules         UpsellRule[]
   user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -362,6 +363,40 @@ model Coupon {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model UpsellRule {
+  id            String   @id @default(cuid())
+  restaurantId  String
+  name          String
+  active        Boolean  @default(true)
+  
+  // Configuração de exibição
+  displayLocation String  @default("checkout") // "checkout" | "cart_modal" | "both"
+  priority        Int     @default(0)
+  
+  // Produtos selecionados para upsell
+  productIds      String[] // IDs dos produtos a serem sugeridos
+  
+  // Descontos individuais por produto (JSON: {productId: discountPercent})
+  productDiscounts String? @default("{}") // Ex: {"prod1": 15, "prod2": 20}
+  
+  // Texto customizado
+  title           String?  // Ex: "Complete seu pedido!"
+  subtitle        String?  // Ex: "Clientes também levaram:"
+  
+  // Métricas
+  views           Int      @default(0)
+  clicks          Int      @default(0)
+  conversions     Int      @default(0)
+  revenue         Float    @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  
+  @@index([restaurantId, active])
 }
 
 enum UserRole {

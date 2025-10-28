@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { use } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Bell, ShoppingCart, Info } from 'lucide-react';
@@ -18,19 +17,18 @@ type Table = {
   };
 };
 
-export default function TableQRCodePage({ params }: { params: Promise<{ qrCode: string }> }) {
-  const resolvedParams = use(params);
+export default function TableQRCodePage({ params }: { params: { qrCode: string } }) {
   const [table, setTable] = useState<Table | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCallingWaiter, setIsCallingWaiter] = useState(false);
 
   useEffect(() => {
     loadTable();
-  }, [resolvedParams.qrCode]);
+  }, [params.qrCode]);
 
   const loadTable = async () => {
     try {
-      const res = await fetch(`/api/tables/public?qrCode=${resolvedParams.qrCode}`);
+      const res = await fetch(`/api/tables/public?qrCode=${params.qrCode}`);
       if (!res.ok) {
         throw new Error('Mesa não encontrada');
       }

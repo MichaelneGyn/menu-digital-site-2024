@@ -18,8 +18,11 @@ export default function RestaurantHeader({ restaurant }: RestaurantHeaderProps) 
   // Usar logo OU logoUrl (fallback para compatibilidade)
   const logoSource = restaurant?.logo || restaurant?.logoUrl;
   
-  // Adicionar timestamp para evitar cache de imagem
-  const logoUrl = logoSource ? `${logoSource}?t=${Date.now()}` : null;
+  // Verificar se é SVG data URL
+  const isSvgDataUrl = logoSource?.startsWith('data:image/svg+xml');
+  
+  // Adicionar timestamp para evitar cache de imagem (apenas para URLs normais)
+  const logoUrl = logoSource && !isSvgDataUrl ? `${logoSource}?t=${Date.now()}` : logoSource;
   
   return (
     <header className="restaurant-header">
@@ -28,17 +31,25 @@ export default function RestaurantHeader({ restaurant }: RestaurantHeaderProps) 
         <div className="flex md:hidden flex-col gap-3 py-3">
           <div className="flex items-center justify-between">
             <div className="logo flex items-center gap-3">
-              <div className="logo-icon w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-xl flex-shrink-0">
+              <div className={`logo-icon w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0 overflow-hidden ${!logoUrl || !isSvgDataUrl ? 'bg-red-600' : 'bg-gradient-to-br from-gray-50 to-white shadow-sm'}`}>
                 {logoUrl ? (
-                  <div className="relative w-full h-full">
-                    <Image 
+                  isSvgDataUrl ? (
+                    <img 
                       src={logoUrl} 
                       alt={`${restaurant.name} logo`}
-                      fill
-                      className="object-cover rounded-full"
-                      unoptimized
+                      className="w-8 h-8 object-contain"
                     />
-                  </div>
+                  ) : (
+                    <div className="relative w-full h-full">
+                      <Image 
+                        src={logoUrl} 
+                        alt={`${restaurant.name} logo`}
+                        fill
+                        className="object-cover rounded-full"
+                        unoptimized
+                      />
+                    </div>
+                  )
                 ) : (
                   '🍕'
                 )}
@@ -64,17 +75,25 @@ export default function RestaurantHeader({ restaurant }: RestaurantHeaderProps) 
         {/* Desktop Layout */}
         <div className="hidden md:flex justify-between items-center">
           <div className="logo flex items-center gap-4 cursor-pointer hover:transform hover:scale-105 transition-transform">
-            <div className="logo-icon w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-2xl">
+            <div className={`logo-icon w-12 h-12 rounded-full flex items-center justify-center text-2xl overflow-hidden ${!logoUrl || !isSvgDataUrl ? 'bg-red-600' : 'bg-gradient-to-br from-gray-50 to-white shadow-md'}`}>
               {logoUrl ? (
-                <div className="relative w-full h-full">
-                  <Image 
+                isSvgDataUrl ? (
+                  <img 
                     src={logoUrl} 
                     alt={`${restaurant.name} logo`}
-                    fill
-                    className="object-cover rounded-full"
-                    unoptimized
+                    className="w-10 h-10 object-contain"
                   />
-                </div>
+                ) : (
+                  <div className="relative w-full h-full">
+                    <Image 
+                      src={logoUrl} 
+                      alt={`${restaurant.name} logo`}
+                      fill
+                      className="object-cover rounded-full"
+                      unoptimized
+                    />
+                  </div>
+                )
               ) : (
                 '🍕'
               )}
