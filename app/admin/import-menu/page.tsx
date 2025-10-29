@@ -40,6 +40,7 @@ type ItemForm = {
   name: string;
   description: string;
   price: string;
+  cost?: string; // Custo do produto (para cálculo de lucro)
   categoryId: string;
   categoryName: string;
   image: File | null;
@@ -100,6 +101,7 @@ export default function ImportMenuPage() {
       name: '',
       description: '',
       price: '',
+      cost: '',
       categoryId: '',
       categoryName: '',
       image: null,
@@ -610,6 +612,10 @@ export default function ImportMenuPage() {
         formData.append(`items[${index}][description]`, item.description);
         // Se tem personalização e preço vazio, envia 0
         formData.append(`items[${index}][price]`, item.price || '0');
+        // Custo (opcional)
+        if (item.cost) {
+          formData.append(`items[${index}][cost]`, item.cost);
+        }
         formData.append(`items[${index}][categoryId]`, item.categoryId);
         formData.append(`items[${index}][isPromo]`, String(item.isPromo));
         if (item.originalPrice) {
@@ -817,6 +823,29 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                   <p className="text-xs text-orange-600 mt-1">
                                     💡 Se deixar vazio, o preço virá das opções de personalização
                                   </p>
+                                )}
+                              </div>
+
+                              {/* Custo (novo campo) */}
+                              <div>
+                                <Label>
+                                  Custo (R$) - opcional
+                                  <span className="text-xs text-gray-500 ml-2">💰 Para calcular lucro</span>
+                                </Label>
+                                <PriceInput
+                                  value={item.cost || ''}
+                                  onChange={(val) => updateItem(item.id, 'cost', val)}
+                                  placeholder="Digite: 890 = R$ 8,90"
+                                />
+                                <p className="text-xs text-blue-600 mt-1">
+                                  💡 Quanto custa fazer este produto? (ingredientes + embalagem)
+                                </p>
+                                {item.price && item.cost && parseFloat(item.cost) > 0 && (
+                                  <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">
+                                    <p className="text-xs font-semibold text-green-800">
+                                      💰 Lucro: R$ {((parseFloat(item.price) - parseFloat(item.cost)) / 100).toFixed(2)} ({(((parseFloat(item.price) - parseFloat(item.cost)) / parseFloat(item.price)) * 100).toFixed(1)}%)
+                                    </p>
+                                  </div>
                                 )}
                               </div>
                             </div>

@@ -330,23 +330,14 @@ function AdminDashboard() {
                     <span className="text-xs text-yellow-600 font-semibold">NOVO</span>
                   </button>
 
-                  {/* Tutoriais */}
-                  <button
-                    onClick={() => router.push('/admin/tutoriais')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-red-50 to-pink-50 border-red-200"
-                  >
-                    <span className="text-xl sm:text-2xl">🎬</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Tutoriais</span>
-                    <span className="text-xs text-red-600 font-semibold">NOVO</span>
-                  </button>
-
                   {/* Relatórios */}
                   <button
-                    onClick={() => setShowReportsModal(true)}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
+                    onClick={() => router.push('/admin/relatorios')}
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-green-50 to-blue-50 border-green-200"
                   >
                     <span className="text-xl sm:text-2xl">📊</span>
                     <span className="text-xs sm:text-sm font-medium text-center">Relatórios</span>
+                    <span className="text-xs text-green-600 font-semibold">LUCRO</span>
                   </button>
 
                   {/* Novos cards adicionais */}
@@ -436,13 +427,22 @@ function AdminDashboard() {
                         </p>
                       </div>
                     )}
-                    <div className="pt-3">
+                    <div className="pt-3 space-y-2">
                       <Button 
                         className="w-full animated-button" 
                         variant="outline"
                         onClick={() => setShowEditRestaurantModal(true)}
                       >
                         Editar Informações
+                      </Button>
+                      
+                      <Button 
+                        className="w-full animated-button bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white border-0" 
+                        onClick={() => router.push('/admin/tutoriais')}
+                      >
+                        <span className="mr-2">🎬</span>
+                        Tutoriais em Vídeo
+                        <Badge className="ml-2 bg-yellow-400 text-red-900 text-xs">NOVO</Badge>
                       </Button>
                     </div>
                   </div>

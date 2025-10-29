@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import LandingHeader from '@/components/LandingHeader';
 import LandingFooter from '@/components/LandingFooter';
+import ScreenshotsSection from '@/components/ScreenshotsSection';
 
 export default function HomePage() {
   const [orders, setOrders] = useState(100);
@@ -540,6 +541,12 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Screenshots Section */}
+        </div>
+        
+        <ScreenshotsSection />
+        
+        <div className="max-w-4xl mx-auto text-center p-8">
           {/* Comparação com Concorrentes */}
           <div className="mt-16 p-8 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl">
             <h2 className="text-2xl font-bold mb-6">💡 Economize milhares por ano vs iFood</h2>

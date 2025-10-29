@@ -3,9 +3,10 @@ import { prisma } from './db';
 import { Restaurant, Category, MenuItem } from '@prisma/client';
 
 // Custom types for client components (with Decimal converted to number)
-export type ClientMenuItem = Omit<MenuItem, 'price' | 'originalPrice'> & {
+export type ClientMenuItem = Omit<MenuItem, 'price' | 'originalPrice' | 'cost'> & {
   price: number;
   originalPrice: number | null;
+  cost: number | null;
 };
 
 export type ClientCategory = Omit<Category, 'menuItems'> & {
@@ -49,6 +50,7 @@ export async function getRestaurantBySlug(slug: string): Promise<ClientRestauran
           ...item,
           price: Number(item.price),
           originalPrice: item.originalPrice ? Number(item.originalPrice) : null,
+          cost: item.cost ? Number(item.cost) : null,
         }))
       }))
     };
