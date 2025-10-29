@@ -330,6 +330,16 @@ function AdminDashboard() {
                     <span className="text-xs text-yellow-600 font-semibold">NOVO</span>
                   </button>
 
+                  {/* Tutoriais */}
+                  <button
+                    onClick={() => router.push('/admin/tutoriais')}
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-red-50 to-pink-50 border-red-200"
+                  >
+                    <span className="text-xl sm:text-2xl">🎬</span>
+                    <span className="text-xs sm:text-sm font-medium text-center">Tutoriais</span>
+                    <span className="text-xs text-red-600 font-semibold">NOVO</span>
+                  </button>
+
                   {/* Relatórios */}
                   <button
                     onClick={() => setShowReportsModal(true)}
