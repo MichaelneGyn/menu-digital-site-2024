@@ -6,42 +6,42 @@ import PhoneMockup from './PhoneMockup';
 const adminScreenshots = [
   {
     id: 'dashboard',
-    screenshot: '/screenshots/admin-dashboard.png',
+    screenshot: '/screenshots/Screenshot_2025-10-29-15-25-58-778_com.android.chrome.jpg',
     alt: 'Dashboard Administrativo',
     title: 'Dashboard Completo',
     description: 'Gerencie tudo em um só lugar: produtos, cupons, relatórios e muito mais'
   },
   {
     id: 'relatorios',
-    screenshot: '/screenshots/admin-relatorios.png',
+    screenshot: '/screenshots/Screenshot_2025-10-29-15-26-04-111_com.android.chrome.jpg',
     alt: 'Relatórios de Lucro',
     title: 'Relatórios de Lucro',
     description: 'Acompanhe faturamento, custos e lucro líquido em tempo real'
   },
   {
     id: 'produtos',
-    screenshot: '/screenshots/admin-produtos.png',
+    screenshot: '/screenshots/Screenshot_2025-10-29-15-26-08-691_com.android.chrome.jpg',
     alt: 'Gestão de Produtos',
     title: 'Gestão de Produtos',
     description: 'Adicione, edite e organize seu cardápio facilmente'
   },
   {
     id: 'mesas',
-    screenshot: '/screenshots/admin-mesas.png',
+    screenshot: '/screenshots/Screenshot_2025-10-29-15-26-14-781_com.android.chrome.jpg',
     alt: 'Gestão de Mesas',
     title: 'QR Code para Mesas',
     description: 'Gere QR Codes para cada mesa e receba pedidos automaticamente'
   },
   {
     id: 'upsell',
-    screenshot: '/screenshots/admin-upsell.png',
+    screenshot: '/screenshots/Screenshot_2025-10-29-15-26-19-935_com.android.chrome.jpg',
     alt: 'Sistema de Upsell',
     title: 'Upsell Inteligente',
     description: 'Sugira produtos complementares e aumente o ticket médio'
   },
   {
     id: 'comandas',
-    screenshot: '/screenshots/admin-comandas.png',
+    screenshot: '/screenshots/Screenshot_2025-10-29-16-24-05-617_com.android.chrome.jpg',
     alt: 'Painel de Comandas',
     title: 'Painel em Tempo Real',
     description: 'Acompanhe pedidos ao vivo com atualizações instantâneas'
@@ -51,14 +51,14 @@ const adminScreenshots = [
 const clientScreenshots = [
   {
     id: 'pagamento',
-    screenshot: '/screenshots/cliente-pagamento.png',
+    screenshot: '/screenshots/Screenshot_2025-10-29-16-24-36-107_com.android.chrome.jpg',
     alt: 'Formas de Pagamento',
     title: 'Múltiplas Formas de Pagamento',
     description: 'PIX, cartão ou dinheiro - cliente escolhe como pagar'
   },
   {
     id: 'pedido',
-    screenshot: '/screenshots/cliente-pedido.png',
+    screenshot: '/screenshots/Screenshot_2025-10-29-16-24-52-984_com.android.chrome.jpg',
     alt: 'Acompanhamento de Pedido',
     title: 'Rastreamento ao Vivo',
     description: 'Cliente acompanha o pedido em tempo real com barra de progresso'
