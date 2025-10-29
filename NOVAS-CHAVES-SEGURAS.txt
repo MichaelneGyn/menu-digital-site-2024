@@ -1,0 +1,35 @@
+# ========================================
+# NOVAS CHAVES DE API - ATUALIZADAS
+# Data: 28/10/2025 - 00:48
+# ========================================
+
+# ==========================================
+# 1. RESEND (Email)
+# ==========================================
+RESEND_API_KEY=re_tQiwTskM_59MAqLQLa46tWA485mxQvu7V
+
+# ==========================================
+# 2. CLOUDINARY (Upload de Imagens)
+# ==========================================
+CLOUDINARY_CLOUD_NAME=dtsneyz
+CLOUDINARY_API_KEY=532241479867993
+CLOUDINARY_API_SECRET=G4oNElxxOXIuBLobel7Xft_eI7A
+
+# ==========================================
+# 3. SUPABASE (Storage/Database)
+# ==========================================
+NEXT_PUBLIC_SUPABASE_URL=https://vppvfgmkfrycktsulahd.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwcHZmZ21rZnJ5Y2t0c3VsYWhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5MjM3NzUsImV4cCI6MjA3NDQ5OTc3NX0.g5rAdICbw__d4YSjNfCGpcJDWxsmqWDsDt7JfvsUUJA
+
+SUPABASE_URL=https://vppvfgmkfrycktsulahd.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwcHZmZ21rZnJ5Y2t0c3VsYWhkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODkyMzc3NSwiZXhwIjoyMDc0NDk5Nzc1fQ.Ow2-A4kfhql48CfqZSCKVzrPPk2oCVhb_1CaBI77At8
+
+# ==========================================
+# INSTRUÇÕES:
+# ==========================================
+# 1. COPIE todas as variáveis acima
+# 2. COLE no Vercel: https://vercel.com/seu-projeto/settings/environment-variables
+# 3. COLE no seu .env.local (arquivo local)
+# 4. REDEPLOY no Vercel
+# 5. DELETE este arquivo após usar (contém chaves sensíveis!)
+# ==========================================

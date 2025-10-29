@@ -50,6 +50,8 @@ export async function POST(req: NextRequest) {
       const name = formData.get(`items[${index}][name]`) as string;
       const description = formData.get(`items[${index}][description]`) as string || '';
       const price = parseFloat(formData.get(`items[${index}][price]`) as string);
+      const costStr = formData.get(`items[${index}][cost]`) as string;
+      const cost = costStr ? parseFloat(costStr) : undefined;
       const categoryId = formData.get(`items[${index}][categoryId]`) as string;
       const originalPriceStr = formData.get(`items[${index}][originalPrice]`) as string;
       const originalPrice = originalPriceStr ? parseFloat(originalPriceStr) : undefined;
@@ -134,6 +136,7 @@ export async function POST(req: NextRequest) {
         name,
         description,
         price,
+        cost,
         categoryId,
         restaurantId: restaurant.id,
         image: imagePath,

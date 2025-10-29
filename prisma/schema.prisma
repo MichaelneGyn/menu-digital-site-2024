@@ -133,6 +133,7 @@ model MenuItem {
   name                String
   description         String?
   price               Float
+  cost                Float?                // Custo do produto (para cálculo de lucro)
   originalPrice       Float?
   image               String?
   isActive            Boolean               @default(true)

@@ -7,22 +7,31 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Calculator, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Calculator, Plus, Trash2, TrendingUp, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface Ingrediente {
+  id: string;
+  nome: string;
+  custo: string;
+}
 
 export default function CMVSimples() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Estados simples
+  // Estados
   const [nomeProduto, setNomeProduto] = useState('');
   const [precoVenda, setPrecoVenda] = useState('');
-  const [custoIngredientes, setCustoIngredientes] = useState('');
+  const [ingredientes, setIngredientes] = useState<Ingrediente[]>([
+    { id: '1', nome: '', custo: '' }
+  ]);
   
   // Resultados
+  const [custoTotal, setCustoTotal] = useState(0);
   const [cmvPercentual, setCmvPercentual] = useState(0);
   const [lucro, setLucro] = useState(0);
-  const [status, setStatus] = useState<'bom' | 'atencao' | 'ruim' | null>(null);
+  const [statusCMV, setStatusCMV] = useState<'bom' | 'atencao' | 'ruim' | null>(null);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -31,49 +40,78 @@ export default function CMVSimples() {
     }
   }, [session, status]);
 
-  // Calcular CMV automaticamente quando mudar os valores
+  // Calcular custo total dos ingredientes
+  useEffect(() => {
+    const total = ingredientes.reduce((acc, ing) => {
+      const custo = parseFloat(ing.custo) || 0;
+      return acc + custo;
+    }, 0);
+    setCustoTotal(total);
+  }, [ingredientes]);
+
+  // Calcular CMV automaticamente
   useEffect(() => {
     const preco = parseFloat(precoVenda) || 0;
-    const custo = parseFloat(custoIngredientes) || 0;
 
-    if (preco > 0 && custo > 0) {
-      const cmv = (custo / preco) * 100;
-      const lucroCalculado = preco - custo;
+    if (preco > 0 && custoTotal > 0) {
+      const cmv = (custoTotal / preco) * 100;
+      const lucroCalculado = preco - custoTotal;
 
       setCmvPercentual(cmv);
       setLucro(lucroCalculado);
 
       // Definir status
       if (cmv <= 30) {
-        setStatus('bom');
+        setStatusCMV('bom');
       } else if (cmv <= 40) {
-        setStatus('atencao');
+        setStatusCMV('atencao');
       } else {
-        setStatus('ruim');
+        setStatusCMV('ruim');
       }
     } else {
       setCmvPercentual(0);
       setLucro(0);
-      setStatus(null);
+      setStatusCMV(null);
     }
-  }, [precoVenda, custoIngredientes]);
+  }, [precoVenda, custoTotal]);
+
+  const adicionarIngrediente = () => {
+    setIngredientes([
+      ...ingredientes,
+      { id: Date.now().toString(), nome: '', custo: '' }
+    ]);
+  };
+
+  const removerIngrediente = (id: string) => {
+    if (ingredientes.length === 1) {
+      toast.error('Você precisa ter pelo menos 1 ingrediente!');
+      return;
+    }
+    setIngredientes(ingredientes.filter(ing => ing.id !== id));
+  };
+
+  const atualizarIngrediente = (id: string, campo: 'nome' | 'custo', valor: string) => {
+    setIngredientes(ingredientes.map(ing => 
+      ing.id === id ? { ...ing, [campo]: valor } : ing
+    ));
+  };
 
   const limparCampos = () => {
     setNomeProduto('');
     setPrecoVenda('');
-    setCustoIngredientes('');
+    setIngredientes([{ id: '1', nome: '', custo: '' }]);
+    setCustoTotal(0);
     setCmvPercentual(0);
     setLucro(0);
-    setStatus(null);
+    setStatusCMV(null);
   };
 
   const salvarCalculo = () => {
-    if (!nomeProduto || !precoVenda || !custoIngredientes) {
-      toast.error('Preencha todos os campos!');
+    if (!nomeProduto || !precoVenda || ingredientes.every(ing => !ing.nome)) {
+      toast.error('Preencha todos os campos obrigatórios!');
       return;
     }
 
-    // Aqui você pode salvar no banco se quiser
     toast.success(`✅ Cálculo de "${nomeProduto}" salvo!`);
     limparCampos();
   };
@@ -142,28 +180,74 @@ export default function CMVSimples() {
               <p className="text-sm text-gray-500">💡 Quanto o cliente paga por este produto</p>
             </div>
 
-            {/* Passo 3: Custo dos Ingredientes */}
-            <div className="space-y-2">
+            {/* Passo 3: Lista de Ingredientes */}
+            <div className="space-y-3">
               <Label className="text-lg font-semibold flex items-center gap-2">
                 <span className="bg-blue-500 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm">3</span>
-                Quanto CUSTA fazer?
+                Liste TODOS os ingredientes
               </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg">R$</span>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="15.00"
-                  value={custoIngredientes}
-                  onChange={(e) => setCustoIngredientes(e.target.value)}
-                  className="text-lg h-12 pl-12"
-                />
+              <p className="text-sm text-gray-500">💡 Não esqueça nada: embalagem, molho, tempero, etc.</p>
+
+              {/* Tabela de Ingredientes */}
+              <div className="space-y-2">
+                {ingredientes.map((ingrediente, index) => (
+                  <div key={ingrediente.id} className="flex gap-2 items-center">
+                    <div className="flex-1">
+                      <Input
+                        placeholder={`Ex: ${index === 0 ? 'Farinha' : index === 1 ? 'Queijo' : index === 2 ? 'Calabresa' : 'Ingrediente'}`}
+                        value={ingrediente.nome}
+                        onChange={(e) => atualizarIngrediente(ingrediente.id, 'nome', e.target.value)}
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="w-32 relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={ingrediente.custo}
+                        onChange={(e) => atualizarIngrediente(ingrediente.id, 'custo', e.target.value)}
+                        className="h-11 pl-10"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removerIngrediente(ingrediente.id)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
               </div>
-              <p className="text-sm text-gray-500">💡 Some TODOS os ingredientes (farinha, queijo, calabresa, etc)</p>
+
+              {/* Botão Adicionar Ingrediente */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={adicionarIngrediente}
+                className="w-full border-dashed border-2 hover:bg-blue-50"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Ingrediente
+              </Button>
+
+              {/* Custo Total */}
+              {custoTotal > 0 && (
+                <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-gray-700">💰 Custo Total dos Ingredientes:</span>
+                    <span className="text-2xl font-bold text-blue-600">R$ {custoTotal.toFixed(2)}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Resultado */}
-            {status && (
+            {statusCMV && (
               <div className="mt-8 p-6 bg-gradient-to-br from-green-50 to-blue-50 rounded-xl border-2 border-green-200">
                 <h3 className="text-2xl font-bold mb-4 text-center">📊 Resultado</h3>
                 
@@ -193,12 +277,12 @@ export default function CMVSimples() {
 
                 {/* Status Visual */}
                 <div className={`p-4 rounded-lg ${
-                  status === 'bom' ? 'bg-green-100 border-2 border-green-300' :
-                  status === 'atencao' ? 'bg-yellow-100 border-2 border-yellow-300' :
+                  statusCMV === 'bom' ? 'bg-green-100 border-2 border-green-300' :
+                  statusCMV === 'atencao' ? 'bg-yellow-100 border-2 border-yellow-300' :
                   'bg-red-100 border-2 border-red-300'
                 }`}>
                   <div className="flex items-start gap-3">
-                    {status === 'bom' && (
+                    {statusCMV === 'bom' && (
                       <>
                         <TrendingUp className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
                         <div>
@@ -209,7 +293,7 @@ export default function CMVSimples() {
                         </div>
                       </>
                     )}
-                    {status === 'atencao' && (
+                    {statusCMV === 'atencao' && (
                       <>
                         <AlertCircle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-1" />
                         <div>
@@ -220,7 +304,7 @@ export default function CMVSimples() {
                         </div>
                       </>
                     )}
-                    {status === 'ruim' && (
+                    {statusCMV === 'ruim' && (
                       <>
                         <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
                         <div>
@@ -261,7 +345,7 @@ export default function CMVSimples() {
               <Button
                 onClick={salvarCalculo}
                 className="flex-1 bg-green-600 hover:bg-green-700"
-                disabled={!status}
+                disabled={!statusCMV}
               >
                 💾 Salvar Cálculo
               </Button>

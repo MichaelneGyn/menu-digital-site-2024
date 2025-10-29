@@ -29,23 +29,26 @@ export default function RestaurantNav({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Auto-scroll para o botão ativo
+  // Auto-scroll para o botão ativo com animação suave
   useEffect(() => {
     if (activeButtonRef.current && navContainerRef.current) {
       const button = activeButtonRef.current;
       const container = navContainerRef.current;
       
-      const buttonLeft = button.offsetLeft;
-      const buttonWidth = button.offsetWidth;
-      const containerWidth = container.clientWidth;
+      // Pequeno delay para garantir que a animação seja visível
+      setTimeout(() => {
+        const buttonLeft = button.offsetLeft;
+        const buttonWidth = button.offsetWidth;
+        const containerWidth = container.clientWidth;
 
-      // Centraliza o botão ativo
-      const scrollTo = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
-      
-      container.scrollTo({
-        left: scrollTo,
-        behavior: 'smooth'
-      });
+        // Centraliza o botão ativo
+        const scrollTo = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
+        
+        container.scrollTo({
+          left: scrollTo,
+          behavior: 'smooth'
+        });
+      }, 100);
     }
   }, [activeCategory]);
 
@@ -60,39 +63,67 @@ export default function RestaurantNav({
       style={{ 
         position: 'sticky',
         top: 0,
-        zIndex: 9999,
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
-        boxShadow: isScrolled ? '0 8px 32px rgba(0,0,0,0.3)' : '0 4px 16px rgba(0,0,0,0.2)',
+        zIndex: 999,
+        background: 'white',
+        borderBottom: '1px solid #e5e7eb',
+        boxShadow: isScrolled ? '0 2px 8px rgba(0,0,0,0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
         transition: 'box-shadow 0.3s ease',
         width: '100%',
-        minHeight: '80px',
+        minHeight: '60px',
         padding: '0',
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        WebkitBackfaceVisibility: 'hidden',
+        backfaceVisibility: 'hidden',
+        WebkitTransform: 'translateZ(0)',
+        transform: 'translateZ(0)'
       }}
     >
       <div 
         ref={navContainerRef}
         className="category-menu-container"
         style={{ 
-          maxWidth: '1200px',
-          margin: '0 auto',
+          maxWidth: '100%',
+          margin: '0',
           width: '100%',
-          padding: '20px 24px',
+          padding: '12px 16px',
           display: 'flex',
-          gap: '20px',
+          gap: '12px',
           overflowX: 'auto',
           overflowY: 'hidden',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch',
-          position: 'relative'
+          position: 'relative',
+          scrollBehavior: 'smooth'
         }}
       >
         <style jsx>{`
           .category-menu-container::-webkit-scrollbar {
             display: none;
+          }
+          
+          @keyframes pulse {
+            0% {
+              transform: translateY(-2px) scale(1);
+            }
+            50% {
+              transform: translateY(-2px) scale(1.12);
+            }
+            100% {
+              transform: translateY(-2px) scale(1.08);
+            }
+          }
+          
+          @keyframes slideIn {
+            from {
+              opacity: 0;
+              transform: translateX(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
           }
         `}</style>
         
@@ -107,19 +138,18 @@ export default function RestaurantNav({
               onClick={() => onCategoryChange(category.id)}
               style={{ 
                 flexShrink: 0,
-                minWidth: '120px',
-                height: '40px',
-                padding: '0 16px',
-                borderRadius: '20px',
+                minWidth: 'auto',
+                height: '36px',
+                padding: '0 14px',
+                borderRadius: '18px',
                 border: isActive ? '2px solid #ef4444' : '1px solid #e5e7eb',
-                borderBottom: isActive ? '3px solid #ef4444' : '1px solid #e5e7eb',
                 background: isActive 
-                  ? 'linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%)' 
+                  ? '#fef2f2' 
                   : 'white',
                 color: isActive ? '#dc2626' : '#6b7280',
-                fontWeight: isActive ? '700' : '500',
-                fontSize: '14px',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                fontWeight: isActive ? '600' : '500',
+                fontSize: '13px',
+                transition: 'all 0.3s ease',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -127,9 +157,9 @@ export default function RestaurantNav({
                 gap: '6px',
                 whiteSpace: 'nowrap',
                 boxShadow: isActive 
-                  ? '0 4px 20px rgba(239, 68, 68, 0.4), 0 2px 8px rgba(239, 68, 68, 0.2)' 
-                  : '0 1px 3px rgba(0,0,0,0.1)',
-                transform: isActive ? 'translateY(-2px) scale(1.05)' : 'scale(1)',
+                  ? '0 2px 8px rgba(239, 68, 68, 0.2)' 
+                  : '0 1px 2px rgba(0,0,0,0.05)',
+                transform: isActive ? 'scale(1.02)' : 'scale(1)',
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation',
                 outline: 'none',
