@@ -70,7 +70,6 @@ function AdminDashboard() {
   const [showCouponsModal, setShowCouponsModal] = useState(false);
   const [showCreateRestaurantModal, setShowCreateRestaurantModal] = useState(false);
   const [showEditRestaurantModal, setShowEditRestaurantModal] = useState(false);
-  const [showPersonalizeModal, setShowPersonalizeModal] = useState(false);
   const [showReportsModal, setShowReportsModal] = useState(false);
 
   // Regra de visibilidade para cards adicionais
@@ -310,14 +309,6 @@ function AdminDashboard() {
                     <span className="text-xs text-blue-600 font-semibold">NOVO</span>
                   </button>
 
-                  {/* Personalizar */}
-                  <button
-                    onClick={() => setShowPersonalizeModal(true)}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
-                  >
-                    <span className="text-xl sm:text-2xl">🎨</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Personalizar</span>
-                  </button>
 
                   {/* Calculadora CMV */}
                   <button
@@ -612,18 +603,6 @@ function AdminDashboard() {
         />
       )}
 
-      {showPersonalizeModal && restaurant && (
-        <PersonalizeModal 
-          isOpen={showPersonalizeModal}
-          onClose={() => setShowPersonalizeModal(false)}
-          restaurant={restaurant}
-          onSuccess={() => {
-            setShowPersonalizeModal(false);
-            toast.success('🎨 Personalização salva com sucesso!');
-            fetchRestaurantData();
-          }}
-        />
-      )}
 
       {showCouponsModal && restaurant && (
         <CouponsModal 
