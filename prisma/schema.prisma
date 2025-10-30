@@ -446,6 +446,13 @@ enum WaiterCallStatus {
   DISMISSED
 }
 
+enum NotificationType {
+  NEW_SIGNUP       // Novo cadastro (trial)
+  PAYMENT_RECEIVED // Pagamento recebido
+  TRIAL_ENDING     // Trial acabando
+  SUBSCRIPTION_CANCELED // Assinatura cancelada
+}
+
 model WaiterCall {
   id           String           @id @default(cuid())
   restaurantId String
@@ -460,4 +467,22 @@ model WaiterCall {
   
   @@index([restaurantId, status])
   @@index([createdAt])
+}
+
+model AdminNotification {
+  id          String               @id @default(cuid())
+  type        NotificationType
+  title       String
+  message     String
+  userId      String?              // ID do usuário relacionado (cadastro/pagamento)
+  userName    String?              // Nome do usuário
+  userEmail   String?              // Email do usuário
+  amount      Float?               // Valor do pagamento (se aplicável)
+  metadata    String?              // JSON com dados extras
+  isRead      Boolean              @default(false)
+  createdAt   DateTime             @default(now())
+  readAt      DateTime?
+  
+  @@index([isRead, createdAt])
+  @@index([type, createdAt])
 }
