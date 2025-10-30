@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import { notifyPaymentReceived } from '@/lib/notifications';
 
 /**
  * Confirma um pagamento e ativa a assinatura
@@ -107,6 +108,15 @@ export async function POST(req: NextRequest) {
       where: { id: paymentId },
       data: { subscriptionId: subscription.id },
     });
+
+    // 🔔 NOTIFICAR ADMIN SOBRE PAGAMENTO RECEBIDO
+    await notifyPaymentReceived(
+      payment.user.id,
+      payment.user.name || 'Sem nome',
+      payment.user.email,
+      payment.amount,
+      plan
+    );
 
     return NextResponse.json({
       message: 'Pagamento confirmado com sucesso!',

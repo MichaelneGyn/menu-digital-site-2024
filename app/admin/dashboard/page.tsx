@@ -19,6 +19,7 @@ import { EmojiIcon } from '@/components/EmojiIcon';
 import { PriceInput } from '@/components/PriceInput';
 import { CouponsModal } from '@/components/CouponsModal';
 import AddItemWithCustomizationsModal from '@/components/admin/AddItemWithCustomizationsModal';
+import AdminNotifications from '@/components/AdminNotifications';
 
 interface Restaurant {
   id: string;
@@ -179,8 +180,8 @@ function AdminDashboard() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-6 gap-4">
-            <div>
+          <div className="flex justify-between items-center py-6 gap-4">
+            <div className="flex-1">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Painel Administrativo
               </h1>
@@ -188,17 +189,18 @@ function AdminDashboard() {
                 Bem-vindo, {session.user?.name || session.user?.email}!
               </p>
             </div>
-            <div className="flex gap-2 sm:gap-3 flex-wrap">
+            <div className="flex gap-2 items-center flex-shrink-0">
+              <AdminNotifications />
               {restaurant && (
                 <Link href={`/${restaurant.slug}`}>
-                  <Button variant="outline" className="animated-button text-sm sm:text-base">
+                  <Button variant="outline" className="animated-button text-sm sm:text-base hidden sm:flex">
                     <span className="mr-2">👁️</span>
                     Ver Cardápio
                   </Button>
                 </Link>
               )}
               <Link href="/auth/logout">
-                <Button variant="destructive" className="animated-button text-sm sm:text-base">
+                <Button variant="destructive" className="animated-button text-sm sm:text-base hidden sm:flex">
                   Sair
                 </Button>
               </Link>

@@ -16,16 +16,23 @@ export default function RestaurantNav({
   onCategoryChange 
 }: RestaurantNavProps) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isFixed, setIsFixed] = useState(false);
   const activeButtonRef = useRef<HTMLButtonElement>(null);
   const navContainerRef = useRef<HTMLDivElement>(null);
+  const navPlaceholderRef = useRef<HTMLDivElement>(null);
 
-  // Detecta scroll para adicionar sombra
+  // Detecta scroll para adicionar sombra e fixar a barra
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 200);
+      const scrollY = window.scrollY;
+      const shouldBeFixed = scrollY > 100;
+      
+      setIsScrolled(scrollY > 200);
+      setIsFixed(shouldBeFixed);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Chama uma vez no mount
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -58,27 +65,39 @@ export default function RestaurantNav({
   }
 
   return (
-    <nav 
-      className="category-sticky-menu"
-      style={{ 
-        position: 'sticky',
-        top: 0,
-        zIndex: 999,
-        background: 'white',
-        borderBottom: '1px solid #e5e7eb',
-        boxShadow: isScrolled ? '0 2px 8px rgba(0,0,0,0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
-        transition: 'box-shadow 0.3s ease',
-        width: '100%',
-        minHeight: '60px',
-        padding: '0',
-        display: 'flex',
-        alignItems: 'center',
-        WebkitBackfaceVisibility: 'hidden',
-        backfaceVisibility: 'hidden',
-        WebkitTransform: 'translateZ(0)',
-        transform: 'translateZ(0)'
-      }}
-    >
+    <>
+      {/* Placeholder para manter o espaço quando a barra ficar fixa */}
+      {isFixed && (
+        <div 
+          ref={navPlaceholderRef}
+          style={{ height: '60px', width: '100%' }} 
+        />
+      )}
+      
+      <nav 
+        className="category-sticky-menu"
+        style={{ 
+          position: isFixed ? 'fixed' : 'sticky',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 999,
+          background: 'white',
+          borderBottom: '1px solid #e5e7eb',
+          boxShadow: isScrolled ? '0 2px 8px rgba(0,0,0,0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
+          transition: 'box-shadow 0.3s ease, transform 0.2s ease',
+          width: '100%',
+          minHeight: '60px',
+          padding: '0',
+          display: 'flex',
+          alignItems: 'center',
+          WebkitBackfaceVisibility: 'hidden',
+          backfaceVisibility: 'hidden',
+          WebkitTransform: 'translateZ(0)',
+          transform: isFixed ? 'translateY(0)' : 'translateZ(0)',
+          willChange: 'transform'
+        }}
+      >
       <div 
         ref={navContainerRef}
         className="category-menu-container"
@@ -211,5 +230,6 @@ export default function RestaurantNav({
         })}
       </div>
     </nav>
+    </>
   );
 }

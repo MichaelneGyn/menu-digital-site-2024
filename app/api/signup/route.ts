@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import { onlyDigits, isValidWhatsapp } from '@/lib/phone';
 import { authRateLimiter } from '@/lib/rate-limit';
+import { notifyNewSignup } from '@/lib/notifications';
 
 const signUpSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -173,6 +174,9 @@ export async function POST(request: NextRequest) {
 
       return { user, restaurant, subscription };
     });
+
+    // 🔔 NOTIFICAR ADMIN SOBRE NOVO CADASTRO
+    await notifyNewSignup(result.user.id, result.user.name || 'Sem nome', result.user.email);
 
     // Determinar qual tipo de cliente é (para pricing)
     const finalUserCount = totalUsers + 1; // +1 porque acabamos de criar
