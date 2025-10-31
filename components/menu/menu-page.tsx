@@ -282,8 +282,11 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <RestaurantBanner restaurant={restaurant} />
+    <>
+      <div className="min-h-screen bg-gray-50">
+        <RestaurantBanner restaurant={restaurant} />
+      </div>
+      
       <RestaurantNav
         categories={restaurant?.categories || []}
         activeCategory={activeCategory}
@@ -292,7 +295,8 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
         secondaryColor={restaurant.secondaryColor}
       />
 
-      <main className="main-content px-4 py-6 max-w-6xl mx-auto">
+      <div className="min-h-screen bg-gray-50">
+        <main className="main-content px-4 py-6 max-w-6xl mx-auto">
         {/* Status de horário de funcionamento */}
         <div className="mb-6">
           <BusinessHoursAlert 
@@ -382,6 +386,7 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
       
       {/* Espaçamento para não sobrepor o bottom nav */}
       <div style={{ height: '80px' }} />
-    </div>
+      </div>
+    </>
   );
 }
