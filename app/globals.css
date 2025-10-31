@@ -1976,10 +1976,9 @@
   animation: slideDown 0.8s ease-out;
 }
 
-/* STICKY FUNCIONANDO - VERSAO FINAL FORCADA */
+/* STICKY FUNCIONANDO - VERSAO FINAL SIMPLIFICADA */
 nav.category-sticky-menu,
 .category-sticky-menu {
-  position: -webkit-sticky !important;
   position: sticky !important;
   top: 0 !important;
   left: 0 !important;
@@ -1992,16 +1991,9 @@ nav.category-sticky-menu,
   min-height: 60px !important;
   display: flex !important;
   align-items: center !important;
-  visibility: visible !important;
-  opacity: 1 !important;
   margin: 0 !important;
   padding: 0 !important;
   box-sizing: border-box !important;
-  transform: translateZ(0) !important;
-  will-change: transform !important;
-  /* Força o sticky em todos os contextos */
-  contain: layout style paint !important;
-  isolation: isolate !important;
 }
 
 /* Garantir que o container pai não interfira */
