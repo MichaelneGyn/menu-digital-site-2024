@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Sticky Navigation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .container {
+            min-height: 100vh;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #EA1D2C, #dc2626);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        /* BARRA STICKY - IGUAL AO SEU CÓDIGO */
+        .barra-categorias {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .categorias-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 16px;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .categorias-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .categoria-btn {
+            min-width: 120px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+            background: #f9fafb;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+        }
+
+        .categoria-btn:hover {
+            background: #f3f4f6;
+            transform: translateY(-1px);
+        }
+
+        .categoria-btn.active {
+            background: linear-gradient(135deg, #EA1D2C, #dc2626);
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .section h2 {
+            font-size: 24px;
+            color: #EA1D2C;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .produto {
+            padding: 15px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .produto:last-child {
+            border-bottom: none;
+        }
+
+        .produto-nome {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .produto-preco {
+            color: #EA1D2C;
+            font-weight: bold;
+        }
+
+        .instrucoes {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #EA1D2C;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            max-width: 300px;
+            z-index: 2000;
+        }
+
+        .instrucoes h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .instrucoes p {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🍕 X Lanches</h1>
+            <p>O melhor sabor do RJ</p>
+        </div>
+
+        <!-- BARRA DE CATEGORIAS STICKY -->
+        <nav class="barra-categorias">
+            <div class="categorias-container">
+                <button class="categoria-btn active" onclick="scrollToSection('pizza')">
+                    🍕 Pizza
+                </button>
+                <button class="categoria-btn" onclick="scrollToSection('bebida')">
+                    🥤 Bebida
+                </button>
+                <button class="categoria-btn" onclick="scrollToSection('sobremesa')">
+                    🍰 Sobremesa
+                </button>
+                <button class="categoria-btn" onclick="scrollToSection('sanduiches')">
+                    🍔 Sanduíches
+                </button>
+                <button class="categoria-btn" onclick="scrollToSection('promocoes')">
+                    🔥 Promoções
+                </button>
+            </div>
+        </nav>
+
+        <!-- Conteúdo -->
+        <div class="content">
+            <!-- Pizza -->
+            <div class="section" id="pizza">
+                <h2>🍕 Pizza</h2>
+                <div class="produto">
+                    <span class="produto-nome">Pizza Margherita</span>
+                    <span class="produto-preco">R$ 40,00</span>
+                </div>
+                <div class="produto">
+                    <span class="produto-nome">Pizza Calabresa</span>
+                    <span class="produto-preco">R$ 45,00</span>
+                </div>
+                <div class="produto">
+                    <span class="produto-nome">Pizza Portuguesa</span>
+                    <span class="produto-preco">R$ 50,00</span>
+                </div>
+                <div class="produto">
+                    <span class="produto-nome">Pizza 4 Queijos</span>
+                    <span class="produto-preco">R$ 48,00</span>
+                </div>
+                <div class="produto">
+                    <span class="produto-nome">Pizza Frango Catupiry</span>
+                    <span class="produto-preco">R$ 46,00</span>
+                </div>
+            </div>
+
+            <!-- Bebida -->
+            <div class="section" id="bebida">
+                <h2>🥤 Bebida</h2>
+                <div class="produto">
+                    <span class="produto-nome">Coca-Cola 2L</span>
+                    <span class="produto-preco">R$ 12,00</span>
+                </div>
+                <div class="produto">
+                    <span class="produto-nome">Guaraná 2L</span>
+                    <span class="produto-preco">R$ 10,00</span>
+                </div>
+                <div class="produto">
+                    <span class="produto-nome">Suco Natural</span>
+                    <span class="produto-preco">R$ 8,00</span>
+                </div>
+                <div class="produto">
+                    <span class="produto-nome">Água Mineral</span>
+                    <span class="produto-preco">R$ 4,00</span>
+                </div>
+            </div>
+
+            <!-- Sobremesa -->
+            <div class="section" id="sobremesa">
+                <h2>🍰 Sobremesa</h2>
+                <div class="produto">
+                    <span class="produto-nome">Pudim</span>
+                    <span class="produto-preco">R$ 15,00</span>
+                </div>
+                <div class="produto">
+                    <span class="produto-nome">Brigadeiro</span>
+                    <span class="produto-preco">R$ 3,00</span>
+                </div>
+                <div class="produto">
+                    <span class="produto-nome">Mousse de Maracujá</span>
+                    <span class="produto-preco">R$ 12,00</span>
+                </div>
+            </div>
+
+            <!-- Sanduíches -->
+            <div class="section" id="sanduiches">
+                <h2>🍔 Sanduíches</h2>
+                <div class="produto">
+                    <span class="produto-nome">X-Burger</span>
+                    <span class="produto-preco">R$ 25,00</span>
+                </div>
+                <div class="produto">
+                    <span class="produto-nome">X-Salada</span>
+                    <span class="produto-preco">R$ 22,00</span>
+                </div>
+                <div class="produto">
+                    <span class="produto-nome">X-Bacon</span>
+                    <span class="produto-preco">R$ 28,00</span>
+                </div>
+            </div>
+
+            <!-- Promoções -->
+            <div class="section" id="promocoes">
+                <h2>🔥 Promoções</h2>
+                <div class="produto">
+                    <span class="produto-nome">Combo Pizza + Refrigerante</span>
+                    <span class="produto-preco">R$ 50,00</span>
+                </div>
+                <div class="produto">
+                    <span class="produto-nome">2 X-Burger + Batata</span>
+                    <span class="produto-preco">R$ 45,00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instruções -->
+        <div class="instrucoes">
+            <h3>✅ Teste o Sticky!</h3>
+            <p>Faça scroll para baixo. A barra de categorias deve ficar fixa no topo!</p>
+        </div>
+    </div>
+
+    <script>
+        function scrollToSection(id) {
+            const section = document.getElementById(id);
+            if (section) {
+                const offset = 80; // Altura da barra sticky
+                const elementPosition = section.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+
+                // Atualizar botão ativo
+                document.querySelectorAll('.categoria-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+            }
+        }
+
+        // Atualizar categoria ativa ao fazer scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.section');
+            const buttons = document.querySelectorAll('.categoria-btn');
+            
+            let currentSection = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                const sectionHeight = section.clientHeight;
+                
+                if (window.pageYOffset >= sectionTop && window.pageYOffset < sectionTop + sectionHeight) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+
+            buttons.forEach((btn, index) => {
+                const sectionIds = ['pizza', 'bebida', 'sobremesa', 'sanduiches', 'promocoes'];
+                if (sectionIds[index] === currentSection) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

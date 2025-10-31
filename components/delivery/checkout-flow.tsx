@@ -498,19 +498,19 @@ export default function CheckoutFlow({
               </Card>
 
               {/* Botões de ação */}
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <Button
                   variant="outline"
                   onClick={() => setCurrentStep('address')}
-                  className="flex-1 h-12 text-base font-semibold"
+                  className="flex-1 h-12 text-sm sm:text-base font-semibold whitespace-nowrap px-3 sm:px-4"
                 >
                   ← Voltar
                 </Button>
                 <Button
                   onClick={() => setCurrentStep('payment')}
-                  className="flex-1 bg-green-600 hover:bg-green-700 h-12 text-base font-semibold"
+                  className="flex-1 bg-green-600 hover:bg-green-700 h-12 text-sm sm:text-base font-semibold whitespace-nowrap px-3 sm:px-4"
                 >
-                  Continuar para Pagamento →
+                  Continuar →
                 </Button>
               </div>
             </>
@@ -679,10 +679,10 @@ export default function CheckoutFlow({
 
               <Button
                 onClick={() => window.open(`/pedido/${createdOrderId}`, '_blank')}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-base font-semibold"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-sm sm:text-base font-semibold px-3 sm:px-4"
               >
-                <Package className="w-5 h-5 mr-2" />
-                🔴 Acompanhar Pedido ao Vivo
+                <Package className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                🔴 Acompanhar ao Vivo
               </Button>
 
               <p className="text-xs text-blue-600">
@@ -752,17 +752,17 @@ export default function CheckoutFlow({
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-2 sm:gap-3 pt-4">
               <Button
                 onClick={onClose}
                 variant="outline"
-                className="flex-1 h-12"
+                className="flex-1 h-12 text-sm sm:text-base whitespace-nowrap px-3 sm:px-4"
               >
                 Voltar ao Cardápio
               </Button>
               <Button
                 onClick={() => window.open(`/pedido/${createdOrderId}`, '_blank')}
-                className="flex-1 h-12 bg-red-600 hover:bg-red-700"
+                className="flex-1 h-12 bg-red-600 hover:bg-red-700 text-sm sm:text-base whitespace-nowrap px-3 sm:px-4"
               >
                 Ver Status
               </Button>

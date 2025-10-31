@@ -73,6 +73,10 @@ model Restaurant {
   bannerImage      String?
   primaryColor     String       @default("#d32f2f")
   secondaryColor   String       @default("#ffc107")
+  headerColor      String       @default("#ffffff")
+  headerTextColor  String       @default("#000000")
+  backgroundColor  String       @default("#f5f5f5")
+  cardColor        String       @default("#ffffff")
   email            String?
   address          String?
   city             String?

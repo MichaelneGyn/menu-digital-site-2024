@@ -14,9 +14,6 @@ export default function CategorySection({ category, onAddToCart }: CategorySecti
   return (
     <div className="category-section" data-category={category?.name}>
       <div className="category-header">
-        <div className="category-icon">
-          {category?.icon || '🍽️'}
-        </div>
         <h2 className="category-title">{category?.name}</h2>
       </div>
       
