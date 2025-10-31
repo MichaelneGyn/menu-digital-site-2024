@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import { apiRateLimiter } from '@/lib/rate-limit';
+import { cookies } from 'next/headers';
 
 // Configurar CORS (APENAS para seu domínio)
 const corsHeaders = {
@@ -108,13 +109,29 @@ export async function POST(req: NextRequest) {
       console.log('MenuItem válido:', menuItem.name);
     }
 
+    // Gerar ou buscar ID do cliente no cookie
+    const cookieStore = cookies();
+    let customerId = cookieStore.get('customerId')?.value;
+    
+    // Se não tem cookie, gerar novo ID único
+    if (!customerId) {
+      customerId = crypto.randomUUID();
+      cookieStore.set('customerId', customerId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 365, // 1 ano
+        path: '/',
+      });
+    }
+
     // Gerar URL de rastreamento
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const trackingUrl = `${baseUrl}/track/${code.replace('#', '')}`;
 
     // Criar pedido e itens em uma transação
     const order = await prisma.$transaction(async (tx) => {
-      // Criar pedido
+      // Criar pedido (salvar customerId no campo customerPhone se não tiver telefone)
       const newOrder = await tx.order.create({
         data: {
           restaurantId,
@@ -122,7 +139,7 @@ export async function POST(req: NextRequest) {
           total,
           code,
           customerName: customerName || null,
-          customerPhone: customerPhone || null,
+          customerPhone: customerPhone || customerId, // Usa telefone ou customerId
           deliveryAddress: deliveryAddress || null,
           paymentMethod: paymentMethod || 'Dinheiro',
           notes: notes || null,

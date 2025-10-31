@@ -15,18 +15,6 @@ interface CartFloatProps {
 
 export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }: CartFloatProps) {
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   useEffect(() => {
     if (totalItems > 0) {
@@ -51,75 +39,54 @@ export default function CartFloat({ items, totalItems, totalPrice, onOpenCart }:
     onOpenCart();
   };
 
-  // Estilos diferentes para mobile e desktop
-  const baseStyle: React.CSSProperties = {
-    position: 'fixed',
-    zIndex: 999999,
-    display: 'flex',
-    background: '#EA1D2C',
-    border: 'none',
-    color: 'white',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    boxShadow: '0 8px 30px rgba(234, 29, 44, 0.8)',
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-    WebkitTapHighlightColor: 'transparent'
-  };
-
-  const buttonStyle: React.CSSProperties = isMobile ? {
-    ...baseStyle,
-    // MOBILE: Full width na parte inferior
-    bottom: '16px',
-    left: '16px',
-    right: '16px',
-    padding: '18px 20px',
-    borderRadius: '50px',
-    width: 'calc(100vw - 32px)',
-    maxWidth: 'none',
-    fontSize: '16px',
-    zIndex: 999999
-  } : {
-    ...baseStyle,
-    // DESKTOP: Lado direito
-    bottom: '20px',
-    right: '20px',
-    left: 'auto',
-    padding: '14px 24px',
-    borderRadius: '50px',
-    minWidth: '280px',
-    maxWidth: '350px',
-    fontSize: '16px',
-    zIndex: 999999
-  };
-
   return (
     <button 
       id="cart-float-button"
       className={`cart-float ${isAnimating ? 'cart-animate' : ''}`}
       onClick={handleCartClick}
       type="button"
-      style={buttonStyle}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <ShoppingCart size={22} strokeWidth={2.5} />
-        {!isMobile && <span>Carrinho</span>}
+      {/* Layout circular compacto para todas as telas */}
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <ShoppingCart size={24} strokeWidth={2.5} />
         {totalItems > 0 && (
           <span style={{
+            position: 'absolute',
+            top: '-8px',
+            right: '-8px',
             background: 'white',
             color: '#EA1D2C',
-            padding: '4px 10px',
-            borderRadius: '20px',
-            fontSize: '14px',
-            fontWeight: 'bold'
+            padding: '4px 6px',
+            borderRadius: '10px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            minWidth: '18px',
+            textAlign: 'center',
+            lineHeight: '1',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
           }}>
-            {totalItems}
+            {totalItems > 99 ? '99+' : totalItems}
           </span>
         )}
-      </div>
-      
-      <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-        {formatPrice(totalPrice)}
+        {/* Preço pequeno abaixo do ícone */}
+        {totalPrice > 0 && (
+          <div style={{
+            position: 'absolute',
+            bottom: '-22px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            fontSize: '10px',
+            fontWeight: 'bold',
+            whiteSpace: 'nowrap',
+            background: 'rgba(0,0,0,0.7)',
+            color: 'white',
+            padding: '2px 6px',
+            borderRadius: '8px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          }}>
+            {formatPrice(totalPrice)}
+          </div>
+        )}
       </div>
     </button>
   );

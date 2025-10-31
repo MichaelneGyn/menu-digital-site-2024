@@ -8,54 +8,50 @@ interface RestaurantNavProps {
   categories: ClientCategory[];
   activeCategory: string;
   onCategoryChange: (categoryId: string) => void;
+  primaryColor?: string;
+  secondaryColor?: string;
 }
 
 export default function RestaurantNav({ 
   categories, 
   activeCategory, 
-  onCategoryChange 
+  onCategoryChange,
+  primaryColor = '#EA1D2C',
+  secondaryColor = '#FFC107'
 }: RestaurantNavProps) {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isFixed, setIsFixed] = useState(false);
-  const activeButtonRef = useRef<HTMLButtonElement>(null);
+  const navRef = useRef<HTMLElement>(null);
   const navContainerRef = useRef<HTMLDivElement>(null);
-  const navPlaceholderRef = useRef<HTMLDivElement>(null);
 
-  // Detecta scroll para adicionar sombra e fixar a barra
   useEffect(() => {
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const shouldBeFixed = scrollY > 100;
-      
-      setIsScrolled(scrollY > 200);
-      setIsFixed(shouldBeFixed);
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      // Apenas controla a sombra baseada no scroll
+      setIsScrolled(scrollTop > 50);
     };
 
-    handleScroll(); // Chama uma vez no mount
+    // Adiciona listener apenas para sombra
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
-  // Auto-scroll para o botão ativo com animação suave
+  // Auto-scroll para categoria ativa
   useEffect(() => {
-    if (activeButtonRef.current && navContainerRef.current) {
-      const button = activeButtonRef.current;
-      const container = navContainerRef.current;
-      
-      // Pequeno delay para garantir que a animação seja visível
-      setTimeout(() => {
-        const buttonLeft = button.offsetLeft;
-        const buttonWidth = button.offsetWidth;
-        const containerWidth = container.clientWidth;
-
-        // Centraliza o botão ativo
-        const scrollTo = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
+    if (navContainerRef.current && activeCategory) {
+      const activeButton = navContainerRef.current.querySelector(`[data-category="${activeCategory}"]`) as HTMLElement;
+      if (activeButton) {
+        const container = navContainerRef.current;
+        const containerRect = container.getBoundingClientRect();
+        const buttonRect = activeButton.getBoundingClientRect();
         
-        container.scrollTo({
-          left: scrollTo,
-          behavior: 'smooth'
-        });
-      }, 100);
+        if (buttonRect.left < containerRect.left || buttonRect.right > containerRect.right) {
+          const scrollLeft = activeButton.offsetLeft - (container.offsetWidth / 2) + (activeButton.offsetWidth / 2);
+          container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+        }
+      }
     }
   }, [activeCategory]);
 
@@ -65,171 +61,150 @@ export default function RestaurantNav({
   }
 
   return (
-    <>
-      {/* Placeholder para manter o espaço quando a barra ficar fixa */}
-      {isFixed && (
+    <nav 
+      ref={navRef}
+      className="category-sticky-menu"
+      style={{
+        position: 'sticky',
+        top: 0,
+        left: 0,
+        right: 0,
+        width: '100%',
+        zIndex: 1000,
+        backgroundColor: 'white',
+        borderBottom: '2px solid #f3f4f6',
+        boxShadow: isScrolled 
+          ? '0 4px 12px rgba(0,0,0,0.15)' 
+          : '0 2px 8px rgba(0,0,0,0.1)',
+        minHeight: '60px',
+        padding: 0,
+        display: 'flex',
+        alignItems: 'center',
+        margin: 0,
+        boxSizing: 'border-box',
+        transition: 'box-shadow 0.3s ease'
+      }}
+    >
         <div 
-          ref={navPlaceholderRef}
-          style={{ height: '60px', width: '100%' }} 
-        />
-      )}
-      
-      <nav 
-        className="category-sticky-menu"
-        style={{ 
-          position: isFixed ? 'fixed' : 'sticky',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 999,
-          background: 'white',
-          borderBottom: '1px solid #e5e7eb',
-          boxShadow: isScrolled ? '0 2px 8px rgba(0,0,0,0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
-          transition: 'box-shadow 0.3s ease, transform 0.2s ease',
-          width: '100%',
-          minHeight: '60px',
-          padding: '0',
-          display: 'flex',
-          alignItems: 'center',
-          WebkitBackfaceVisibility: 'hidden',
-          backfaceVisibility: 'hidden',
-          WebkitTransform: 'translateZ(0)',
-          transform: isFixed ? 'translateY(0)' : 'translateZ(0)',
-          willChange: 'transform'
-        }}
-      >
-      <div 
-        ref={navContainerRef}
-        className="category-menu-container"
-        style={{ 
-          maxWidth: '100%',
-          margin: '0',
-          width: '100%',
-          padding: '12px 16px',
-          display: 'flex',
-          gap: '12px',
-          overflowX: 'auto',
-          overflowY: 'hidden',
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          WebkitOverflowScrolling: 'touch',
-          position: 'relative',
-          scrollBehavior: 'smooth'
-        }}
-      >
-        <style jsx>{`
-          .category-menu-container::-webkit-scrollbar {
-            display: none;
-          }
-          
-          @keyframes pulse {
-            0% {
-              transform: translateY(-2px) scale(1);
+          ref={navContainerRef}
+          className="category-menu-container"
+          style={{ 
+            maxWidth: '1200px',
+            margin: '0 auto',
+            width: '100%',
+            padding: '12px 16px',
+            display: 'flex',
+            gap: '12px',
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+            scrollBehavior: 'smooth'
+          }}
+        >
+          <style jsx>{`
+            .category-menu-container::-webkit-scrollbar {
+              display: none;
             }
-            50% {
-              transform: translateY(-2px) scale(1.12);
+            
+            @keyframes pulse {
+              0% { transform: translateY(-2px) scale(1); }
+              50% { transform: translateY(-2px) scale(1.12); }
+              100% { transform: translateY(-2px) scale(1); }
             }
-            100% {
-              transform: translateY(-2px) scale(1.08);
+            
+            .category-button {
+               min-width: 100px;
+               height: 44px;
+               padding: 0 20px;
+               border: none;
+               border-radius: 24px;
+               font-size: 14px;
+               font-weight: 600;
+               cursor: pointer;
+               transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               white-space: nowrap;
+               flex-shrink: 0;
+               position: relative;
+               overflow: hidden;
+             }
+            
+            .category-button.active {
+              background: linear-gradient(135deg, ${primaryColor} 0%, #dc2626 100%);
+              color: white;
+              transform: translateY(-2px) scale(1.02);
+              box-shadow: 
+                0 8px 25px rgba(239, 68, 68, 0.4),
+                0 4px 12px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+              animation: pulse 2s ease-in-out infinite;
             }
-          }
-          
-          @keyframes slideIn {
-            from {
-              opacity: 0;
-              transform: translateX(-10px);
+            
+            .category-button.active::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: -100%;
+              width: 100%;
+              height: 100%;
+              background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+              animation: shine 2s ease-in-out infinite;
             }
-            to {
-              opacity: 1;
-              transform: translateX(0);
+            
+            .category-button.inactive {
+              background: #f9fafb;
+              color: #4b5563;
+              border: 1px solid #e5e7eb;
             }
-          }
-        `}</style>
-        
-        {/* Remover progress bar */}
-        
-        {categories.map((category) => {
-          const isActive = activeCategory === category.id;
-          return (
-            <button
-              key={category.id}
-              ref={isActive ? activeButtonRef : null}
-              onClick={() => onCategoryChange(category.id)}
-              style={{ 
-                flexShrink: 0,
-                minWidth: 'auto',
-                height: '36px',
-                padding: '0 14px',
-                borderRadius: '18px',
-                border: isActive ? '2px solid #ef4444' : '1px solid #e5e7eb',
-                background: isActive 
-                  ? '#fef2f2' 
-                  : 'white',
-                color: isActive ? '#dc2626' : '#6b7280',
-                fontWeight: isActive ? '600' : '500',
-                fontSize: '13px',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                whiteSpace: 'nowrap',
-                boxShadow: isActive 
-                  ? '0 2px 8px rgba(239, 68, 68, 0.2)' 
-                  : '0 1px 2px rgba(0,0,0,0.05)',
-                transform: isActive ? 'scale(1.02)' : 'scale(1)',
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation',
-                outline: 'none',
-                userSelect: 'none',
-                position: 'relative'
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = '#f9fafb';
-                  e.currentTarget.style.borderColor = '#d1d5db';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = 'white';
-                  e.currentTarget.style.borderColor = '#e5e7eb';
-                }
-              }}
-              onMouseDown={(e) => {
-                e.currentTarget.style.transform = isActive 
-                  ? 'translateY(-1px) scale(1.03)' 
-                  : 'scale(0.98)';
-              }}
-              onMouseUp={(e) => {
-                e.currentTarget.style.transform = isActive 
-                  ? 'translateY(-2px) scale(1.05)' 
-                  : 'scale(1)';
-              }}
-            >
-              <span style={{ 
-                fontSize: '16px',
-                lineHeight: 1,
-                display: 'flex',
-                alignItems: 'center'
-              }}>
-                {category.icon}
-              </span>
-              <span style={{ 
-                fontSize: '14px',
-                fontWeight: isActive ? '700' : '500',
-                letterSpacing: isActive ? '0.02em' : '0.01em',
-                lineHeight: 1,
-                textShadow: isActive ? '0 1px 2px rgba(220, 38, 38, 0.1)' : 'none'
-              }}>
-                {category.name}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </nav>
-    </>
+            
+            .category-button.inactive:hover {
+              background: #f3f4f6;
+              color: #374151;
+              transform: translateY(-1px);
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            
+            @keyframes shine {
+               0% { left: -100%; }
+               50% { left: 100%; }
+               100% { left: 100%; }
+             }
+            
+            @media (max-width: 768px) {
+              .category-button {
+                min-width: 100px;
+                height: 40px;
+                padding: 0 16px;
+                font-size: 13px;
+              }
+              
+              .category-menu-container {
+                padding: 10px 12px !important;
+                gap: 10px !important;
+              }
+            }
+          `}</style>
+
+          {categories.map((category) => {
+             const isActive = category.id === activeCategory;
+             return (
+               <button
+                 key={category.id}
+                 data-category={category.id}
+                 onClick={() => onCategoryChange(category.id)}
+                 className={`category-button ${isActive ? 'active' : 'inactive'}`}
+                 aria-pressed={isActive}
+                 role="tab"
+               >
+                 <span>{category.name}</span>
+               </button>
+             );
+           })}
+        </div>
+      </nav>
   );
 }

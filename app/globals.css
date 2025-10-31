@@ -1111,9 +1111,17 @@
 
 @media (max-width: 768px) {
   .cancel-button {
-    padding: 1rem 1.25rem;
-    font-size: 1rem;
-    min-width: 100px;
+    padding: 1rem 0.75rem;
+    font-size: 0.875rem;
+    min-width: 90px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cancel-button {
+    padding: 1rem 0.5rem;
+    font-size: 0.8rem;
+    min-width: 80px;
   }
 }
 
@@ -1152,8 +1160,8 @@
 
 @media (max-width: 768px) {
   .add-to-cart-button {
-    padding: 0.875rem 1rem;
-    font-size: 0.95rem;
+    padding: 0.875rem 0.75rem;
+    font-size: 0.875rem;
     gap: 0.5rem;
     min-height: 54px;
   }
@@ -1175,12 +1183,13 @@
 
 @media (max-width: 480px) {
   .total-price {
-    font-size: 1.05rem;
-    padding: 3px 10px;
+    font-size: 0.95rem;
+    padding: 3px 8px;
   }
   
   .add-to-cart-button {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    padding: 0.875rem 0.5rem;
   }
 }
 
@@ -1967,19 +1976,74 @@
   animation: slideDown 0.8s ease-out;
 }
 
-/* NOVO MENU DE CATEGORIAS STICKY */
+/* STICKY FUNCIONANDO - VERSAO FINAL FORCADA */
+nav.category-sticky-menu,
 .category-sticky-menu {
+  position: -webkit-sticky !important;
   position: sticky !important;
   top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
   width: 100% !important;
   z-index: 1000 !important;
-  background: white !important;
+  background-color: white !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
   border-bottom: 2px solid #f3f4f6 !important;
-  min-height: 64px !important;
+  min-height: 60px !important;
   display: flex !important;
   align-items: center !important;
   visibility: visible !important;
   opacity: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  transform: translateZ(0) !important;
+  will-change: transform !important;
+  /* Força o sticky em todos os contextos */
+  contain: layout style paint !important;
+  isolation: isolate !important;
+}
+
+/* Garantir que o container pai não interfira */
+.category-sticky-menu * {
+  box-sizing: border-box !important;
+}
+
+/* Forçar que elementos pais não quebrem o sticky */
+body {
+  overflow-x: hidden !important;
+}
+
+html {
+  overflow-x: hidden !important;
+}
+
+/* Container principal - IGUAL AO TESTE HTML */
+.main-content-container,
+.min-h-screen,
+div[class*="min-h-screen"],
+.container {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  contain: none !important;
+  position: relative !important;
+  transform: none !important;
+}
+
+/* Body e HTML - IGUAL AO TESTE HTML */
+body, html {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  position: relative !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Garantir que o sticky funcione mesmo com containers flexbox */
+.category-sticky-menu {
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
 }
 
 .category-menu-container {
@@ -2005,24 +2069,42 @@
   display: none !important;
 }
 
-/* Desktop */
+/* Media Queries para diferentes dispositivos */
 @media (min-width: 769px) {
   .category-sticky-menu {
-    position: sticky;
-    top: 0;
+    position: sticky !important;
+    top: 0px !important;
   }
 }
 
-/* Mobile */
 @media (max-width: 768px) {
   .category-sticky-menu {
-    position: sticky;
-    top: 0;
+    position: sticky !important;
+    top: 0px !important;
   }
   
   .category-menu-container {
     padding: 10px 12px !important;
     gap: 10px !important;
+  }
+}
+
+/* Força o sticky em todos os navegadores */
+@supports (position: sticky) {
+  .category-sticky-menu {
+    position: sticky !important;
+    top: 0px !important;
+  }
+}
+
+/* Fallback para navegadores antigos */
+@supports not (position: sticky) {
+  .category-sticky-menu {
+    position: fixed !important;
+    top: 0px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
   }
 }
 
@@ -2218,56 +2300,17 @@
   }
 }
 
-.category-icon {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, #EA1D2C 0%, #FF6B35 100%);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  box-shadow: 0 6px 20px rgba(234, 29, 44, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.category-icon::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.5s ease;
-}
-
-.category-icon:hover {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 10px 30px rgba(234, 29, 44, 0.4);
-}
-
-.category-icon:hover::before {
-  left: 100%;
-}
-
 .category-title {
   color: #2D2D2D;
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: -0.5px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.3px;
   text-transform: capitalize;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #EA1D2C 0%, #FF6B35 50%, #F7931E 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -2304,15 +2347,9 @@ body {
     padding-bottom: 1rem;
   }
   
-  .category-icon {
-    width: 48px;
-    height: 48px;
-    font-size: 1.6rem;
-  }
-  
   .category-title {
-    font-size: 1.6rem;
-    font-weight: 700;
+    font-size: 1.3rem;
+    font-weight: 600;
   }
 }
 
@@ -2492,24 +2529,24 @@ body {
   transform: scale(1.1);
 }
 
-/* Cart Float Button - Estilo iFood Melhorado */
+/* Cart Float Button - Formato Circular Elegante */
 .cart-float {
   position: fixed !important;
   bottom: 20px !important;
   right: 20px !important;
   background: linear-gradient(135deg, #EA1D2C 0%, #D01726 100%) !important;
   color: white !important;
-  padding: 1rem 1.5rem !important;
-  border-radius: 50px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
   box-shadow: 0 8px 30px rgba(234, 29, 44, 0.4) !important;
   cursor: pointer !important;
   transition: all 0.3s ease !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important;
+  justify-content: center !important;
   z-index: 999999 !important;
-  min-width: 280px !important;
-  max-width: 320px !important;
+  width: 64px !important;
+  height: 64px !important;
   border: none !important;
   outline: none !important;
   visibility: visible !important;
@@ -2518,13 +2555,13 @@ body {
 }
 
 .cart-float:hover {
-  transform: translateY(-6px) scale(1.02);
+  transform: translateY(-4px) scale(1.1);
   box-shadow: 0 12px 40px rgba(234, 29, 44, 0.6);
   background: linear-gradient(135deg, #D01726 0%, #B91C1C 100%);
 }
 
 .cart-float:active {
-  transform: translateY(-3px) scale(1.01);
+  transform: translateY(-2px) scale(1.05);
 }
 
 .cart-animate {
@@ -2532,9 +2569,9 @@ body {
 }
 
 @keyframes cart-bounce {
-  0% { transform: translateY(-6px) scale(1.02); }
-  50% { transform: translateY(-12px) scale(1.08); }
-  100% { transform: translateY(-6px) scale(1.02); }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2) rotate(10deg); }
+  100% { transform: scale(1); }
 }
 
 .cart-float-content {
@@ -2574,11 +2611,13 @@ body {
 
 @media (min-width: 769px) {
   .cart-float {
-    bottom: 30px;
-    right: 30px;
-    min-width: 320px;
-    max-width: 400px;
-    border-radius: 60px;
+    bottom: 80px !important;
+    right: 30px !important;
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 50% !important;
+    min-width: unset !important;
+    max-width: unset !important;
   }
 }
 
@@ -2787,7 +2826,7 @@ body {
 /* Fallback padrão para mobile */
 @media (max-width: 768px) {
   .main-content {
-    margin-top: 5rem;
+    margin-top: 0;
     padding: 0.75rem;
     width: 100% !important;
     max-width: 100vw !important;
@@ -2807,9 +2846,9 @@ body {
   }
   
   /* Garantir que containers não ultrapassem a tela */
-  * {
+  body, html {
+    overflow-x: hidden !important;
     max-width: 100vw !important;
-    box-sizing: border-box !important;
   }
   
   /* Containers principais */
@@ -2820,6 +2859,14 @@ body {
     margin-right: auto !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
+  }
+  
+  /* Garantir que elementos não quebrem o layout */
+  .main-content, .menu-container, .restaurant-container {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
   }
 }
 
@@ -3084,11 +3131,210 @@ body {
 /* Garantir que emojis em botões fiquem centralizados */
 button .emoji-icon img.emoji {
   vertical-align: middle;
-  margin: 0;
+}
+
+/* ========================================
+   MOBILE LAYOUT FIXES
+   ======================================== */
+
+/* Garantir que o body não tenha scroll horizontal */
+body {
+  overflow-x: hidden !important;
+  position: relative;
+}
+
+/* Melhorar layout mobile geral */
+@media (max-width: 768px) {
+  /* Garantir que o conteúdo principal tenha espaço para o bottom nav */
+  .main-content {
+    padding-bottom: 80px !important; /* Espaço para bottom nav */
+    min-height: calc(100vh - 80px) !important;
+  }
+  
+  /* Bottom Navigation otimizado */
+  .bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 50 !important;
+    background: white !important;
+    border-top: 1px solid #e5e7eb !important;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
+    height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+    padding: 0 8px !important;
+  }
+  
+  /* Carrinho flutuante posicionamento correto */
+  .cart-float {
+    position: fixed !important;
+    bottom: 72px !important; /* Acima do bottom nav */
+    right: 16px !important;
+    z-index: 45 !important;
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #EA1D2C 0%, #D01726 100%) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 4px 20px rgba(234, 29, 44, 0.5) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+  }
+  
+  /* Melhorar toque em dispositivos móveis */
+  button, a, .clickable {
+    -webkit-tap-highlight-color: transparent !important;
+    touch-action: manipulation !important;
+  }
+  
+  /* Garantir que inputs não causem zoom no iOS */
+  input, textarea, select {
+    font-size: 16px !important;
+    transform: translateZ(0) !important;
+    -webkit-appearance: none !important;
+  }
+  
+  /* Melhorar scroll em listas */
+  .category-menu-container {
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important;
+  }
+  
+  /* Garantir que modais ocupem toda a tela em mobile */
+  .modal-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 9999 !important;
+  }
+  
+  /* Melhorar layout de cards de produtos */
+   .product-card {
+     margin-bottom: 16px !important;
+     border-radius: 12px !important;
+     overflow: hidden !important;
+   }
 }
 
 /* Emojis grandes (para seleção de ícones) */
 .emoji-icon-large img.emoji {
   height: 2em;
   width: 2em;
+}
+
+/* ========================================
+   RESTAURANT BANNER
+   ======================================== */
+.restaurant-banner {
+  position: relative;
+  width: 100%;
+  padding: 2rem 1rem;
+  margin-bottom: 0;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+  background: white;
+}
+
+.banner-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.restaurant-logo {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+}
+
+.restaurant-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.restaurant-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.restaurant-name {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  line-height: 1.2;
+}
+
+.restaurant-description {
+  font-size: 0.95rem;
+  margin: 0 0 0.75rem 0;
+  opacity: 0.95;
+  line-height: 1.4;
+}
+
+.restaurant-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.restaurant-badges .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .restaurant-banner {
+    padding: 1.5rem 1rem;
+    border-radius: 0 0 16px 16px;
+  }
+
+  .banner-content {
+    gap: 1rem;
+  }
+
+  .restaurant-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .restaurant-name {
+    font-size: 1.35rem;
+  }
+
+  .restaurant-description {
+    font-size: 0.85rem;
+  }
+
+  .restaurant-badges .badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
 }

@@ -7,11 +7,13 @@ import { ClientRestaurant, ClientMenuItem } from '@/lib/restaurant';
 import { ProductCustomization } from './product-card';
 import RestaurantHeader from './restaurant-header';
 import RestaurantNav from './restaurant-nav';
+import RestaurantBanner from './restaurant-banner';
 import CategorySection from './category-section';
 import CartFloat from './cart-float';
 import CartModal from './cart-modal';
 import Notification from './notification';
 import RestaurantFooter from './restaurant-footer';
+import BottomNav from './bottom-nav';
 import DeliveryInfo from '@/components/delivery/delivery-info';
 import BusinessHoursAlert from '@/components/business-hours-alert';
 import AdminBypassToggle from '@/components/admin-bypass-toggle';
@@ -81,6 +83,16 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
     const timer = setTimeout(() => setIsLoading(false), 2000);
     return () => clearTimeout(timer);
   }, [restaurant?.categories]);
+
+  // Listener para abrir carrinho via Bottom Nav
+  useEffect(() => {
+    const handleOpenCart = () => {
+      setShowCartModal(true);
+    };
+
+    window.addEventListener('openCart', handleOpenCart);
+    return () => window.removeEventListener('openCart', handleOpenCart);
+  }, []);
 
   // Scroll Spy - Detecta qual categoria está visível
   useEffect(() => {
@@ -270,17 +282,19 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
   }
 
   return (
-    <div className="min-h-screen" style={{ width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
-      <RestaurantHeader restaurant={restaurant} />
+    <div className="min-h-screen bg-gray-50">
+      <RestaurantBanner restaurant={restaurant} />
       <RestaurantNav
         categories={restaurant?.categories || []}
         activeCategory={activeCategory}
         onCategoryChange={handleCategoryChange}
+        primaryColor={restaurant.primaryColor}
+        secondaryColor={restaurant.secondaryColor}
       />
 
-      <main className="main-content" style={{ width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
+      <main className="main-content px-4 py-6 max-w-6xl mx-auto">
         {/* Status de horário de funcionamento */}
-        <div className="max-w-6xl mx-auto px-4 mb-6" style={{ width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
+        <div className="mb-6">
           <BusinessHoursAlert 
             restaurant={{ 
               name: restaurant.name,
@@ -359,6 +373,15 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
       />
 
       <RestaurantFooter restaurant={restaurant} />
+
+      {/* Bottom Navigation Bar */}
+      <BottomNav 
+        cartItemsCount={getTotalItems()}
+        restaurantSlug={restaurant.slug || ''}
+      />
+      
+      {/* Espaçamento para não sobrepor o bottom nav */}
+      <div style={{ height: '80px' }} />
     </div>
   );
 }

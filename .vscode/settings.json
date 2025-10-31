@@ -16,5 +16,8 @@
     "strings": true
   },
   "css.lint.unknownAtRules": "ignore",
-  "json.schemaDownload.enable": false
+  "css.lint.unknownProperties": "ignore",
+  "css.lint.vendorPrefix": "ignore",
+  "json.schemaDownload.enable": false,
+  "problems.showCurrentInStatus": true
 }
