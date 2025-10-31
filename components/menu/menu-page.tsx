@@ -285,17 +285,14 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
     <>
       <div className="min-h-screen bg-gray-50">
         <RestaurantBanner restaurant={restaurant} />
-      </div>
-      
-      <RestaurantNav
-        categories={restaurant?.categories || []}
-        activeCategory={activeCategory}
-        onCategoryChange={handleCategoryChange}
-        primaryColor={restaurant.primaryColor}
-        secondaryColor={restaurant.secondaryColor}
-      />
-
-      <div className="min-h-screen bg-gray-50">
+        
+        <RestaurantNav
+          categories={restaurant?.categories || []}
+          activeCategory={activeCategory}
+          onCategoryChange={handleCategoryChange}
+          primaryColor={restaurant.primaryColor}
+          secondaryColor={restaurant.secondaryColor}
+        />
         <main className="main-content px-4 py-6 max-w-6xl mx-auto">
         {/* Status de horário de funcionamento */}
         <div className="mb-6">
