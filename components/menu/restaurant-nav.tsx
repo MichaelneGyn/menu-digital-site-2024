@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { ClientCategory } from '@/lib/restaurant';
+import { Search } from 'lucide-react';
 
 interface RestaurantNavProps {
   categories: ClientCategory[];
@@ -10,6 +11,7 @@ interface RestaurantNavProps {
   onCategoryChange: (categoryId: string) => void;
   primaryColor?: string;
   secondaryColor?: string;
+  onSearch?: (query: string) => void;
 }
 
 export default function RestaurantNav({ 
@@ -17,9 +19,12 @@ export default function RestaurantNav({
   activeCategory, 
   onCategoryChange,
   primaryColor = '#EA1D2C',
-  secondaryColor = '#FFC107'
+  secondaryColor = '#FFC107',
+  onSearch
 }: RestaurantNavProps) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const navRef = useRef<HTMLElement>(null);
   const navContainerRef = useRef<HTMLDivElement>(null);
 
@@ -65,20 +70,114 @@ export default function RestaurantNav({
       ref={navRef}
       className="category-sticky-menu"
       style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        backgroundColor: 'white',
         boxShadow: isScrolled 
           ? '0 4px 12px rgba(0,0,0,0.15)' 
           : '0 2px 8px rgba(0,0,0,0.1)',
         transition: 'box-shadow 0.3s ease'
       }}
     >
+      {/* Campo de Busca */}
+      {showSearch && (
+        <div style={{
+          padding: '12px 16px',
+          borderBottom: '1px solid #e5e7eb',
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}>
+          <div style={{
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <Search 
+              size={20} 
+              style={{
+                position: 'absolute',
+                left: '12px',
+                color: '#9ca3af'
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Buscar produtos..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                onSearch?.(e.target.value);
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px 10px 40px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '12px',
+                fontSize: '14px',
+                outline: 'none',
+                transition: 'border-color 0.2s'
+              }}
+              onFocus={(e) => e.target.style.borderColor = primaryColor}
+              onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+            />
+            <button
+              onClick={() => {
+                setShowSearch(false);
+                setSearchQuery('');
+                onSearch?.('');
+              }}
+              style={{
+                marginLeft: '8px',
+                padding: '8px 16px',
+                background: '#f3f4f6',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
+      
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '12px 16px'
+      }}>
+        {/* Botão de Busca */}
+        <button
+          onClick={() => setShowSearch(!showSearch)}
+          style={{
+            minWidth: '44px',
+            height: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: showSearch ? primaryColor : '#f9fafb',
+            color: showSearch ? 'white' : '#4b5563',
+            border: showSearch ? 'none' : '1px solid #e5e7eb',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            flexShrink: 0,
+            transition: 'all 0.3s'
+          }}
+        >
+          <Search size={20} />
+        </button>
+        
         <div 
           ref={navContainerRef}
           className="category-menu-container"
           style={{ 
-            maxWidth: '1200px',
-            margin: '0 auto',
-            width: '100%',
-            padding: '12px 16px',
+            flex: 1,
             display: 'flex',
             gap: '12px',
             overflowX: 'auto',
@@ -120,11 +219,11 @@ export default function RestaurantNav({
              }
             
             .category-button.active {
-              background: linear-gradient(135deg, ${primaryColor} 0%, #dc2626 100%);
+              background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
               color: white;
               transform: translateY(-2px) scale(1.02);
               box-shadow: 
-                0 8px 25px rgba(239, 68, 68, 0.4),
+                0 8px 25px rgba(220, 38, 38, 0.4),
                 0 4px 12px rgba(0, 0, 0, 0.15),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
               animation: pulse 2s ease-in-out infinite;
@@ -191,6 +290,7 @@ export default function RestaurantNav({
              );
            })}
         </div>
-      </nav>
+      </div>
+    </nav>
   );
 }

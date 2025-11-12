@@ -281,6 +281,18 @@ function AdminDashboard() {
                     <span className="text-xs sm:text-sm font-medium text-center">Nova Categoria</span>
                   </button>
 
+                  {/* Integrações - APENAS ADMIN */}
+                  {isAdmin && (
+                    <button
+                      onClick={() => router.push('/admin/integrations')}
+                      className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border-2 rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-400 shadow-lg"
+                    >
+                      <span className="text-xl sm:text-2xl">🔗</span>
+                      <span className="text-xs sm:text-sm font-medium text-center">Integrações</span>
+                      <span className="text-xs text-blue-600 font-semibold">DEV</span>
+                    </button>
+                  )}
+
                   {/* Cupons de Desconto */}
                   <button
                     onClick={() => setShowCouponsModal(true)}
@@ -299,6 +311,16 @@ function AdminDashboard() {
                     <span className="text-xl sm:text-2xl">📤</span>
                     <span className="text-xs sm:text-sm font-medium text-center">Adicionar Itens em Massa</span>
                     <span className="text-xs text-purple-600 font-semibold">NOVO</span>
+                  </button>
+
+                  {/* Personalização */}
+                  <button
+                    onClick={() => router.push('/dashboard/customization')}
+                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-green-50 to-emerald-50 border-green-200"
+                  >
+                    <span className="text-xl sm:text-2xl">🎨</span>
+                    <span className="text-xs sm:text-sm font-medium text-center">Personalização</span>
+                    <span className="text-xs text-green-600 font-semibold">NOVO</span>
                   </button>
 
                   {/* Configurações */}

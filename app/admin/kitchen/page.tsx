@@ -599,10 +599,32 @@ function OrderCard({
       </CardHeader>
       
       <CardContent className="space-y-3">
+        {/* Badge do Tipo de Pedido */}
+        <div className="flex gap-2">
+          {order.orderType === 'DELIVERY' && (
+            <Badge className="bg-blue-500 text-white">
+              🚗 Entrega
+            </Badge>
+          )}
+          {order.orderType === 'TAKEOUT' && (
+            <Badge className="bg-orange-500 text-white">
+              🛍️ Retirada
+            </Badge>
+          )}
+          {order.orderType === 'TABLE' && (
+            <Badge className="bg-purple-500 text-white">
+              🍽️ Mesa {order.tableId || ''}
+            </Badge>
+          )}
+        </div>
+
         {/* Cliente */}
         <div>
           <p className="font-semibold text-sm">{order.customerName}</p>
           <p className="text-xs text-gray-600">{order.customerPhone}</p>
+          {order.orderType === 'DELIVERY' && order.deliveryAddress && (
+            <p className="text-xs text-gray-600 mt-1">📍 {order.deliveryAddress}</p>
+          )}
         </div>
 
         {/* Itens */}

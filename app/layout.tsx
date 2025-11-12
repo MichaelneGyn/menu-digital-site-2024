@@ -7,6 +7,10 @@ import { authOptions } from "@/lib/auth";
 import { Toaster } from "sonner";
 import ConditionalWhatsApp from "@/components/ConditionalWhatsApp";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import GoogleTagManager from "@/components/GoogleTagManager";
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const revalidate = 0;
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -82,6 +86,7 @@ export default async function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <GoogleAnalytics />
+        <GoogleTagManager />
       </head>
       <body className={inter.className} suppressHydrationWarning>
         <Providers session={session}>

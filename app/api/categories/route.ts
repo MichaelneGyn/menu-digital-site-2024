@@ -12,6 +12,46 @@ const createCategorySchema = z.object({
   restaurantId: z.string().min(1, 'Restaurante é obrigatório'),
 });
 
+// GET: Buscar categorias do restaurante
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    // Buscar restaurante do usuário
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { 
+        restaurants: {
+          include: {
+            categories: {
+              orderBy: { name: 'asc' }
+            }
+          }
+        }
+      }
+    });
+
+    if (!user || !user.restaurants || user.restaurants.length === 0) {
+      return NextResponse.json({ categories: [] });
+    }
+
+    // Pegar categorias do primeiro restaurante
+    const categories = user.restaurants[0].categories || [];
+
+    return NextResponse.json({ categories });
+  } catch (error) {
+    console.error('Erro ao buscar categorias:', error);
+    return NextResponse.json(
+      { error: 'Erro interno do servidor' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

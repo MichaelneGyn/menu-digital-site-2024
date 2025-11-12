@@ -174,13 +174,15 @@ export default function CartModal({
             </button>
           </div>
 
-          <CheckoutFlow 
-            items={orderItems}
-            restaurant={restaurant}
-            onBack={() => setStep('cart')}
-            onClose={onClose}
-            onAddItem={onAddItem}
-          />
+          <div className="checkout-body">
+            <CheckoutFlow 
+              items={orderItems}
+              restaurant={restaurant}
+              onBack={() => setStep('cart')}
+              onClose={onClose}
+              onAddItem={onAddItem}
+            />
+          </div>
         </div>
       </div>
     );

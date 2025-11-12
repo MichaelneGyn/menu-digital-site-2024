@@ -8,9 +8,10 @@ import ProductCard from './product-card';
 interface CategorySectionProps {
   category: ClientCategory;
   onAddToCart: (item: ClientMenuItem, customization?: ProductCustomization) => void;
+  viewOnly?: boolean;
 }
 
-export default function CategorySection({ category, onAddToCart }: CategorySectionProps) {
+export default function CategorySection({ category, onAddToCart, viewOnly = false }: CategorySectionProps) {
   return (
     <div className="category-section" data-category={category?.name}>
       <div className="category-header">
@@ -23,6 +24,7 @@ export default function CategorySection({ category, onAddToCart }: CategorySecti
             key={item.id}
             item={item}
             onAddToCart={onAddToCart}
+            viewOnly={viewOnly}
           />
         ))}
       </div>

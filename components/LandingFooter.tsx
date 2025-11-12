@@ -104,7 +104,10 @@ export default function LandingFooter() {
               </li>
               <li className="flex items-start gap-2">
                 <span>⏰</span>
-                <span>Seg - Sex: 9h às 18h</span>
+                <div>
+                  <div>Suporte via WhatsApp</div>
+                  <div className="text-xs text-gray-400">Resposta em até 2 horas</div>
+                </div>
               </li>
               <li className="flex items-start gap-2">
                 <span>📷</span>

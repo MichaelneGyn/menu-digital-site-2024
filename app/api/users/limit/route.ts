@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // Data de início das 10 vagas (hoje)
 const LAUNCH_DATE = new Date('2025-01-21T00:00:00Z'); // Ajuste para a data real de lançamento
