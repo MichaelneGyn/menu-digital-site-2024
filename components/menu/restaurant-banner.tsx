@@ -8,8 +8,8 @@ interface RestaurantBannerProps {
 }
 
 export default function RestaurantBanner({ restaurant }: RestaurantBannerProps) {
-  // Cores personalizáveis
-  const headerColor = (restaurant as any).headerColor || restaurant.primaryColor || '#EA1D2C';
+  // Usar a cor do restaurante ou cinza neutro
+  const headerColor = (restaurant as any).headerColor || '#6b7280'; // Cinza neutro
   const headerTextColor = (restaurant as any).headerTextColor || '#FFFFFF';
   
   // Verificar se tem banner/capa

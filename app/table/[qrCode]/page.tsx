@@ -114,7 +114,7 @@ export default function TableQRCodePage({ params }: { params: { qrCode: string }
         {/* Botões de Ação */}
         <div className="grid grid-cols-1 gap-4 mb-6">
           {/* Ver Cardápio */}
-          <Link href={`/${table.restaurant.slug}?table=${table.id}`}>
+          <Link href={`/${table.restaurant.slug}?table=${table.id}&viewOnly=true`}>
             <Button
               size="lg"
               className="w-full h-20 text-lg bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
@@ -122,7 +122,7 @@ export default function TableQRCodePage({ params }: { params: { qrCode: string }
               <ShoppingCart className="w-6 h-6 mr-3" />
               <div className="text-left">
                 <div className="font-bold">Ver Cardápio</div>
-                <div className="text-sm opacity-90">Faça seu pedido</div>
+                <div className="text-sm opacity-90">Veja os pratos e preços</div>
               </div>
             </Button>
           </Link>
@@ -158,7 +158,6 @@ export default function TableQRCodePage({ params }: { params: { qrCode: string }
                 <p className="font-semibold mb-1">Como funciona:</p>
                 <ul className="space-y-1 text-blue-700">
                   <li>• Clique em "Ver Cardápio" para ver os pratos disponíveis</li>
-                  <li>• Adicione itens ao carrinho e finalize seu pedido</li>
                   <li>• Use "Chamar Garçom" se precisar de atendimento</li>
                 </ul>
               </div>

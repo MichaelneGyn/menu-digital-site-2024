@@ -6,19 +6,25 @@ interface PageProps {
   params: {
     slug: string;
   };
+  searchParams: {
+    viewOnly?: string;
+    table?: string;
+  };
 }
 
 // Revalidar a cada 10 segundos (garante que mudanças apareçam rapidamente)
 export const revalidate = 10;
 
-export default async function RestaurantPage({ params }: PageProps) {
+export default async function RestaurantPage({ params, searchParams }: PageProps) {
   const restaurant = await getRestaurantBySlug(params.slug);
 
   if (!restaurant) {
     notFound();
   }
 
-  return <MenuPage restaurant={restaurant} />;
+  const viewOnly = searchParams.viewOnly === 'true';
+
+  return <MenuPage restaurant={restaurant} viewOnly={viewOnly} />;
 }
 
 export async function generateMetadata({ params }: PageProps) {

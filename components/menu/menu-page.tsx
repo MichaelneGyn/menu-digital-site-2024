@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import { ClientRestaurant, ClientMenuItem } from '@/lib/restaurant';
 import { ProductCustomization } from './product-card';
 import RestaurantHeader from './restaurant-header';
@@ -14,6 +15,7 @@ import CartModal from './cart-modal';
 import Notification from './notification';
 import RestaurantFooter from './restaurant-footer';
 import BottomNav from './bottom-nav';
+import CallWaiterButton from './call-waiter-button';
 import DeliveryInfo from '@/components/delivery/delivery-info';
 import BusinessHoursAlert from '@/components/business-hours-alert';
 import AdminBypassToggle from '@/components/admin-bypass-toggle';
@@ -21,6 +23,7 @@ import { isRestaurantOpen } from '@/lib/business-hours';
 
 interface MenuPageProps {
   restaurant: ClientRestaurant;
+  viewOnly?: boolean; // Modo visualização (sem carrinho)
 }
 
 export interface CartItem extends ClientMenuItem {
@@ -29,7 +32,7 @@ export interface CartItem extends ClientMenuItem {
   cartId: string; // Para permitir o mesmo item com customizações diferentes
 }
 
-export default function MenuPage({ restaurant }: MenuPageProps) {
+export default function MenuPage({ restaurant, viewOnly = false }: MenuPageProps) {
   // Debug: verificar dados PIX do restaurante
   console.log('🔍 MenuPage - Restaurant PIX Data:', {
     restaurantName: restaurant.name,
@@ -40,6 +43,7 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
   });
 
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showNotification, setShowNotification] = useState(false);
@@ -47,7 +51,10 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
   const [showCartModal, setShowCartModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [adminEmail, setAdminEmail] = useState<string | undefined>(undefined);
+  const [tableInfo, setTableInfo] = useState<{ id: string; number: string } | null>(null);
+  const [isManualScroll, setIsManualScroll] = useState(false);
   const categoryRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  const manualScrollTimer = useRef<NodeJS.Timeout | null>(null);
 
   // Verifica se o usuário logado é o dono do restaurante
   useEffect(() => {
@@ -73,6 +80,25 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
     
     checkIfOwner();
   }, [session, restaurant.id]);
+
+  // Busca informações da mesa se estiver em modo visualização
+  useEffect(() => {
+    if (!searchParams) return;
+    const tableId = searchParams.get('table');
+    if (viewOnly && tableId) {
+      fetch(`/api/tables/${tableId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.table) {
+            setTableInfo({
+              id: data.table.id,
+              number: data.table.number
+            });
+          }
+        })
+        .catch(err => console.error('Erro ao buscar mesa:', err));
+    }
+  }, [viewOnly, searchParams]);
 
   // Set first category as active on load
   useEffect(() => {
@@ -102,8 +128,10 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
     const timer = setTimeout(() => {
       const observerOptions = {
         root: null,
-        rootMargin: '-120px 0px -50% 0px', // Ajustado para melhor detecção
-        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0]
+        // Menor deslocamento superior para refletir altura real do menu sticky
+        rootMargin: '-90px 0px -55% 0px',
+        // Limites mais simples e sensíveis para detecção
+        threshold: [0, 0.1, 0.25, 0.5]
       };
 
       // Armazena as seções visíveis com suas posições
@@ -129,24 +157,32 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
 
         // Encontra a seção mais apropriada
         if (visibleSections.size > 0) {
-          let bestCategory = '';
-          let bestScore = -1;
+          // Ordena as seções pela posição no topo
+          const sortedSections = Array.from(visibleSections.entries())
+            .filter(([_, data]) => data.ratio > 0.02) // Mais sensível à visibilidade
+            .sort((a, b) => {
+              // Prioriza a seção que está mais próxima do topo da viewport
+              const aTop = a[1].top;
+              const bTop = b[1].top;
+              const aDistance = aTop >= -20 ? Math.abs(aTop) : Math.abs(aTop) + 30; // tolera pequeno negativo
+              const bDistance = bTop >= -20 ? Math.abs(bTop) : Math.abs(bTop) + 30;
+              
+              // Se a diferença de distância é pequena, usa a visibilidade como desempate
+              if (Math.abs(aDistance - bDistance) < 50) {
+                return b[1].ratio - a[1].ratio;
+              }
+              
+              return aDistance - bDistance;
+            });
 
-          visibleSections.forEach((data, id) => {
-            // Prioriza seções que estão mais próximas do topo e mais visíveis
-            const topScore = Math.max(0, 1 - Math.abs(data.top) / 200);
-            const visibilityScore = data.ratio;
-            const combinedScore = (topScore * 0.6) + (visibilityScore * 0.4);
+          if (sortedSections.length > 0) {
+            const bestCategory = sortedSections[0][0];
 
-            if (combinedScore > bestScore) {
-              bestScore = combinedScore;
-              bestCategory = id;
+            // Só atualiza se não for scroll manual
+            if (bestCategory && bestCategory !== activeCategory && !isManualScroll) {
+              console.log('🎯 Categoria ativa mudou para:', bestCategory, 'top:', sortedSections[0][1].top, 'ratio:', sortedSections[0][1].ratio);
+              setActiveCategory(bestCategory);
             }
-          });
-
-          if (bestCategory && bestCategory !== activeCategory) {
-            console.log('🎯 Categoria ativa:', bestCategory, '(score:', bestScore.toFixed(2), ')');
-            setActiveCategory(bestCategory);
           }
         }
       };
@@ -170,14 +206,66 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
       clearTimeout(timer);
       observer?.disconnect();
     };
-  }, [restaurant?.categories, activeCategory]);
+  }, [restaurant?.categories, activeCategory, isManualScroll]);
+
+  // Fallback por scroll: calcula posições dos sections e atualiza chip ativo
+  useEffect(() => {
+    let ticking = false;
+
+    const getStickyOffset = () => {
+      const navEl = document.querySelector('.category-sticky-menu') as HTMLElement | null;
+      return navEl ? navEl.offsetHeight : 90; // altura estimada da barra
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        if (isManualScroll) return; // não interferir no clique manual
+
+        const offset = getStickyOffset();
+        let bestCategory: string | null = null;
+        let bestScore = Number.POSITIVE_INFINITY;
+
+        Object.entries(categoryRefs.current).forEach(([id, el]) => {
+          if (!el) return;
+          const top = el.getBoundingClientRect().top;
+          // penaliza muito quando está bem acima do topo
+          if (top < -offset * 0.8) return;
+          const score = Math.abs(top - offset * 0.6); // alvo levemente abaixo da barra
+          if (score < bestScore) {
+            bestScore = score;
+            bestCategory = id;
+          }
+        });
+
+        if (bestCategory && bestCategory !== activeCategory) {
+          setActiveCategory(bestCategory);
+        }
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [activeCategory, isManualScroll]);
 
   // Função para fazer scroll suave ao clicar na categoria
   const handleCategoryChange = (categoryId: string) => {
     console.log('🖱️ Clique na categoria:', categoryId);
+    
+    // Marca como scroll manual
+    setIsManualScroll(true);
+    setActiveCategory(categoryId);
+    
+    // Limpa timer anterior
+    if (manualScrollTimer.current) {
+      clearTimeout(manualScrollTimer.current);
+    }
+    
     const element = categoryRefs.current[categoryId];
     if (element) {
-      const offset = 120; // Offset ajustado para compensar o menu sticky
+      const offset = 150; // Offset ajustado para compensar o menu sticky
       const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
       const offsetPosition = elementPosition - offset;
 
@@ -188,7 +276,12 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
         behavior: 'smooth'
       });
     }
-    setActiveCategory(categoryId);
+    
+    // Reativa detecção automática após 800ms
+    manualScrollTimer.current = setTimeout(() => {
+      setIsManualScroll(false);
+      console.log('✅ Detecção automática reativada');
+    }, 800);
   };
 
   const handleAddToCart = (item: ClientMenuItem, customization?: ProductCustomization) => {
@@ -283,39 +376,41 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 client-menu-neutral-theme">
         <RestaurantBanner restaurant={restaurant} />
         
-        <RestaurantNav
-          categories={restaurant?.categories || []}
-          activeCategory={activeCategory}
-          onCategoryChange={handleCategoryChange}
-          primaryColor={restaurant.primaryColor}
-          secondaryColor={restaurant.secondaryColor}
-        />
-        <main className="main-content px-4 py-6 max-w-6xl mx-auto">
-        {/* Status de horário de funcionamento */}
-        <div className="mb-6">
-          <BusinessHoursAlert 
-            restaurant={{ 
-              name: restaurant.name,
-              openTime: restaurant.openTime || null,
-              closeTime: restaurant.closeTime || null,
-              workingDays: restaurant.workingDays || null
-            }}
-            adminEmail={adminEmail}
+        <main className="main-content">
+          <RestaurantNav
+            categories={restaurant?.categories || []}
+            activeCategory={activeCategory}
+            onCategoryChange={handleCategoryChange}
+            primaryColor={restaurant.primaryColor}
+            secondaryColor={restaurant.secondaryColor}
           />
           
-          {/* Toggle para admin */}
-          {adminEmail && (
-            <AdminBypassToggle 
-              onBypassActivated={(email) => {
-                console.log('Admin bypass activated for:', email);
-                // Aqui você pode implementar a lógica de bypass se necessário
-              }}
-            />
-          )}
-        </div>
+          <div className="px-4 py-6 max-w-6xl mx-auto">
+            {/* Status de horário de funcionamento */}
+            <div className="mb-6">
+              <BusinessHoursAlert 
+                restaurant={{ 
+                  name: restaurant.name,
+                  openTime: restaurant.openTime || null,
+                  closeTime: restaurant.closeTime || null,
+                  workingDays: restaurant.workingDays || null
+                }}
+                adminEmail={adminEmail}
+              />
+              
+              {/* Toggle para admin */}
+              {adminEmail && (
+                <AdminBypassToggle 
+                  onBypassActivated={(email) => {
+                    console.log('Admin bypass activated for:', email);
+                    // Aqui você pode implementar a lógica de bypass se necessário
+                  }}
+                />
+              )}
+            </div>
         
         <DeliveryInfo 
           deliveryTime="40 - 50min"
@@ -331,9 +426,10 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
             data-category-id={category.id}
             id={`category-${category.id}`}
             style={{ 
-              scrollMarginTop: '120px',
-              minHeight: '300px', // Garante altura mínima para melhor detecção
-              paddingTop: '20px',
+              scrollMarginTop: '150px',
+              minHeight: '400px', // Aumentado para melhor detecção
+              paddingTop: '30px',
+              paddingBottom: '30px',
               width: '100%',
               maxWidth: '100vw',
               overflowX: 'hidden'
@@ -342,12 +438,15 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
             <CategorySection
               category={category}
               onAddToCart={handleAddToCart}
+              viewOnly={viewOnly}
             />
           </section>
         ))}
-      </main>
+          </div>
+        </main>
 
-      {!showCartModal && (
+      {/* Carrinho e Checkout - Apenas se NÃO for modo visualização */}
+      {!viewOnly && !showCartModal && (
         <CartFloat 
           items={cartItems} 
           totalItems={getTotalItems()}
@@ -356,7 +455,7 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
         />
       )}
 
-      {showCartModal && (
+      {!viewOnly && showCartModal && (
         <CartModal
           items={cartItems}
           restaurant={restaurant}
@@ -375,14 +474,25 @@ export default function MenuPage({ restaurant }: MenuPageProps) {
 
       <RestaurantFooter restaurant={restaurant} />
 
-      {/* Bottom Navigation Bar */}
-      <BottomNav 
-        cartItemsCount={getTotalItems()}
-        restaurantSlug={restaurant.slug || ''}
-      />
+      {/* Botão Chamar Garçom - Apenas em modo visualização E se restaurante habilitou */}
+      {viewOnly && restaurant.enableWaiterCall && tableInfo && (
+        <CallWaiterButton
+          restaurantId={restaurant.id}
+          tableId={tableInfo.id}
+          tableNumber={tableInfo.number}
+        />
+      )}
+
+      {/* Bottom Navigation Bar - Apenas se NÃO for modo visualização */}
+      {!viewOnly && (
+        <BottomNav 
+          cartItemsCount={getTotalItems()}
+          restaurantSlug={restaurant.slug || ''}
+        />
+      )}
       
       {/* Espaçamento para não sobrepor o bottom nav */}
-      <div style={{ height: '80px' }} />
+      {!viewOnly && <div style={{ height: '80px' }} />}
       </div>
     </>
   );

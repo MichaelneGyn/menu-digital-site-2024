@@ -4,21 +4,29 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ClientMenuItem } from '@/lib/restaurant';
-import ProductCustomizationModalDynamic from './product-customization-modal-dynamic';
+import ProductCustomizationModalImproved from './product-customization-modal-improved';
 
 interface ProductCardProps {
   item: ClientMenuItem;
   onAddToCart: (item: ClientMenuItem, customization?: ProductCustomization) => void;
+  viewOnly?: boolean;
 }
 
 export interface ProductCustomization {
+  // Opções comuns
   flavors?: string[];
   extras?: Array<{name: string; price: number}>;
   observations?: string;
+
+  // Campos adicionais usados pelo novo modal
+  size?: string; // ex: tamanho da pizza
+  ingredients?: string[]; // ex: ingredientes selecionados de burger
+
+  // Preço total calculado
   totalPrice: number;
 }
 
-export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
+export default function ProductCard({ item, onAddToCart, viewOnly = false }: ProductCardProps) {
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   const [hasCustomizations, setHasCustomizations] = useState(false);
   const [checkingCustomizations, setCheckingCustomizations] = useState(false);
@@ -108,18 +116,48 @@ export default function ProductCard({ item, onAddToCart }: ProductCardProps) {
               </span>
             </div>
             
-            <button
-              className="add-to-cart-btn"
-              onClick={handleAddToCart}
-            >
-              + Adicionar
-            </button>
+            {/* Botão Adicionar - Apenas se NÃO for modo visualização */}
+            {!viewOnly && (
+              <button
+                className="add-to-cart-btn"
+                onClick={handleAddToCart}
+                style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.25)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  marginTop: '8px',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.35)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.25)';
+                }}
+              >
+                <span style={{ fontSize: '14px', lineHeight: '1' }}>+</span>
+                <span>Adicionar</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {showCustomizationModal && hasCustomizations && (
-        <ProductCustomizationModalDynamic
+        <ProductCustomizationModalImproved
           item={item}
           onAdd={handleCustomizedAdd}
           onClose={() => setShowCustomizationModal(false)}

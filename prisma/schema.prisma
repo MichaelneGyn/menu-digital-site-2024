@@ -1,7 +1,7 @@
 // Prisma Schema - Supabase PostgreSQL
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -102,32 +102,35 @@ model Restaurant {
   showDeliveryTime Boolean      @default(true)
   showRatings      Boolean      @default(true)
   theme            String       @default("light")
+  enableWaiterCall Boolean      @default(true)  // Habilita botão "Chamar Garçom" no cardápio
   pixKey              String?
   pixQrCode           String?                // Deprecated: não usado mais, mas mantido para compatibilidade
-  categories          Category[]
-  coupons             Coupon[]
-  ingredients         Ingredient[]
-  menuItems           MenuItem[]
-  orders              Order[]
-  tables              Table[]
-  waiterCalls         WaiterCall[]
-  customizationGroups CustomizationGroup[]
-  upsellRules         UpsellRule[]
-  user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories              Category[]
+  coupons                 Coupon[]
+  ingredients             Ingredient[]
+  menuItems               MenuItem[]
+  orders                  Order[]
+  tables                  Table[]
+  waiterCalls             WaiterCall[]
+  customizationGroups     CustomizationGroup[]
+  upsellRules             UpsellRule[]
+  categoryCustomizations  CategoryCustomization[]
+  user                    User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Category {
-  id           String     @id @default(cuid())
-  name         String
-  description  String?
-  icon         String?
-  sortOrder    Int        @default(0)
-  isActive     Boolean    @default(true)
-  restaurantId String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  menuItems    MenuItem[]
+  id                      String                   @id @default(cuid())
+  name                    String
+  description             String?
+  icon                    String?
+  sortOrder               Int                      @default(0)
+  isActive                Boolean                  @default(true)
+  restaurantId            String
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  restaurant              Restaurant               @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menuItems               MenuItem[]
+  categoryCustomizations  CategoryCustomization[]
 
   @@unique([restaurantId, name])
 }
@@ -489,4 +492,76 @@ model AdminNotification {
   
   @@index([isRead, createdAt])
   @@index([type, createdAt])
+}
+
+// Modelos de Personalização por Categoria
+model CategoryCustomization {
+  id                String                   @id @default(cuid())
+  categoryId        String
+  restaurantId      String
+  isCustomizable    Boolean                  @default(false)
+  hasSizes          Boolean                  @default(false)
+  hasFlavors        Boolean                  @default(false)
+  hasExtras         Boolean                  @default(false)
+  maxFlavors        Int                      @default(1)
+  flavorsRequired   Boolean                  @default(false)
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  
+  category          Category                 @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  restaurant        Restaurant               @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  sizes             CustomizationSize[]
+  flavors           CustomizationFlavor[]
+  extras            CustomizationExtra[]
+  
+  @@unique([categoryId, restaurantId])
+  @@index([restaurantId])
+}
+
+model CustomizationSize {
+  id                       String                 @id @default(cuid())
+  categoryCustomizationId  String
+  name                     String
+  description              String?
+  priceMultiplier          Float                  @default(1.0)
+  displayOrder             Int                    @default(0)
+  isActive                 Boolean                @default(true)
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+  
+  categoryCustomization    CategoryCustomization  @relation(fields: [categoryCustomizationId], references: [id], onDelete: Cascade)
+  
+  @@index([categoryCustomizationId])
+}
+
+model CustomizationFlavor {
+  id                       String                 @id @default(cuid())
+  categoryCustomizationId  String
+  name                     String
+  description              String?
+  price                    Float
+  displayOrder             Int                    @default(0)
+  isActive                 Boolean                @default(true)
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+  
+  categoryCustomization    CategoryCustomization  @relation(fields: [categoryCustomizationId], references: [id], onDelete: Cascade)
+  
+  @@index([categoryCustomizationId])
+}
+
+model CustomizationExtra {
+  id                       String                 @id @default(cuid())
+  categoryCustomizationId  String
+  name                     String
+  description              String?
+  price                    Float
+  displayOrder             Int                    @default(0)
+  isActive                 Boolean                @default(true)
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+  
+  categoryCustomization    CategoryCustomization  @relation(fields: [categoryCustomizationId], references: [id], onDelete: Cascade)
+  
+  @@index([categoryCustomizationId])
 }

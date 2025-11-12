@@ -962,19 +962,34 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                               )}
                             </div>
 
-                            {/* Customizações */}
+                            {/* Customizações - NOVO SISTEMA */}
                             <div className="border-t-2 border-dashed pt-4 mt-4">
-                              <label className="flex items-center gap-2 mb-4">
-                                <input
-                                  type="checkbox"
-                                  checked={item.hasCustomizations}
-                                  onChange={(e) => updateItem(item.id, 'hasCustomizations', e.target.checked)}
-                                  className="w-5 h-5"
-                                />
-                                <span className="text-base font-semibold">🍕 Este produto tem opções de personalização?</span>
-                              </label>
+                              <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg">
+                                <div className="flex items-start gap-3">
+                                  <span className="text-3xl">💡</span>
+                                  <div className="flex-1">
+                                    <h4 className="font-bold text-blue-900 text-lg mb-2">✨ Novo Sistema de Personalização!</h4>
+                                    <p className="text-sm text-blue-700 mb-3">
+                                      Agora você pode configurar personalização por <strong>categoria inteira</strong> de forma mais simples e rápida!
+                                    </p>
+                                    <Button
+                                      type="button"
+                                      onClick={() => window.open('/dashboard/customization', '_blank')}
+                                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg"
+                                    >
+                                      🎨 Acessar Personalização por Categoria
+                                    </Button>
+                                    <p className="text-xs text-blue-600 mt-3 flex items-center gap-1">
+                                      <span>💡</span>
+                                      <span>Configure uma vez e todos os produtos da categoria herdam as opções!</span>
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
 
-                              {item.hasCustomizations && (
+                            {/* Sistema antigo removido - usar apenas o novo sistema por categoria */}
+                            {false && item.hasCustomizations && (
                                 <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-5 mb-4">
                                   <div className="flex items-center justify-between mb-4">
                                     <div>
@@ -1189,8 +1204,7 @@ Refrigerante Lata,Coca-Cola 350ml,5.00,Bebidas,,não,`;
                                     </div>
                                   ))}
                                 </div>
-                              )}
-                            </div>
+                            )}
                           </CardContent>
                         </Card>
                       ))}
