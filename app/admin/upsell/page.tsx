@@ -349,8 +349,8 @@ function UpsellPage() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-96 overflow-y-auto p-1">
                 {menuItems.map((item) => {
                   const isSelected = selectedProducts.includes(item.id);
-                  const discount = productDiscounts[item.id] || 0;
-                  const discountedPrice = discount > 0 ? item.price * (1 - discount / 100) : item.price;
+                  const discount = productDiscounts[item.id]; // Sem || 0 para permitir undefined
+                  const discountedPrice = discount && discount > 0 ? item.price * (1 - discount / 100) : item.price;
                   
                   return (
                     <div
@@ -397,8 +397,22 @@ function UpsellPage() {
                             type="number"
                             min="0"
                             max="100"
-                            value={discount}
-                            onChange={(e) => handleDiscountChange(item.id, parseInt(e.target.value) || 0)}
+                            value={discount ?? ''}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === '') {
+                                // Se apagar tudo, remove o desconto
+                                setProductDiscounts(prev => {
+                                  const newDiscounts = {...prev};
+                                  delete newDiscounts[item.id];
+                                  return newDiscounts;
+                                });
+                              } else {
+                                // Remove zeros à esquerda e converte para número
+                                const numValue = parseInt(value.replace(/^0+/, '') || '0');
+                                handleDiscountChange(item.id, numValue);
+                              }
+                            }}
                             className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                             placeholder="Ex: 15"
                           />

@@ -1,5 +1,27 @@
 {
   "version": 1.1,
+  "properties": [
+    {
+      "name": "line-clamp",
+      "description": "Limits the number of lines of text that can be displayed.",
+      "browsers": ["E79", "FF121", "S17", "C120"]
+    },
+    {
+      "name": "-webkit-line-clamp",
+      "description": "Webkit-specific property to limit text lines.",
+      "browsers": ["E79", "FF121", "S17", "C120"]
+    },
+    {
+      "name": "appearance",
+      "description": "Controls the appearance of UI elements.",
+      "browsers": ["E79", "FF80", "S15.4", "C84"]
+    },
+    {
+      "name": "-webkit-appearance",
+      "description": "Webkit-specific appearance property.",
+      "browsers": ["E79", "FF80", "S15.4", "C84"]
+    }
+  ],
   "atDirectives": [
     {
       "name": "@tailwind",

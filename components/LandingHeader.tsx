@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import LanguageSwitcher from './LanguageSwitcher';
 
 export default function LandingHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -59,6 +60,9 @@ export default function LandingHeader() {
             {/* Separador */}
             <div className="h-8 w-px bg-gray-300"></div>
             
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+            
             {/* Botões de Ação */}
             <Link href="/auth/login">
               <Button variant="outline" size="sm" className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-bold">
@@ -72,8 +76,9 @@ export default function LandingHeader() {
             </Link>
           </div>
 
-          {/* Mobile Actions: Login + Menu */}
+          {/* Mobile Actions: Language + Login + Menu */}
           <div className="md:hidden flex items-center gap-2">
+            <LanguageSwitcher />
             <Link href="/auth/login">
               <Button
                 variant="outline"
@@ -81,7 +86,7 @@ export default function LandingHeader() {
                 className="border-2 border-gray-300 font-semibold"
                 aria-label="Login"
               >
-                👤 Login
+                👤
               </Button>
             </Link>
             <button

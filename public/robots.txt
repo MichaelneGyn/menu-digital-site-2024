@@ -1,0 +1,20 @@
+# robots.txt para Virtual Cardápio
+# Otimizado para SEO
+
+User-agent: *
+Allow: /
+Allow: /auth/login
+Allow: /auth/register
+Allow: /comparacao
+Allow: /sitemap.xml
+
+# Bloquear áreas privadas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+
+# Sitemap
+Sitemap: https://virtualcardapio.com.br/sitemap.xml
+
+# Crawl-delay (opcional)
+Crawl-delay: 1

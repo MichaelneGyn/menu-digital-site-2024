@@ -4,24 +4,24 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// GET - Contar total de usuários (público, para mostrar vagas restantes)
+// GET - Contar total de usuários (público, para mostrar estatísticas)
 export async function GET() {
   try {
     const count = await prisma.user.count();
     
     return NextResponse.json({ 
       count,
-      limit: 10, // 🔒 Limite alinhado com USER_LIMIT em signup/route.ts
-      spotsLeft: Math.max(0, 10 - count),
-      promoActive: count < 10
+      limit: null, // ✅ SEM LIMITE - Cadastros ilimitados
+      spotsLeft: null, // ✅ Vagas ilimitadas
+      promoActive: count < 50 // Promoção ativa para primeiros 50
     });
   } catch (error) {
     console.error('Erro ao contar usuários:', error);
     // Retorna 0 em caso de erro para não quebrar a página
     return NextResponse.json({ 
       count: 0,
-      limit: 10, // 🔒 Limite alinhado com USER_LIMIT
-      spotsLeft: 10,
+      limit: null, // ✅ SEM LIMITE
+      spotsLeft: null, // ✅ Vagas ilimitadas
       promoActive: true
     });
   }

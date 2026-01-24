@@ -116,7 +116,7 @@ export default function ComparacaoPage() {
                   <span className="text-gray-600 font-semibold">Mensalidade:</span>
                   <span className="text-2xl font-black text-gray-900">R$ 69,90</span>
                 </div>
-                <p className="text-xs text-green-600 font-semibold">🎉 Primeiros 10: R$ 34,95 vitalício!</p>
+                <p className="text-xs text-green-600 font-semibold">✨ Sem taxas por pedido!</p>
               </div>
 
               {/* Comissão */}

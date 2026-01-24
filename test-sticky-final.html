@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Sticky Navigation</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+        }
+        
+        .header {
+            height: 200px;
+            background: linear-gradient(135deg, #ea1d2c, #dc2626);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        /* STICKY NAVIGATION - VERSÃO FINAL */
+        .category-sticky-menu {
+            position: sticky !important;
+            top: 0 !important;
+            width: 100% !important;
+            z-index: 1000 !important;
+            background-color: white !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+            border-bottom: 2px solid #f3f4f6 !important;
+            min-height: 60px !important;
+            display: flex !important;
+            align-items: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        .category-menu-container {
+            max-width: 1200px !important;
+            margin: 0 auto !important;
+            width: 100% !important;
+            padding: 12px 16px !important;
+            display: flex !important;
+            gap: 12px !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+        }
+        
+        .category-button {
+            min-width: 100px;
+            height: 44px;
+            padding: 0 20px;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .category-button.active {
+            background: linear-gradient(135deg, #ea1d2c 0%, #dc2626 100%);
+            color: white;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+        
+        .category-button.inactive {
+            background: #f9fafb;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .category-button.inactive:hover {
+            background: #f3f4f6;
+            color: #374151;
+            transform: translateY(-1px);
+        }
+        
+        .content {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .tall-content {
+            height: 300px;
+            background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍕 X Lanches - Teste Sticky Navigation</h1>
+    </div>
+    
+    <nav class="category-sticky-menu">
+        <div class="category-menu-container">
+            <button class="category-button active">Pizza</button>
+            <button class="category-button inactive">Bebidas</button>
+            <button class="category-button inactive">Sobremesas</button>
+            <button class="category-button inactive">Sanduíches</button>
+            <button class="category-button inactive">Promoções</button>
+        </div>
+    </nav>
+    
+    <div class="content">
+        <div class="section">
+            <h2>🍕 Pizza</h2>
+            <div class="tall-content">
+                Conteúdo da seção Pizza - Role para baixo para testar o sticky
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🥤 Bebidas</h2>
+            <div class="tall-content">
+                Conteúdo da seção Bebidas
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🍰 Sobremesas</h2>
+            <div class="tall-content">
+                Conteúdo da seção Sobremesas
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🥪 Sanduíches</h2>
+            <div class="tall-content">
+                Conteúdo da seção Sanduíches
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🎉 Promoções</h2>
+            <div class="tall-content">
+                Conteúdo da seção Promoções
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Teste Final</h2>
+            <div class="tall-content">
+                Se você consegue ver o menu de categorias fixo no topo enquanto rola, 
+                o sticky navigation está funcionando perfeitamente!
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Adiciona funcionalidade aos botões
+        document.querySelectorAll('.category-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active de todos
+                document.querySelectorAll('.category-button').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.classList.add('inactive');
+                });
+                
+                // Adiciona active ao clicado
+                this.classList.remove('inactive');
+                this.classList.add('active');
+            });
+        });
+        
+        // Teste de scroll para verificar se o sticky funciona
+        let scrolled = false;
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('.category-sticky-menu');
+            if (window.pageYOffset > 50 && !scrolled) {
+                nav.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                scrolled = true;
+                console.log('✅ Sticky navigation detectou scroll - FUNCIONANDO!');
+            } else if (window.pageYOffset <= 50 && scrolled) {
+                nav.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                scrolled = false;
+            }
+        });
+        
+        console.log('🚀 Teste de sticky navigation carregado');
+        console.log('📍 Role a página para baixo para testar');
+    </script>
+</body>
+</html>

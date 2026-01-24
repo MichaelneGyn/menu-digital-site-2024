@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import ConditionalWhatsApp from "@/components/ConditionalWhatsApp";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import GoogleTagManager from "@/components/GoogleTagManager";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const revalidate = 0;
@@ -15,9 +16,9 @@ export const revalidate = 0;
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Cardápio Digital para Restaurantes | Menu Online com QR Code - Teste Grátis",
-  description: "Crie seu cardápio digital em minutos! Sistema completo com QR Code, pedidos online, relatórios de lucro e muito mais. Teste grátis por 30 dias. Aumente suas vendas hoje!",
-  keywords: "cardápio digital, menu digital, cardápio online, qr code restaurante, pedidos online, sistema para restaurante, menu qr code, cardápio digital grátis",
+  title: "Cardápio Digital | Menu QR Code para Restaurante - 30 Dias Grátis",
+  description: "⚡ Cardápio Digital Profissional por R$ 69,90/mês! QR Code + Pedidos Online + Relatórios + Suporte 24/7. Teste GRÁTIS 30 dias. Sem taxa por pedido. Cancele quando quiser. ✅",
+  keywords: "cardápio digital, menu digital, cardápio online, qr code restaurante, pedidos online, sistema para restaurante, menu qr code, cardápio digital grátis, cardápio digital barato, melhor cardápio digital, cardápio digital whatsapp, cardápio digital delivery, sistema delivery restaurante, app cardápio digital, cardápio digital profissional",
   authors: [{ name: "Virtual Cardápio" }],
   creator: "Virtual Cardápio",
   publisher: "Virtual Cardápio",
@@ -36,8 +37,8 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'pt_BR',
     url: 'https://virtualcardapio.com.br',
-    title: 'Cardápio Digital para Restaurantes | Menu Online com QR Code',
-    description: 'Crie seu cardápio digital em minutos! Sistema completo com QR Code, pedidos online e relatórios. Teste grátis por 30 dias.',
+    title: 'Cardápio Digital | R$ 69,90/mês - 30 Dias Grátis',
+    description: '⚡ Cardápio Digital Profissional! QR Code + Pedidos Online + Relatórios. Teste GRÁTIS 30 dias. Sem taxa por pedido. ✅',
     siteName: 'Virtual Cardápio',
     images: [
       {
@@ -90,8 +91,10 @@ export default async function RootLayout({
       </head>
       <body className={inter.className} suppressHydrationWarning>
         <Providers session={session}>
-          {children}
-          <ConditionalWhatsApp />
+          <LanguageProvider>
+            {children}
+            <ConditionalWhatsApp />
+          </LanguageProvider>
           <Toaster 
             position="top-right" 
             richColors 
