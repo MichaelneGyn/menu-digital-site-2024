@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useSession } from 'next-auth/react';
@@ -20,6 +19,20 @@ import { PriceInput } from '@/components/PriceInput';
 import { CouponsModal } from '@/components/CouponsModal';
 import AddItemWithCustomizationsModal from '@/components/admin/AddItemWithCustomizationsModal';
 import AdminNotifications from '@/components/AdminNotifications';
+import {
+  Home, ShoppingBag, ChefHat, Menu as MenuIcon, BarChart2, Calculator, Settings, HelpCircle,
+  Bell, Search, Plus, Folder, Ticket, Layers, Link as LinkIcon, Palette, FileText,
+  ClipboardList, LayoutGrid, Phone, Users, MoreHorizontal, Edit, ExternalLink,
+  TrendingUp, DollarSign, ShoppingCart, Package, ChevronRight, LogOut
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface Restaurant {
   id: string;
@@ -72,6 +85,7 @@ function AdminDashboard() {
   const [showCreateRestaurantModal, setShowCreateRestaurantModal] = useState(false);
   const [showEditRestaurantModal, setShowEditRestaurantModal] = useState(false);
   const [showReportsModal, setShowReportsModal] = useState(false);
+  const [showCustomizeModal, setShowCustomizeModal] = useState(false);
 
   // Regra de visibilidade para cards adicionais
   const ADMIN_EMAIL = 'michaeldouglasqueiroz@gmail.com';
@@ -111,12 +125,6 @@ function AdminDashboard() {
     const totalCategories = data.categories?.length || 0;
     const promoItems = data.menuItems?.filter(item => item.isPromo).length || 0;
 
-    console.log('📊 Calculando estatísticas:');
-    console.log('  Total de itens:', totalItems);
-    console.log('  Itens completos:', data.menuItems);
-    console.log('  Itens com isPromo=true:', data.menuItems?.filter(item => item.isPromo));
-    console.log('  Total de promoções:', promoItems);
-
     setStats({
       totalItems,
       totalCategories,
@@ -145,6 +153,29 @@ function AdminDashboard() {
     }
   };
 
+  const handleTogglePromo = async (item: MenuItem) => {
+    try {
+      const response = await fetch(`/api/menu/${item.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...item,
+          isPromo: !item.isPromo,
+          categoryId: item.category.id
+        }),
+      });
+
+      if (response.ok) {
+        toast.success(`Item ${!item.isPromo ? 'colocado em' : 'removido da'} promoção!`);
+        fetchRestaurantData();
+      } else {
+        toast.error('Erro ao atualizar status');
+      }
+    } catch (error) {
+      toast.error('Erro ao atualizar status');
+    }
+  };
+
   if (status === 'loading' || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -157,417 +188,351 @@ function AdminDashboard() {
   }
 
   if (!session) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Você não está logado</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-center">
-              <p className="text-gray-600">Faça login para acessar o painel.</p>
-              <Link href="/auth/login">
-                <Button className="animated-button">Ir para Login</Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return null;
   }
 
+  const quickAccessItems = [
+    { icon: Plus, label: 'Novo item', action: () => setShowAddItemModal(true), badge: null },
+    { icon: Folder, label: 'Categoria', action: () => setShowAddCategoryModal(true), badge: null },
+    { icon: Ticket, label: 'Cupom', action: () => setShowCouponsModal(true), badge: null },
+    { icon: TrendingUp, label: 'Promoção', action: () => toast.info('Gerencie as promoções na aba Cardápio'), badge: 'NOVO' },
+    { icon: Layers, label: 'Combo', action: () => router.push('/admin/upsell'), badge: null },
+    { icon: LinkIcon, label: 'Integrações', action: () => router.push('/admin/integrations'), badge: 'DEV' },
+    { icon: Palette, label: 'Personalização', action: () => router.push('/admin/customization'), badge: null },
+    { icon: Settings, label: 'Configurações', action: () => router.push('/admin/settings'), badge: 'NOVO' },
+    { icon: Calculator, label: 'Calculadora CMV', action: () => router.push('/admin/cmv/calculator'), badge: null },
+    { icon: TrendingUp, label: 'Upsell', action: () => router.push('/admin/upsell'), badge: 'NOVO' },
+    { icon: BarChart2, label: 'Relatórios', action: () => setShowReportsModal(true), badge: 'LUCRO' },
+    { icon: ClipboardList, label: 'Comandas', action: () => router.push('/admin/orders'), badge: null },
+    { icon: LayoutGrid, label: 'Painel Comandas', action: () => router.push('/admin/kitchen'), badge: 'NOVO' },
+    { icon: LayoutGrid, label: 'Gestão Mesas', action: () => router.push('/admin/tables'), badge: null },
+    { icon: Phone, label: 'Chamadas', action: () => router.push('/admin/waiter-calls'), badge: 'NOVO' },
+    { icon: Users, label: 'Usuários', action: () => router.push('/admin/usuarios'), badge: null },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6 gap-4">
-            <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                Painel Administrativo
-              </h1>
-              <p className="text-sm sm:text-base text-gray-600">
-                Bem-vindo, {session.user?.name || session.user?.email}!
+    <div className="flex min-h-screen bg-gray-50 font-sans">
+      {/* Sidebar */}
+      <aside className="w-20 bg-[#E53935] fixed h-full z-50 flex flex-col items-center py-6 gap-8 shadow-lg">
+        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white mb-2">
+          <Home size={24} />
+        </div>
+
+        <nav className="flex flex-col gap-6 w-full items-center">
+          <button className="flex flex-col items-center gap-1 text-white opacity-100 relative group">
+            <div className="p-2 bg-white/10 rounded-lg">
+              <Home size={20} />
+            </div>
+            <span className="text-[10px] font-medium">Inicio</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group">
+            <div className="p-2 group-hover:bg-white/10 rounded-lg transition-colors">
+              <ShoppingBag size={20} />
+            </div>
+            <span className="text-[10px] font-medium">Pedido</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group">
+            <div className="p-2 group-hover:bg-white/10 rounded-lg transition-colors">
+              <ChefHat size={20} />
+            </div>
+            <span className="text-[10px] font-medium">Cozinha</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group">
+            <div className="p-2 group-hover:bg-white/10 rounded-lg transition-colors">
+              <MenuIcon size={20} />
+            </div>
+            <span className="text-[10px] font-medium">Cardápio</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group">
+            <div className="p-2 group-hover:bg-white/10 rounded-lg transition-colors">
+              <BarChart2 size={20} />
+            </div>
+            <span className="text-[10px] font-medium">Desemp</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group">
+            <div className="p-2 group-hover:bg-white/10 rounded-lg transition-colors">
+              <DollarSign size={20} />
+            </div>
+            <span className="text-[10px] font-medium">Financ</span>
+          </button>
+
+          <button
+            onClick={() => router.push('/admin/settings')}
+            className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group"
+          >
+            <div className="p-2 group-hover:bg-white/10 rounded-lg transition-colors">
+              <Settings size={20} />
+            </div>
+            <span className="text-[10px] font-medium">Config</span>
+          </button>
+
+          <button
+            onClick={() => router.push('/admin/tutoriais')}
+            className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group mt-auto"
+          >
+            <div className="p-2 group-hover:bg-white/10 rounded-lg transition-colors">
+              <HelpCircle size={20} />
+            </div>
+            <span className="text-[10px] font-medium">Ajuda</span>
+          </button>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 ml-20">
+        {/* Header */}
+        <header className="bg-white border-b h-16 flex items-center justify-between px-8 sticky top-0 z-40">
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-lg font-bold text-gray-900 leading-tight">{restaurant?.name || 'Seu Restaurante'}</h1>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                <span className="text-xs text-gray-500 font-medium">Loja aberta</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="text"
+                placeholder="Buscar..."
+                className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"
+              />
+            </div>
+
+            <AdminNotifications />
+
+            <div className="flex items-center gap-3 pl-6 border-l">
+              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-xs">
+                {session.user?.name?.substring(0, 2).toUpperCase() || 'AD'}
+              </div>
+              <div className="text-sm hidden md:block">
+                <p className="font-medium text-gray-900">{session.user?.name}</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="p-8 max-w-[1600px] mx-auto space-y-8">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <p className="text-sm text-gray-500 mb-2">Pedidos hoje</p>
+              <div className="text-3xl font-bold text-gray-900 mb-1">12</div>
+              <p className="text-xs font-medium text-green-600 flex items-center gap-1">
+                <TrendingUp size={12} /> +8% vs ontem
               </p>
             </div>
-            <div className="flex gap-2 items-center flex-shrink-0">
-              <AdminNotifications />
-              {restaurant && (
-                <Link href={`/${restaurant.slug}`}>
-                  <Button variant="outline" className="animated-button text-sm sm:text-base hidden sm:flex">
-                    <span className="mr-2">👁️</span>
-                    Ver Cardápio
-                  </Button>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <p className="text-sm text-gray-500 mb-2">Faturamento</p>
+              <div className="text-3xl font-bold text-gray-900 mb-1">R$ 486,00</div>
+              <p className="text-xs font-medium text-green-600 flex items-center gap-1">
+                <TrendingUp size={12} /> +12% vs ontem
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <p className="text-sm text-gray-500 mb-2">Ticket médio</p>
+              <div className="text-3xl font-bold text-gray-900 mb-1">R$ 40,50</div>
+              <p className="text-xs font-medium text-red-600 flex items-center gap-1">
+                <TrendingUp size={12} className="rotate-180" /> -3% vs ontem
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <p className="text-sm text-gray-500 mb-2">Itens vendidos</p>
+              <div className="text-3xl font-bold text-gray-900 mb-1">34</div>
+              <p className="text-xs text-gray-400">
+                Total de vendas
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Access */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h2 className="text-lg font-bold text-gray-900 mb-6">Acesso rápido</h2>
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-y-8 gap-x-4">
+              {quickAccessItems.map((item, index) => (
+                <button
+                  key={index}
+                  onClick={item.action}
+                  className="flex flex-col items-center gap-3 group relative"
+                >
+                  <div className="w-12 h-12 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-red-50 group-hover:text-red-600 group-hover:border-red-100 transition-all">
+                    <item.icon size={20} strokeWidth={1.5} />
+                  </div>
+                  <span className="text-xs font-medium text-gray-600 group-hover:text-red-600 transition-colors text-center">
+                    {item.label}
+                  </span>
+                  {item.badge && (
+                    <span className={`absolute -top-1 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${item.badge === 'NOVO' ? 'bg-red-100 text-red-600' :
+                        item.badge === 'LUCRO' ? 'bg-green-100 text-green-600' :
+                          'bg-gray-100 text-gray-600'
+                      }`}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Menu List */}
+            <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col">
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h2 className="text-lg font-bold text-gray-900">Cardápio</h2>
+                <Link href={`/${restaurant?.slug}`} target="_blank" className="text-sm font-medium text-red-600 hover:text-red-700">
+                  Ver todos
                 </Link>
-              )}
-              <Link href="/auth/logout">
-                <Button variant="destructive" className="animated-button text-sm sm:text-base hidden sm:flex">
-                  Sair
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+              </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Cards de Estatísticas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
-          <Card className="stat-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 sm:px-6">
-              <CardTitle className="text-sm font-medium">Total de Itens</CardTitle>
-              <span className="text-xl sm:text-2xl">🍕</span>
-            </CardHeader>
-            <CardContent className="px-4 sm:px-6">
-              <div className="text-xl sm:text-2xl font-bold text-red-600">{stats.totalItems}</div>
-              <p className="text-xs text-muted-foreground">
-                Itens no cardápio
-              </p>
-            </CardContent>
-          </Card>
+              <div className="flex-1 overflow-auto">
+                {restaurant?.menuItems && restaurant.menuItems.length > 0 ? (
+                  <div className="divide-y divide-gray-50">
+                    {restaurant.menuItems.slice(0, 5).map((item) => (
+                      <div key={item.id} className="p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors group">
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                          {item.image ? (
+                            <img
+                              src={item.image?.startsWith('/') ? item.image : item.image?.startsWith('http') ? item.image : `/api/image?key=${encodeURIComponent(item.image)}`}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                              <Package size={20} />
+                            </div>
+                          )}
+                        </div>
 
-          <Card className="stat-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 sm:px-6">
-              <CardTitle className="text-sm font-medium">Categorias</CardTitle>
-              <span className="text-xl sm:text-2xl">📁</span>
-            </CardHeader>
-            <CardContent className="px-4 sm:px-6">
-              <div className="text-xl sm:text-2xl font-bold text-blue-600">{stats.totalCategories}</div>
-              <p className="text-xs text-muted-foreground">
-                Categorias ativas
-              </p>
-            </CardContent>
-          </Card>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-900 truncate">{item.name}</h3>
+                          <p className="text-sm text-gray-500">R$ {Number(item.price).toFixed(2)}</p>
+                        </div>
 
-          <Card className="stat-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 sm:px-6">
-              <CardTitle className="text-sm font-medium">Promoções</CardTitle>
-              <span className="text-xl sm:text-2xl">🎉</span>
-            </CardHeader>
-            <CardContent className="px-4 sm:px-6">
-              <div className="text-xl sm:text-2xl font-bold text-yellow-600">{stats.promoItems}</div>
-              <p className="text-xs text-muted-foreground">
-                Itens em promoção
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Conteúdo Principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Ações Rápidas */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Ações Rápidas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Grade original de Ações Rápidas: manter exatamente os cards e funcionalidades */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                  {/* Adicionar Item */}
-                  <button
-                    onClick={() => setShowAddItemModal(true)}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
-                  >
-                    <span className="text-xl sm:text-2xl">➕</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Adicionar Item</span>
-                  </button>
-
-                  {/* Nova Categoria */}
-                  <button
-                    onClick={() => setShowAddCategoryModal(true)}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
-                  >
-                    <span className="text-xl sm:text-2xl">📁</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Nova Categoria</span>
-                  </button>
-
-                  {/* Integrações - APENAS ADMIN */}
-                  {isAdmin && (
-                    <button
-                      onClick={() => router.push('/admin/integrations')}
-                      className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border-2 rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-400 shadow-lg"
-                    >
-                      <span className="text-xl sm:text-2xl">🔗</span>
-                      <span className="text-xs sm:text-sm font-medium text-center">Integrações</span>
-                      <span className="text-xs text-blue-600 font-semibold">DEV</span>
-                    </button>
-                  )}
-
-                  {/* Cupons de Desconto */}
-                  <button
-                    onClick={() => setShowCouponsModal(true)}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200"
-                  >
-                    <span className="text-xl sm:text-2xl">🎫</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Cupons</span>
-                    <span className="text-xs text-orange-600 font-semibold">NOVO</span>
-                  </button>
-
-                  {/* Adicionar Itens em Massa */}
-                  <button
-                    onClick={() => router.push('/admin/import-menu')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200"
-                  >
-                    <span className="text-xl sm:text-2xl">📤</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Adicionar Itens em Massa</span>
-                    <span className="text-xs text-purple-600 font-semibold">NOVO</span>
-                  </button>
-
-                  {/* Personalização */}
-                  <button
-                    onClick={() => router.push('/dashboard/customization')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-green-50 to-emerald-50 border-green-200"
-                  >
-                    <span className="text-xl sm:text-2xl">🎨</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Personalização</span>
-                    <span className="text-xs text-green-600 font-semibold">NOVO</span>
-                  </button>
-
-                  {/* Configurações */}
-                  <button
-                    onClick={() => router.push('/admin/settings')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200"
-                  >
-                    <span className="text-xl sm:text-2xl">⚙️</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Configurações</span>
-                    <span className="text-xs text-blue-600 font-semibold">NOVO</span>
-                  </button>
-
-
-                  {/* Calculadora CMV */}
-                  <button
-                    onClick={() => router.push('/admin/cmv')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-green-50 to-blue-50 border-green-200"
-                  >
-                    <span className="text-xl sm:text-2xl">🧮</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Calculadora CMV</span>
-                    <span className="text-xs text-green-600 font-semibold">NOVO</span>
-                  </button>
-
-                  {/* Upsell */}
-                  <button
-                    onClick={() => router.push('/admin/upsell')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200"
-                  >
-                    <span className="text-xl sm:text-2xl">🎯</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Upsell</span>
-                    <span className="text-xs text-yellow-600 font-semibold">NOVO</span>
-                  </button>
-
-                  {/* Relatórios */}
-                  <button
-                    onClick={() => router.push('/admin/relatorios')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-green-50 to-blue-50 border-green-200"
-                  >
-                    <span className="text-xl sm:text-2xl">📊</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Relatórios</span>
-                    <span className="text-xs text-green-600 font-semibold">LUCRO</span>
-                  </button>
-
-                  {/* Novos cards adicionais */}
-                  {/* Comandas: sempre visível */}
-                  <button
-                    onClick={() => router.push('/admin/orders')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
-                  >
-                    <span className="text-xl sm:text-2xl">🧾</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Comandas</span>
-                  </button>
-
-                  {/* Painel de Comandos (Kitchen Display) */}
-                  <button
-                    onClick={() => router.push('/admin/kitchen')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-orange-50 to-red-50 border-orange-200"
-                  >
-                    <span className="text-xl sm:text-2xl">👨‍🍳</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Painel de Comandos</span>
-                    <span className="text-xs text-orange-600 font-semibold">NOVO</span>
-                  </button>
-
-                  {/* Gestão de Mesas */}
-                  <button
-                    onClick={() => router.push('/admin/tables')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
-                  >
-                    <span className="text-xl sm:text-2xl">🍽️</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Gestão de Mesas</span>
-                    <span className="text-xs text-blue-600 font-semibold">NOVO</span>
-                  </button>
-
-                  {/* Chamadas de Garçom */}
-                  <button
-                    onClick={() => router.push('/admin/waiter-calls')}
-                    className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-gradient-to-br from-red-50 to-pink-50 border-red-200"
-                  >
-                    <span className="text-xl sm:text-2xl">🔔</span>
-                    <span className="text-xs sm:text-sm font-medium text-center">Chamadas</span>
-                    <span className="text-xs text-red-600 font-semibold">NOVO</span>
-                  </button>
-
-                  {/* Usuários & Assinaturas: somente para admin */}
-                  {isAdmin && (
-                    <button
-                      onClick={() => router.push('/admin/customers')}
-                      className="h-20 sm:h-24 flex flex-col items-center justify-center space-y-1 sm:space-y-2 border rounded-lg p-2 sm:p-4 hover-scale animated-button hover-float bg-white"
-                    >
-                      <span className="text-xl sm:text-2xl">👥💳</span>
-                      <span className="text-xs sm:text-sm font-medium text-center">Usuários</span>
-                    </button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Informações do Restaurante */}
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Informações</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {restaurant ? (
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Nome</label>
-                      <p className="text-lg font-semibold">{restaurant.name}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">URL</label>
-                      <p className="text-sm text-blue-600">/{restaurant.slug}</p>
-                    </div>
-                    {restaurant.whatsapp && (
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">WhatsApp</label>
-                        <p>
-                          <a
-                            href={`https://wa.me/${onlyDigits(restaurant.whatsapp)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-green-600 hover:underline"
+                        <div className="flex items-center gap-4">
+                          <button
+                            onClick={() => handleTogglePromo(item)}
+                            className={`w-10 h-5 rounded-full relative transition-colors ${item.isPromo ? 'bg-green-500' : 'bg-gray-200'}`}
+                            title={item.isPromo ? 'Remover da promoção' : 'Colocar em promoção'}
                           >
-                            {formatBRMask(restaurant.whatsapp)}
-                          </a>
-                        </p>
-                      </div>
-                    )}
-                    <div className="pt-3 space-y-2">
-                      <Button 
-                        className="w-full animated-button" 
-                        variant="outline"
-                        onClick={() => setShowEditRestaurantModal(true)}
-                      >
-                        Editar Informações
-                      </Button>
-                      
-                      <Button 
-                        className="w-full animated-button bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white border-0" 
-                        onClick={() => router.push('/admin/tutoriais')}
-                      >
-                        <span className="mr-2">🎬</span>
-                        Tutoriais em Vídeo
-                        <Badge className="ml-2 bg-yellow-400 text-red-900 text-xs">NOVO</Badge>
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-gray-500 mb-3">Nenhum restaurante cadastrado</p>
-                    <Button 
-                      className="animated-button"
-                      onClick={() => setShowCreateRestaurantModal(true)}
-                    >
-                      Criar Restaurante
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                            <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${item.isPromo ? 'translate-x-5' : 'translate-x-0'}`}></div>
+                          </button>
 
-        {/* Itens Recentes */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Itens do Cardápio</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {restaurant?.menuItems && restaurant.menuItems.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {restaurant.menuItems.slice(0, 6).map((item) => (
-                  <div key={item.id} className="border rounded-lg p-4 hover-scale relative">
-                    <div className="absolute top-2 right-2 flex gap-2 z-10">
-                      <button
-                        onClick={() => {
-                          setEditingItem(item);
-                          setShowEditItemModal(true);
-                        }}
-                        className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-blue-600"
-                        title="Editar item"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
-                        title="Remover item"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    {item.image ? (
-                      <img 
-                        src={
-                          item.image?.startsWith('/') 
-                            ? item.image 
-                            : item.image?.startsWith('http') 
-                              ? item.image 
-                              : `/api/image?key=${encodeURIComponent(item.image)}`
-                        } 
-                        alt={item.name}
-                        className="w-full h-32 object-contain bg-white rounded-md mb-3"
-                      />
-                    ) : (
-                      <div className="w-full h-32 flex items-center justify-center bg-gray-100 rounded-md mb-3">
-                        <div className="text-center text-gray-400">
-                          <span className="text-4xl">📷</span>
-                          <p className="text-xs mt-1">Sem imagem</p>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full outline-none">
+                                <MoreHorizontal size={20} />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => {
+                                setEditingItem(item);
+                                setShowEditItemModal(true);
+                              }}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDeleteItem(item.id)} className="text-red-600 focus:text-red-600">
+                                <LogOut className="mr-2 h-4 w-4" />
+                                Excluir
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
-                    )}
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-red-600">
-                        R$ {Number(item.price).toFixed(2)}
-                      </span>
-                      {item.isPromo && (
-                        <Badge variant="secondary">Promoção</Badge>
-                      )}
-                    </div>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
+                    <p>Nenhum item cadastrado</p>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">Nenhum item cadastrado ainda</p>
-                <Button 
-                  className="animated-button"
+
+              <div className="p-4 border-t border-gray-100">
+                <button
                   onClick={() => setShowAddItemModal(true)}
-                  disabled={!restaurant}
+                  className="flex items-center gap-2 text-red-600 font-medium hover:text-red-700 transition-colors"
                 >
-                  <span className="mr-2">➕</span>
-                  Adicionar Primeiro Item
+                  <Plus size={20} />
+                  Adicionar item
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-6">
+              {/* Info Card */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 className="text-lg font-bold text-gray-900 mb-6">Informações</h2>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Nome</span>
+                    <span className="font-medium text-gray-900">{restaurant?.name || '-'}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Link</span>
+                    <a href={`/${restaurant?.slug}`} target="_blank" className="font-medium text-red-600 hover:underline">
+                      /{restaurant?.slug || '-'}
+                    </a>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">WhatsApp</span>
+                    <span className="font-medium text-gray-900">{restaurant?.whatsapp ? formatBRMask(restaurant.whatsapp) : '-'}</span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => router.push('/admin/settings')}
+                  variant="outline"
+                  className="w-full mt-6 border-gray-200 hover:bg-gray-50 text-gray-700"
+                >
+                  Editar informações
                 </Button>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+
+              {/* Help Card */}
+              <div className="bg-[#E53935] rounded-xl shadow-sm p-6 text-white relative overflow-hidden">
+                <div className="relative z-10">
+                  <h2 className="text-lg font-bold mb-2">Precisa de ajuda?</h2>
+                  <p className="text-white/90 text-sm mb-6">Acesse nossos tutoriais e tire suas dúvidas</p>
+
+                  <Button
+                    onClick={() => router.push('/admin/tutoriais')}
+                    className="w-full bg-white text-[#E53935] hover:bg-gray-50 border-none font-medium"
+                  >
+                    Acessar Central de Ajuda
+                  </Button>
+                </div>
+
+                {/* Decorative circles */}
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full"></div>
+                <div className="absolute bottom-10 -left-10 w-24 h-24 bg-white/10 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
 
       {/* Modals */}
       {showCreateRestaurantModal && (
-        <CreateRestaurantModal 
+        <CreateRestaurantModal
           isOpen={showCreateRestaurantModal}
           onClose={() => setShowCreateRestaurantModal(false)}
           onSuccess={(restaurant) => {
@@ -580,7 +545,7 @@ function AdminDashboard() {
       )}
 
       {showAddItemModal && (
-        <AddItemWithCustomizationsModal 
+        <AddItemWithCustomizationsModal
           isOpen={showAddItemModal}
           onClose={() => setShowAddItemModal(false)}
           restaurantId={restaurant?.id || ''}
@@ -594,7 +559,7 @@ function AdminDashboard() {
       )}
 
       {showEditItemModal && editingItem && (
-        <EditItemModal 
+        <EditItemModal
           isOpen={showEditItemModal}
           onClose={() => {
             setShowEditItemModal(false);
@@ -612,7 +577,7 @@ function AdminDashboard() {
       )}
 
       {showAddCategoryModal && (
-        <AddCategoryModal 
+        <AddCategoryModal
           isOpen={showAddCategoryModal}
           onClose={() => setShowAddCategoryModal(false)}
           restaurantId={restaurant?.id || ''}
@@ -625,7 +590,7 @@ function AdminDashboard() {
       )}
 
       {showEditRestaurantModal && restaurant && (
-        <EditRestaurantModal 
+        <EditRestaurantModal
           isOpen={showEditRestaurantModal}
           onClose={() => setShowEditRestaurantModal(false)}
           restaurant={restaurant}
@@ -637,9 +602,21 @@ function AdminDashboard() {
         />
       )}
 
+      {showCustomizeModal && restaurant && (
+        <CustomizeModal
+          isOpen={showCustomizeModal}
+          onClose={() => setShowCustomizeModal(false)}
+          restaurant={restaurant}
+          onSuccess={() => {
+            setShowCustomizeModal(false);
+            toast.success('🎨 Aparência atualizada com sucesso!');
+            fetchRestaurantData();
+          }}
+        />
+      )}
 
       {showCouponsModal && restaurant && (
-        <CouponsModal 
+        <CouponsModal
           isOpen={showCouponsModal}
           onClose={() => setShowCouponsModal(false)}
           restaurant={restaurant}
@@ -647,7 +624,7 @@ function AdminDashboard() {
       )}
 
       {showReportsModal && restaurant && (
-        <ReportsModal 
+        <ReportsModal
           isOpen={showReportsModal}
           onClose={() => setShowReportsModal(false)}
           restaurant={restaurant}
@@ -727,12 +704,12 @@ function CreateRestaurantModal({ isOpen, onClose, onSuccess }: CreateRestaurantM
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 placeholder="Nome do seu restaurante"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="whatsapp">WhatsApp</Label>
               <Input
@@ -743,13 +720,13 @@ function CreateRestaurantModal({ isOpen, onClose, onSuccess }: CreateRestaurantM
                 placeholder="(11) 99999-9999"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="address">Endereço</Label>
               <Input
                 id="address"
                 value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 placeholder="Endereço do restaurante"
               />
             </div>
@@ -789,15 +766,15 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  
+
   // Customizações
   const [hasCustomizations, setHasCustomizations] = useState(false);
   const [flavors, setFlavors] = useState<string[]>([]);
   const [newFlavor, setNewFlavor] = useState('');
-  const [borders, setBorders] = useState<Array<{name: string; price: string}>>([]);
-  const [newBorder, setNewBorder] = useState({name: '', price: ''});
-  const [extras, setExtras] = useState<Array<{name: string; price: string}>>([]);
-  const [newExtra, setNewExtra] = useState({name: '', price: ''});
+  const [borders, setBorders] = useState<Array<{ name: string; price: string }>>([]);
+  const [newBorder, setNewBorder] = useState({ name: '', price: '' });
+  const [extras, setExtras] = useState<Array<{ name: string; price: string }>>([]);
+  const [newExtra, setNewExtra] = useState({ name: '', price: '' });
   const [maxFlavors, setMaxFlavors] = useState('2');
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -841,7 +818,7 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
           try {
             const errBody = await uploadResponse.json();
             if (errBody?.error) errMsg = errBody.error;
-          } catch {}
+          } catch { }
           toast.error(errMsg);
           return;
         }
@@ -868,7 +845,7 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
         const createdItem = await response.json();
         console.log('✅ Item criado:', createdItem);
         toast.success(`✅ Item "${createdItem.name}" criado com sucesso!`);
-        
+
         // Reset form
         setFormData({
           name: '',
@@ -908,29 +885,29 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 placeholder="Ex: Pizza Margherita"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="description">Descrição</Label>
               <Input
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 required
                 placeholder="Descreva o item"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="categoryId">Categoria</Label>
               <select
                 id="categoryId"
                 value={formData.categoryId}
-                onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                 required
                 className="w-full p-2 border rounded-md"
               >
@@ -942,24 +919,24 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
                 ))}
               </select>
             </div>
-            
+
             <div>
               <Label htmlFor="price">Preço</Label>
               <PriceInput
                 value={formData.price}
-                onChange={(val) => setFormData({...formData, price: val})}
+                onChange={(val) => setFormData({ ...formData, price: val })}
                 placeholder="Digite: 2990 = R$ 29,90"
               />
             </div>
-            
+
             <div>
               <Label>Imagem do Item</Label>
               <div className="space-y-3">
                 {imagePreview ? (
                   <div className="relative">
-                    <img 
-                      src={imagePreview} 
-                      alt="Preview" 
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
                       className="w-full h-32 object-contain bg-gray-50 rounded-md border"
                     />
                     <button
@@ -990,24 +967,24 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
                 )}
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 id="isPromo"
                 checked={formData.isPromo}
-                onChange={(e) => setFormData({...formData, isPromo: e.target.checked})}
+                onChange={(e) => setFormData({ ...formData, isPromo: e.target.checked })}
               />
               <Label htmlFor="isPromo">Item em promoção</Label>
             </div>
-            
+
             {formData.isPromo && (
               <>
                 <div>
                   <Label htmlFor="oldPrice">Preço Anterior</Label>
                   <PriceInput
                     value={formData.oldPrice}
-                    onChange={(val) => setFormData({...formData, oldPrice: val})}
+                    onChange={(val) => setFormData({ ...formData, oldPrice: val })}
                     placeholder="Digite: 3990 = R$ 39,90"
                   />
                 </div>
@@ -1018,7 +995,7 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
                     id="promoTag"
                     type="text"
                     value={formData.promoTag}
-                    onChange={(e) => setFormData({...formData, promoTag: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, promoTag: e.target.value })}
                     placeholder="Ex: COMBO, 2 POR 1, OFERTA, etc."
                     maxLength={20}
                   />
@@ -1029,28 +1006,28 @@ function AddItemModal({ isOpen, onClose, restaurantId, categories, onSuccess }: 
                   <div className="flex flex-wrap gap-2 mt-2">
                     <button
                       type="button"
-                      onClick={() => setFormData({...formData, promoTag: 'COMBO'})}
+                      onClick={() => setFormData({ ...formData, promoTag: 'COMBO' })}
                       className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
                     >
                       COMBO
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormData({...formData, promoTag: '2 POR 1'})}
+                      onClick={() => setFormData({ ...formData, promoTag: '2 POR 1' })}
                       className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
                     >
                       2 POR 1
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormData({...formData, promoTag: 'OFERTA'})}
+                      onClick={() => setFormData({ ...formData, promoTag: 'OFERTA' })}
                       className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
                     >
                       OFERTA
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormData({...formData, promoTag: 'PROMOÇÃO'})}
+                      onClick={() => setFormData({ ...formData, promoTag: 'PROMOÇÃO' })}
                       className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
                     >
                       PROMOÇÃO
@@ -1138,7 +1115,7 @@ function EditItemModal({ isOpen, onClose, item, categories, onSuccess }: EditIte
           try {
             const errBody = await uploadResponse.json();
             if (errBody?.error) errMsg = errBody.error;
-          } catch {}
+          } catch { }
           toast.error(errMsg);
           setIsLoading(false);
           setIsUploading(false);
@@ -1194,7 +1171,7 @@ function EditItemModal({ isOpen, onClose, item, categories, onSuccess }: EditIte
                 <Input
                   id="edit-name"
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                   placeholder="Ex: Pizza Margherita"
                 />
@@ -1205,7 +1182,7 @@ function EditItemModal({ isOpen, onClose, item, categories, onSuccess }: EditIte
                 <select
                   id="edit-category"
                   value={formData.categoryId}
-                  onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                   className="w-full p-2 border rounded-md"
                   required
                 >
@@ -1218,34 +1195,34 @@ function EditItemModal({ isOpen, onClose, item, categories, onSuccess }: EditIte
                 </select>
               </div>
             </div>
-            
+
             <div>
               <Label htmlFor="edit-description">Descrição</Label>
               <Input
                 id="edit-description"
                 value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Descrição do item"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="edit-price">Preço</Label>
               <PriceInput
                 value={formData.price}
-                onChange={(val) => setFormData({...formData, price: val})}
+                onChange={(val) => setFormData({ ...formData, price: val })}
                 placeholder="Digite: 2990 = R$ 29,90"
               />
             </div>
-            
+
             <div>
               <Label>Imagem do Item</Label>
               <div className="space-y-3">
                 {imagePreview ? (
                   <div className="relative">
-                    <img 
-                      src={imagePreview} 
-                      alt="Preview" 
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
                       className="w-full h-32 object-contain bg-gray-50 rounded-md border"
                     />
                     <button
@@ -1276,24 +1253,24 @@ function EditItemModal({ isOpen, onClose, item, categories, onSuccess }: EditIte
                 )}
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 id="edit-isPromo"
                 checked={formData.isPromo}
-                onChange={(e) => setFormData({...formData, isPromo: e.target.checked})}
+                onChange={(e) => setFormData({ ...formData, isPromo: e.target.checked })}
               />
               <Label htmlFor="edit-isPromo">Item em promoção</Label>
             </div>
-            
+
             {formData.isPromo && (
               <>
                 <div>
                   <Label htmlFor="edit-oldPrice">Preço Anterior</Label>
                   <PriceInput
                     value={formData.oldPrice}
-                    onChange={(val) => setFormData({...formData, oldPrice: val})}
+                    onChange={(val) => setFormData({ ...formData, oldPrice: val })}
                     placeholder="Digite: 3990 = R$ 39,90"
                   />
                 </div>
@@ -1304,7 +1281,7 @@ function EditItemModal({ isOpen, onClose, item, categories, onSuccess }: EditIte
                     id="edit-promoTag"
                     type="text"
                     value={formData.promoTag}
-                    onChange={(e) => setFormData({...formData, promoTag: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, promoTag: e.target.value })}
                     placeholder="Ex: COMBO, 2 POR 1, OFERTA, etc."
                     maxLength={20}
                   />
@@ -1315,28 +1292,28 @@ function EditItemModal({ isOpen, onClose, item, categories, onSuccess }: EditIte
                   <div className="flex flex-wrap gap-2 mt-2">
                     <button
                       type="button"
-                      onClick={() => setFormData({...formData, promoTag: 'COMBO'})}
+                      onClick={() => setFormData({ ...formData, promoTag: 'COMBO' })}
                       className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
                     >
                       COMBO
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormData({...formData, promoTag: '2 POR 1'})}
+                      onClick={() => setFormData({ ...formData, promoTag: '2 POR 1' })}
                       className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
                     >
                       2 POR 1
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormData({...formData, promoTag: 'OFERTA'})}
+                      onClick={() => setFormData({ ...formData, promoTag: 'OFERTA' })}
                       className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
                     >
                       OFERTA
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormData({...formData, promoTag: 'PROMOÇÃO'})}
+                      onClick={() => setFormData({ ...formData, promoTag: 'PROMOÇÃO' })}
                       className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium hover:bg-orange-200"
                     >
                       PROMOÇÃO
@@ -1383,7 +1360,7 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
     '🌮', // Taco
     '🌯', // Burrito
     '🥙', // Kebab
-    
+
     // 🍖 CARNES E PROTEÍNAS
     '🍖', // Carne no osso
     '🥩', // Bife
@@ -1392,19 +1369,19 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
     '🐟', // Peixe
     '🦐', // Lagosta
     '🦞', // Caranguejo
-    
+
     // 🍝 MASSAS E ITALIANA
     '🍝', // Espaguete
     '🍜', // Lámen/Macarrão
     '🥘', // Paella
     '🍲', // Ensopado
-    
+
     // 🥗 SAUDÁVEIS E VEGETARIANO
     '🥗', // Salada
     '🥑', // Abacate
     '🌱', // Vegetariano
     '🥦', // Brócolis
-    
+
     // 🍰 SOBREMESAS
     '🍰', // Bolo
     '🧁', // Cupcake
@@ -1416,7 +1393,7 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
     '🍦', // Casquinha
     '🧇', // Waffle
     '🥞', // Panqueca
-    
+
     // 🍺 BEBIDAS ALCOÓLICAS
     '🍺', // Cerveja
     '🍻', // Chopp
@@ -1425,7 +1402,7 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
     '🍸', // Coquetel
     '🍹', // Drink Tropical
     '🥃', // Whisky
-    
+
     // 🥤 BEBIDAS NÃO ALCOÓLICAS
     '🥤', // Refrigerante
     '🧃', // Suco de caixinha
@@ -1435,7 +1412,7 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
     '🥛', // Leite
     '💧', // Água
     '🧉', // Mate/Chimarrão
-    
+
     // 🍟 LANCHES E PORÇÕES
     '🍟', // Batata Frita
     '🥓', // Bacon
@@ -1443,7 +1420,7 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
     '🥨', // Pretzel
     '🍿', // Pipoca
     '🌰', // Castanha
-    
+
     // 🍚 ASIÁTICA E ORIENTAL
     '🍚', // Arroz
     '🍱', // Bento Box
@@ -1452,14 +1429,14 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
     '🥟', // Gyoza
     '🍣', // Sushi
     '🍤', // Tempurá
-    
+
     // 🥐 PADARIA E CAFÉ DA MANHÃ
     '🥐', // Croissant
     '🥖', // Baguete
     '🍞', // Pão
     '🥯', // Bagel
     '🧈', // Manteiga
-    
+
     // 🍎 FRUTAS E NATURAL
     '🍎', // Maçã
     '🍓', // Morango
@@ -1467,7 +1444,7 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
     '🍉', // Melancia
     '🥝', // Kiwi
     '🍇', // Uva
-    
+
     // 🎉 ESPECIAIS E CATEGORIAS
     '⭐', // Destaque
     '🔥', // Promoção/Popular
@@ -1521,12 +1498,12 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 placeholder="Ex: Pizzas, Bebidas, Sobremesas"
               />
             </div>
-            
+
             <div>
               <Label>Ícone</Label>
               <p className="text-xs text-gray-500 mb-2">Escolha o ícone que melhor representa sua categoria (estilo 3D)</p>
@@ -1535,10 +1512,9 @@ function AddCategoryModal({ isOpen, onClose, restaurantId, onSuccess }: AddCateg
                   <button
                     key={icon}
                     type="button"
-                    onClick={() => setFormData({...formData, icon})}
-                    className={`p-3 border rounded-lg hover:bg-gray-100 hover:scale-110 transition-all duration-200 flex items-center justify-center ${
-                      formData.icon === icon ? 'bg-red-50 border-red-500 ring-2 ring-red-300 shadow-lg' : 'bg-white shadow-sm'
-                    }`}
+                    onClick={() => setFormData({ ...formData, icon })}
+                    className={`p-3 border rounded-lg hover:bg-gray-100 hover:scale-110 transition-all duration-200 flex items-center justify-center ${formData.icon === icon ? 'bg-red-50 border-red-500 ring-2 ring-red-300 shadow-lg' : 'bg-white shadow-sm'
+                      }`}
                     title={icon}
                   >
                     <EmojiIcon emoji={icon} size={32} className="emoji-icon-large" />
@@ -1654,12 +1630,12 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 placeholder="Nome do seu restaurante"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="whatsapp">WhatsApp</Label>
               <Input
@@ -1670,31 +1646,31 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                 placeholder="(11) 99999-9999"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="address">Endereço</Label>
               <Input
                 id="address"
                 value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 placeholder="Endereço do restaurante"
               />
             </div>
 
             <div className="border-t pt-3">
               <h3 className="font-semibold mb-2 text-base">💳 Configurações PIX</h3>
-              
+
               <div>
                 <Label htmlFor="pixKey">Chave PIX</Label>
                 <Input
                   id="pixKey"
                   value={formData.pixKey}
-                  onChange={(e) => setFormData({...formData, pixKey: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, pixKey: e.target.value })}
                   placeholder="CPF, CNPJ, e-mail ou chave aleatória"
                 />
                 <p className="text-xs text-gray-500 mt-1">Digite apenas a chave PIX (não o código copia e cola)</p>
               </div>
-              
+
               <p className="text-xs text-green-600 mt-2">
                 ✅ O QR Code será gerado automaticamente no checkout com o valor do pedido!
               </p>
@@ -1702,7 +1678,7 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
 
             <div className="border-t pt-3">
               <h3 className="font-semibold mb-2 text-base">⏰ Horário de Funcionamento</h3>
-              
+
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div>
                   <Label htmlFor="openTime">Abertura</Label>
@@ -1710,7 +1686,7 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                     id="openTime"
                     type="time"
                     value={formData.openTime}
-                    onChange={(e) => setFormData({...formData, openTime: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, openTime: e.target.value })}
                     required
                   />
                 </div>
@@ -1720,7 +1696,7 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                     id="closeTime"
                     type="time"
                     value={formData.closeTime}
-                    onChange={(e) => setFormData({...formData, closeTime: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, closeTime: e.target.value })}
                     required
                   />
                 </div>
@@ -1736,11 +1712,10 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
                         key={day.value}
                         type="button"
                         onClick={() => toggleDay(day.value)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          isSelected
-                            ? 'bg-red-600 text-white'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isSelected
+                          ? 'bg-red-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          }`}
                       >
                         {day.label}
                       </button>
@@ -1755,8 +1730,8 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
           <Button type="button" variant="outline" onClick={onClose} className="flex-1">
             Cancelar
           </Button>
-          <Button 
-            type="button" 
+          <Button
+            type="button"
             disabled={isLoading}
             onClick={() => {
               const form = document.querySelector('form');
@@ -1774,13 +1749,13 @@ function EditRestaurantModal({ isOpen, onClose, restaurant, onSuccess }: EditRes
   );
 }
 
-// Personalize Modal
-interface PersonalizeModalProps extends ModalProps {
+// Customize Modal
+interface CustomizeModalProps extends ModalProps {
   restaurant: Restaurant;
   onSuccess: () => void;
 }
 
-function PersonalizeModal({ isOpen, onClose, restaurant, onSuccess }: PersonalizeModalProps) {
+function CustomizeModal({ isOpen, onClose, restaurant, onSuccess }: CustomizeModalProps) {
   const [formData, setFormData] = useState({
     primaryColor: '#d32f2f',
     secondaryColor: '#ffc107'
@@ -1830,17 +1805,17 @@ function PersonalizeModal({ isOpen, onClose, restaurant, onSuccess }: Personaliz
                   id="primaryColor"
                   type="color"
                   value={formData.primaryColor}
-                  onChange={(e) => setFormData({...formData, primaryColor: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
                   className="w-12 h-10 border rounded cursor-pointer"
                 />
                 <Input
                   value={formData.primaryColor}
-                  onChange={(e) => setFormData({...formData, primaryColor: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
                   placeholder="#d32f2f"
                 />
               </div>
             </div>
-            
+
             <div>
               <Label htmlFor="secondaryColor">Cor Secundária</Label>
               <div className="flex items-center gap-2">
@@ -1848,12 +1823,12 @@ function PersonalizeModal({ isOpen, onClose, restaurant, onSuccess }: Personaliz
                   id="secondaryColor"
                   type="color"
                   value={formData.secondaryColor}
-                  onChange={(e) => setFormData({...formData, secondaryColor: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
                   className="w-12 h-10 border rounded cursor-pointer"
                 />
                 <Input
                   value={formData.secondaryColor}
-                  onChange={(e) => setFormData({...formData, secondaryColor: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
                   placeholder="#ffc107"
                 />
               </div>
@@ -1862,11 +1837,11 @@ function PersonalizeModal({ isOpen, onClose, restaurant, onSuccess }: Personaliz
             <div className="p-4 border rounded-md">
               <h4 className="font-medium mb-2">Preview:</h4>
               <div className="flex gap-2">
-                <div 
+                <div
                   className="w-8 h-8 rounded"
                   style={{ backgroundColor: formData.primaryColor }}
                 ></div>
-                <div 
+                <div
                   className="w-8 h-8 rounded"
                   style={{ backgroundColor: formData.secondaryColor }}
                 ></div>
@@ -1912,12 +1887,12 @@ function ReportsModal({ isOpen, onClose, restaurant }: ReportsModalProps) {
               <div className="text-2xl font-bold text-blue-600">{totalItems}</div>
               <div className="text-sm text-gray-600">Total de Itens</div>
             </div>
-            
+
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <div className="text-2xl font-bold text-green-600">{totalCategories}</div>
               <div className="text-sm text-gray-600">Categorias</div>
             </div>
-            
+
             <div className="text-center p-4 bg-yellow-50 rounded-lg">
               <div className="text-2xl font-bold text-yellow-600">{promoItems}</div>
               <div className="text-sm text-gray-600">Promoções Ativas</div>

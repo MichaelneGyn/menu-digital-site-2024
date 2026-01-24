@@ -1,2 +1,10 @@
-node_modules/@prisma
-.next/cache
+# Ignore build outputs and caches
++.next/
+node_modules/
+out/
+build/
+dist/
+coverage/
+*.log
+*.cache
+.DS_Store

@@ -6,47 +6,20 @@ import { z } from 'zod';
 import { onlyDigits, isValidWhatsapp } from '@/lib/phone';
 import { authRateLimiter } from '@/lib/rate-limit';
 import { notifyNewSignup } from '@/lib/notifications';
+import { notifyNewSignupEmail } from '@/lib/email-notifications';
 
 const signUpSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
-  restaurantName: z.string().min(1, 'Nome do restaurante é obrigatório').optional(),
-  whatsapp: z.string().optional(),
+  restaurantName: z.string().min(3, 'Nome do restaurante é obrigatório (mínimo 3 caracteres)'),
+  whatsapp: z.string().min(10, 'WhatsApp é obrigatório (mínimo 10 dígitos)'),
 });
 
-// LIMITE DE USUÁRIOS (Ajustável conforme upgrade do servidor)
-// Comece com 10, depois aumente para 20, 50, 100, etc.
-const USER_LIMIT = 10; // 🔧 AJUSTE ESTE VALOR QUANDO FIZER UPGRADE DO SERVIDOR
-
+// SEM LIMITE DE USUÁRIOS - Cadastros ilimitados
 const FOUNDER_LIMIT = 10;  // Primeiros 10 pagam R$ 69,90
 const EARLY_LIMIT = 50;     // Usuários 11-50 pagam R$ 79,90
                             // Usuários 51+ pagam R$ 89,90
-
-// Função para enviar notificação quando chegar perto do limite
-async function sendLimitNotification(count: number, limit: number) {
-  try {
-    console.log(`\n🚨 ═══════════════════════════════════════`);
-    console.log(`🚨 ALERTA DE LIMITE: ${count}/${limit} usuários cadastrados!`);
-    console.log(`🚨 ═══════════════════════════════════════\n`);
-    
-    // Avisos específicos
-    if (count === limit - 1) {
-      console.log(`⚠️  ATENÇÃO: ÚLTIMA VAGA DISPONÍVEL!`);
-      console.log(`⚠️  Próximo cadastro atingirá o limite do servidor.`);
-    } else if (count === limit) {
-      console.log(`🔴 LIMITE ATINGIDO!`);
-      console.log(`🔴 Novos cadastros estão bloqueados.`);
-      console.log(`🔴 Faça upgrade do servidor e ajuste USER_LIMIT em /app/api/signup/route.ts`);
-    }
-    console.log(`\n═══════════════════════════════════════\n`);
-    
-    // TODO: Enviar email/WhatsApp para o admin quando implementar
-    // await sendEmail({ to: 'admin@email.com', subject: 'Limite de usuários' });
-  } catch (error) {
-    console.error('Erro ao enviar notificação:', error);
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,25 +31,10 @@ export async function POST(request: NextRequest) {
       return rateLimitResult.response;
     }
 
-    // 🔒 VERIFICAR LIMITE DE USUÁRIOS NO SERVIDOR
+    // ✅ SEM LIMITE - Cadastros ilimitados
+    
+    // Contar usuários para definir pricing tier
     const totalUsers = await prisma.user.count();
-
-    // Notificar quando estiver perto do limite
-    if (totalUsers === USER_LIMIT - 1 || totalUsers === USER_LIMIT) {
-      await sendLimitNotification(totalUsers, USER_LIMIT);
-    }
-
-    // Bloquear novos cadastros se atingiu o limite
-    if (totalUsers >= USER_LIMIT) {
-      console.log(`🚫 CADASTRO BLOQUEADO: ${totalUsers}/${USER_LIMIT} usuários no servidor`);
-      return NextResponse.json(
-        { 
-          error: 'Limite de usuários atingido! Estamos preparando mais vagas. Por favor, tente novamente em breve ou entre em contato.',
-          limitReached: true,
-        },
-        { status: 403 }
-      );
-    }
 
     const body = await request.json();
     
@@ -107,9 +65,8 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Verificar quantos usuários já existem para definir período de trial
-      const totalUsers = await tx.user.count();
-      const PROMO_LIMIT = 50; // 🔒 Primeiros 50 clientes (alinhado com USER_LIMIT)
+      // Definir período de trial baseado no total de usuários
+      const PROMO_LIMIT = 50; // 🔒 Primeiros 50 clientes ganham 30 dias
       
       // Se é um dos primeiros 50: 30 dias grátis, senão: 7 dias
       // totalUsers conta INCLUINDO o usuário recém-criado acima, então:
@@ -177,6 +134,15 @@ export async function POST(request: NextRequest) {
 
     // 🔔 NOTIFICAR ADMIN SOBRE NOVO CADASTRO
     await notifyNewSignup(result.user.id, result.user.name || 'Sem nome', result.user.email);
+    
+    // 📧 ENVIAR EMAIL PARA ADMIN
+    await notifyNewSignupEmail(
+      result.user.name || 'Sem nome',
+      result.user.email,
+      whatsapp || null,
+      result.restaurant?.name || null,
+      result.restaurant?.slug || null
+    );
 
     // Determinar qual tipo de cliente é (para pricing)
     const finalUserCount = totalUsers + 1; // +1 porque acabamos de criar

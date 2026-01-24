@@ -3,13 +3,15 @@
 import Image from 'next/image';
 
 interface PhoneMockupProps {
-  screenshot: string;
+  screenshot?: string;
+  video?: string;
   alt: string;
   title?: string;
   description?: string;
+  blurPersonalData?: boolean;
 }
 
-export default function PhoneMockup({ screenshot, alt, title, description }: PhoneMockupProps) {
+export default function PhoneMockup({ screenshot, video, alt, title, description, blurPersonalData = true }: PhoneMockupProps) {
   return (
     <div className="flex flex-col items-center">
       {/* iPhone Mockup */}
@@ -19,13 +21,38 @@ export default function PhoneMockup({ screenshot, alt, title, description }: Pho
         
         {/* Screen */}
         <div className="relative w-full h-full bg-white rounded-[32px] overflow-hidden">
-          <Image
-            src={screenshot}
-            alt={alt}
-            fill
-            className="object-cover object-top"
-            sizes="280px"
-          />
+          {video ? (
+            <video
+              src={video}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover object-top"
+            />
+          ) : screenshot ? (
+            <Image
+              src={screenshot}
+              alt={alt}
+              fill
+              className="object-cover object-top"
+              sizes="280px"
+            />
+          ) : null}
+          
+          {/* Blur overlay para dados pessoais */}
+          {blurPersonalData && (
+            <>
+              {/* Blur no topo (onde geralmente ficam nomes, emails, telefones) */}
+              <div className="absolute top-0 left-0 right-0 h-[80px] backdrop-blur-md bg-white/30 z-20"></div>
+              
+              {/* Blur em campos de formulário (meio da tela) */}
+              <div className="absolute top-[35%] left-[10%] right-[10%] h-[120px] backdrop-blur-sm bg-white/20 rounded-lg z-20"></div>
+              
+              {/* Blur no rodapé (onde podem aparecer dados de contato) */}
+              <div className="absolute bottom-0 left-0 right-0 h-[60px] backdrop-blur-md bg-white/30 z-20"></div>
+            </>
+          )}
         </div>
         
         {/* Home Indicator */}
