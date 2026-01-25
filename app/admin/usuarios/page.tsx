@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { 
   Search, 
   Trash2, 
@@ -140,7 +139,7 @@ export default function UsuariosPage() {
         user.name || 'Sem nome',
         user.whatsapp || 'Sem WhatsApp',
         user.restaurant?.name || 'Sem restaurante',
-        getStatusLabel(user),
+        getUserStatusState(user).label,
         user.subscriptionPlan || 'Trial',
         new Date(user.createdAt).toLocaleDateString('pt-BR'),
         user.trialEndsAt ? new Date(user.trialEndsAt).toLocaleDateString('pt-BR') : 'N/A'
@@ -156,35 +155,37 @@ export default function UsuariosPage() {
     toast.success('Usuários exportados com sucesso!');
   };
 
-  const getStatusLabel = (user: User) => {
-    if (user.trialEndsAt && new Date(user.trialEndsAt) > new Date()) {
-      return 'Trial';
-    }
+  const getUserStatusState = (user: User) => {
+    const now = new Date();
+    
     if (user.subscriptionStatus === 'active') {
-      return 'Ativo';
+        return { label: 'Assinante', color: 'bg-green-100 text-green-700 border-green-200', dot: 'bg-green-500', isExpired: false };
     }
+    
     if (user.subscriptionStatus === 'canceled') {
-      return 'Cancelado';
+        return { label: 'Cancelado', color: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500', isExpired: true };
     }
-    return 'Inativo';
-  };
 
-  const getStatusBadge = (user: User) => {
-    const status = getStatusLabel(user);
-    const colors = {
-      'Trial': 'bg-blue-100 text-blue-800',
-      'Ativo': 'bg-green-100 text-green-800',
-      'Cancelado': 'bg-red-100 text-red-800',
-      'Inativo': 'bg-gray-100 text-gray-800',
-    };
-    return <Badge className={colors[status as keyof typeof colors]}>{status}</Badge>;
-  };
+    if (user.trialEndsAt) {
+        const trialEnd = new Date(user.trialEndsAt);
+        if (trialEnd > now) {
+             const days = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+             // Se faltar menos de 3 dias, fica amarelo/laranja para alertar
+             const isWarning = days <= 3;
+             return { 
+                 label: 'Trial', 
+                 daysLeft: days, 
+                 color: isWarning ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200', 
+                 dot: isWarning ? 'bg-orange-500' : 'bg-emerald-500',
+                 isExpired: false
+             };
+        } else {
+             return { label: 'Expirado', color: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500', isExpired: true };
+        }
+    }
 
-  const getDaysLeft = (trialEndsAt: string | null) => {
-    if (!trialEndsAt) return null;
-    const days = Math.ceil((new Date(trialEndsAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-    return days > 0 ? days : 0;
-  };
+    return { label: 'Inativo', color: 'bg-gray-100 text-gray-700 border-gray-200', dot: 'bg-gray-500', isExpired: true };
+   };
 
   if (status === 'loading' || loading) {
     return (
@@ -328,19 +329,29 @@ export default function UsuariosPage() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1">
-                        {getStatusBadge(user)}
-                        {user.trialEndsAt && getDaysLeft(user.trialEndsAt) !== null && (
-                          <span className="text-xs text-gray-500">
-                            {getDaysLeft(user.trialEndsAt)} dias restantes
-                          </span>
-                        )}
-                        {user.subscriptionPlan && (
-                          <span className="text-xs text-blue-600 font-medium">
-                            {user.subscriptionPlan}
-                          </span>
-                        )}
-                      </div>
+                      {(() => {
+                        const status = getUserStatusState(user);
+                        return (
+                          <div className="flex flex-col gap-2 items-start">
+                            <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${status.color}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${status.dot}`}></span>
+                              {status.label}
+                            </div>
+                            
+                            {status.daysLeft !== undefined && (
+                              <span className={`text-xs font-semibold ${status.daysLeft <= 3 ? 'text-orange-600' : 'text-emerald-600'}`}>
+                                {status.daysLeft} dias restantes
+                              </span>
+                            )}
+                            
+                            {user.subscriptionPlan && (
+                              <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold bg-gray-100 px-2 py-0.5 rounded">
+                                {user.subscriptionPlan}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1 text-sm text-gray-500">
