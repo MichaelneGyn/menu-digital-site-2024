@@ -37,6 +37,8 @@ import {
 interface Restaurant {
   id: string;
   name: string;
+  logo?: string | null;
+  logoUrl?: string | null;
   whatsapp?: string | null;
   address?: string | null;
   openTime?: string | null;
@@ -214,7 +216,7 @@ function AdminDashboard() {
     <div className="flex min-h-screen bg-gray-50 font-sans">
       {/* Sidebar */}
       <aside className="w-20 bg-[#E53935] fixed h-full z-50 flex flex-col items-center py-6 gap-8 shadow-lg">
-        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white mb-2">
+        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white mb-2 overflow-hidden">
           <Home size={24} />
         </div>
 
@@ -288,6 +290,15 @@ function AdminDashboard() {
         {/* Header */}
         <header className="bg-white border-b h-16 flex items-center justify-between px-8 sticky top-0 z-40">
           <div className="flex items-center gap-4">
+            {(restaurant?.logo || restaurant?.logoUrl) && (
+              <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-100 shadow-sm">
+                <img
+                  src={restaurant.logo || restaurant.logoUrl || ''}
+                  alt={restaurant.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
             <div>
               <h1 className="text-lg font-bold text-gray-900 leading-tight">{restaurant?.name || 'Seu Restaurante'}</h1>
               <div className="flex items-center gap-2">
