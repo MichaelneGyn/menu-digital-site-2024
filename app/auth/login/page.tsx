@@ -16,6 +16,7 @@ export default function LoginPage() {
     password: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -39,13 +40,17 @@ export default function LoginPage() {
 
       if (result?.error) {
         toast.error('Email ou senha incorretos');
+        setIsLoading(false);
       } else {
+        setIsSuccess(true);
         toast.success('Login realizado com sucesso!');
-        router.push('/admin/dashboard');
+        // Delay para exibir a animação de transição antes de redirecionar
+        setTimeout(() => {
+          router.push('/admin/dashboard');
+        }, 2000);
       }
     } catch (error) {
       toast.error('Erro ao fazer login');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -59,7 +64,24 @@ export default function LoginPage() {
 
 
   return (
-    <div className="min-h-screen bg-red-600 flex flex-col items-center justify-center p-4">
+    <>
+      {/* Overlay de Transição de Sucesso */}
+      {isSuccess && (
+        <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center animate-in fade-in duration-500">
+          <div className="relative mb-8">
+            <div className="w-32 h-32 bg-red-600 rounded-full flex items-center justify-center animate-bounce shadow-2xl">
+              <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12.5 1.5c-1.4 0-2.5 1.1-2.5 2.5 0 .8.4 1.5 1 1.9V7c0 .6-.4 1-1 1s-1-.4-1-1V5.9c.6-.4 1-1.1 1-1.9 0-1.4-1.1-2.5-2.5-2.5S5 2.6 5 4c0 .8.4 1.5 1 1.9V7c0 .6-.4 1-1 1s-1-.4-1-1V5.9c.6-.4 1-1.1 1-1.9 0-1.4-1.1-2.5-2.5-2.5S0 2.6 0 4c0 1.4 1.1 2.5 2.5 2.5.3 0 .6-.1.9-.2.2 1.2 1.2 2.2 2.6 2.2h12c1.4 0 2.4-1 2.6-2.2.3.1.6.2.9.2 1.4 0 2.5-1.1 2.5-2.5s-1.1-2.5-2.5-2.5zm-9 8.5v9c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2v-9H3.5z"/>
+              </svg>
+            </div>
+            <div className="absolute inset-0 border-4 border-red-200 rounded-full animate-ping opacity-20"></div>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2 animate-pulse">Acesso Autorizado!</h2>
+          <p className="text-gray-500 font-medium">Preparando seu painel...</p>
+        </div>
+      )}
+
+      <div className="min-h-screen bg-red-600 flex flex-col items-center justify-center p-4">
       {/* Chef Hat Logo */}
       <div className="mb-8">
         <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg">
@@ -102,10 +124,26 @@ export default function LoginPage() {
 
           <Button
             type="submit"
-            className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-lg border-0 transition-colors duration-200"
+            className={`w-full h-14 font-bold text-lg rounded-xl border-0 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg
+              ${isLoading 
+                ? 'bg-green-700 scale-95 opacity-90 cursor-not-allowed' 
+                : 'bg-green-600 hover:bg-green-500 hover:scale-[1.03] hover:shadow-xl active:scale-95'
+              } text-white`}
             disabled={isLoading}
           >
-            {isLoading ? 'ENTRANDO...' : 'ENTRAR'}
+            {isLoading ? (
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span className="tracking-widest animate-pulse">ACESSANDO...</span>
+              </div>
+            ) : (
+              <>
+                <span>ENTRAR NO SISTEMA</span>
+                <svg className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </>
+            )}
           </Button>
         </form>
 
@@ -125,6 +163,7 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -23,21 +23,28 @@ export async function GET() {
           },
           take: 1,
         },
+        subscriptions: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
       },
     });
 
     // Formatar dados para o frontend
-    const formattedUsers = users.map((user: any) => ({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      whatsapp: user.whatsapp,
-      createdAt: user.createdAt,
-      trialEndsAt: user.trialEndsAt,
-      subscriptionStatus: user.subscriptionStatus,
-      subscriptionPlan: user.subscriptionPlan,
-      restaurant: user.restaurants[0] || null,
-    }));
+    const formattedUsers = users.map((user: any) => {
+      const lastSubscription = user.subscriptions?.[0];
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        whatsapp: user.whatsapp,
+        createdAt: user.createdAt,
+        trialEndsAt: lastSubscription?.trialEndsAt || null,
+        subscriptionStatus: lastSubscription?.status || null,
+        subscriptionPlan: lastSubscription?.plan || null,
+        restaurant: user.restaurants[0] || null,
+      };
+    });
 
     return NextResponse.json({ users: formattedUsers });
   } catch (error) {

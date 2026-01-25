@@ -17,18 +17,34 @@
 
   /* Cards com sombra premium */
   .card-premium {
-    @apply shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    transform: translateY(0);
+  }
+
+  .card-premium:hover {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: translateY(-4px);
   }
 
   /* Títulos mais impactantes */
   .hero-title {
-    @apply font-black tracking-tight leading-tight;
+    font-weight: 900;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
     letter-spacing: -0.02em;
   }
 
   /* Botões com animação suave */
   .btn-premium {
-    @apply transition-all duration-300 transform hover:scale-105 active:scale-95;
+    transition: all 0.3s ease;
+    transform: scale(1);
+.btn-premium:hover {
+    transform: scale(1.05);
+}
+.btn-premium:active {
+    transform: scale(0.95);
+}
   }
 
   /* Gradientes sutis para seções */
@@ -222,14 +238,14 @@
 
 @layer base {
   * {
-    @apply border-border;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
     position: relative;
