@@ -159,11 +159,11 @@ export default function UsuariosPage() {
     const now = new Date();
     
     if (user.subscriptionStatus === 'active') {
-        return { label: 'Assinante', color: 'bg-green-100 text-green-700 border-green-200', dot: 'bg-green-500', isExpired: false };
+        return { label: 'Assinante', color: 'bg-blue-100 text-blue-800 border-blue-300', dot: 'bg-blue-600', isExpired: false };
     }
     
     if (user.subscriptionStatus === 'canceled') {
-        return { label: 'Cancelado', color: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500', isExpired: true };
+        return { label: 'Cancelado', color: 'bg-red-100 text-red-800 border-red-300', dot: 'bg-red-500', isExpired: true };
     }
 
     if (user.trialEndsAt) {
@@ -175,16 +175,16 @@ export default function UsuariosPage() {
              return { 
                  label: 'Trial', 
                  daysLeft: days, 
-                 color: isWarning ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200', 
-                 dot: isWarning ? 'bg-orange-500' : 'bg-emerald-500',
+                 color: isWarning ? 'bg-orange-100 text-orange-800 border-orange-300' : 'bg-green-100 text-green-800 border-green-300', 
+                 dot: isWarning ? 'bg-orange-500' : 'bg-green-500',
                  isExpired: false
              };
         } else {
-             return { label: 'Expirado', color: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500', isExpired: true };
+             return { label: 'Expirado', color: 'bg-red-100 text-red-800 border-red-300', dot: 'bg-red-500', isExpired: true };
         }
     }
 
-    return { label: 'Inativo', color: 'bg-gray-100 text-gray-700 border-gray-200', dot: 'bg-gray-500', isExpired: true };
+    return { label: 'Inativo', color: 'bg-gray-100 text-gray-800 border-gray-300', dot: 'bg-gray-500', isExpired: true };
    };
 
   if (status === 'loading' || loading) {
@@ -339,13 +339,13 @@ export default function UsuariosPage() {
                             </div>
                             
                             {status.daysLeft !== undefined && (
-                              <span className={`text-xs font-semibold ${status.daysLeft <= 3 ? 'text-orange-600' : 'text-emerald-600'}`}>
+                              <span className={`text-sm font-bold ${status.daysLeft <= 3 ? 'text-orange-600' : 'text-green-600'}`}>
                                 {status.daysLeft} dias restantes
                               </span>
                             )}
                             
                             {user.subscriptionPlan && (
-                              <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold bg-gray-100 px-2 py-0.5 rounded">
+                              <span className="text-[11px] uppercase tracking-wider text-gray-600 font-bold bg-gray-200 px-2 py-0.5 rounded border border-gray-300">
                                 {user.subscriptionPlan}
                               </span>
                             )}
