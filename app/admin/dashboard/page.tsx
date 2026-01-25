@@ -221,47 +221,84 @@ function AdminDashboard() {
         </div>
 
         <nav className="flex flex-col gap-6 w-full items-center">
-          <button className="flex flex-col items-center gap-1 text-white opacity-100 relative group">
+          <button 
+            onClick={() => window.location.reload()}
+            className="flex flex-col items-center gap-1 text-white opacity-100 relative group"
+          >
             <div className="p-2 bg-white/10 rounded-lg">
               <Home size={20} />
             </div>
             <span className="text-[10px] font-medium">Inicio</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group">
+          <button 
+            onClick={() => router.push('/admin/orders')}
+            className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group"
+          >
             <div className="p-2 group-hover:bg-white/10 rounded-lg transition-colors">
               <ShoppingBag size={20} />
             </div>
-            <span className="text-[10px] font-medium">Pedido</span>
+            <span className="text-[10px] font-medium">Pedidos</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group">
+          <button 
+            onClick={() => router.push('/admin/kitchen')}
+            className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group"
+          >
             <div className="p-2 group-hover:bg-white/10 rounded-lg transition-colors">
               <ChefHat size={20} />
             </div>
             <span className="text-[10px] font-medium">Cozinha</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group">
+          <button 
+            onClick={() => {
+              const element = document.getElementById('cardapio-section');
+              if (element) element.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group"
+          >
             <div className="p-2 group-hover:bg-white/10 rounded-lg transition-colors">
               <MenuIcon size={20} />
             </div>
             <span className="text-[10px] font-medium">Cardápio</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group">
+          <button 
+            onClick={() => router.push('/admin/relatorios')}
+            className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group"
+          >
             <div className="p-2 group-hover:bg-white/10 rounded-lg transition-colors">
               <BarChart2 size={20} />
             </div>
             <span className="text-[10px] font-medium">Desemp</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group">
+          <button 
+            onClick={() => router.push('/admin/payments')}
+            className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition-colors group"
+          >
             <div className="p-2 group-hover:bg-white/10 rounded-lg transition-colors">
               <DollarSign size={20} />
             </div>
             <span className="text-[10px] font-medium">Financ</span>
           </button>
+
+          <div className="w-8 h-[1px] bg-white/20 my-2"></div>
+
+          <a 
+            href={`/${restaurant?.slug}`} 
+            target="_blank"
+            className="flex flex-col items-center gap-1 text-white/90 hover:text-white transition-colors group animate-pulse"
+            title="Ver como o cliente vê"
+          >
+            <div className="p-2 bg-white text-red-600 rounded-lg shadow-lg hover:scale-110 transition-transform">
+              <ExternalLink size={20} strokeWidth={2.5} />
+            </div>
+            <span className="text-[10px] font-bold text-white">Ver Loja</span>
+          </a>
+
+          <div className="w-8 h-[1px] bg-white/20 my-2"></div>
 
           <button
             onClick={() => router.push('/admin/settings')}
