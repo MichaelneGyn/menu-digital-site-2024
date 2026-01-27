@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { GTMEvents } from '@/lib/gtm';
-import { Check, Zap, TrendingUp, Shield } from 'lucide-react';
+import { Check, Shield, ArrowRight } from 'lucide-react';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -54,7 +54,6 @@ export default function RegisterPage() {
       });
 
       if (response.ok) {
-        // Rastreia conversão de cadastro
         GTMEvents.signup();
         GTMEvents.startTrial();
         
@@ -74,7 +73,6 @@ export default function RegisterPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === 'whatsapp') {
-      // Máscara BR: (00) 00000-0000
       const digits = value.replace(/\D/g, '').slice(0, 11);
       let masked = digits;
       if (digits.length > 0) masked = `(${digits.slice(0,2)}`;
@@ -87,276 +85,150 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-green-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-orange-600">
-            Virtual Cardápio
-          </Link>
-          <Link href="/auth/login">
-            <Button variant="ghost" className="font-semibold">
-              Já tenho conta
+    <div className="min-h-screen flex bg-white">
+      {/* Lado Esquerdo - Formulário */}
+      <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24 w-full lg:w-[45%] border-r border-gray-100">
+        <div className="mx-auto w-full max-w-sm lg:w-96">
+          <div className="mb-10">
+            <Link href="/" className="flex items-center gap-2 mb-8 group">
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                   <path d="M12.5 1.5c-1.4 0-2.5 1.1-2.5 2.5 0 .8.4 1.5 1 1.9V7c0 .6-.4 1-1 1s-1-.4-1-1V5.9c.6-.4 1-1.1 1-1.9 0-1.4-1.1-2.5-2.5-2.5S5 2.6 5 4c0 .8.4 1.5 1 1.9V7c0 .6-.4 1-1 1s-1-.4-1-1V5.9c.6-.4 1-1.1 1-1.9 0-1.4-1.1-2.5-2.5-2.5S0 2.6 0 4c0 1.4 1.1 2.5 2.5 2.5.3 0 .6-.1.9-.2.2 1.2 1.2 2.2 2.6 2.2h12c1.4 0 2.4-1 2.6-2.2.3.1.6.2.9.2 1.4 0 2.5-1.1 2.5-2.5s-1.1-2.5-2.5-2.5zm-9 8.5v9c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2v-9H3.5z"/>
+                </svg>
+              </div>
+              <span className="font-bold text-xl text-gray-900">Virtual Cardápio</span>
+            </Link>
+            
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Comece Grátis</h2>
+            <p className="text-gray-500">
+              Crie seu cardápio digital em menos de 1 minuto. <br/>
+              <span className="text-primary font-semibold">Sem cartão de crédito.</span>
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <Label htmlFor="whatsapp" className="text-sm font-semibold text-gray-700">
+                WhatsApp do Negócio
+              </Label>
+              <div className="mt-1">
+                <Input
+                  id="whatsapp"
+                  name="whatsapp"
+                  type="tel"
+                  value={formData.whatsapp}
+                  onChange={handleChange}
+                  required
+                  placeholder="(00) 00000-0000"
+                  className="h-12 border-gray-200 focus:border-primary focus:ring-primary/20 bg-gray-50/50"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                Seu melhor Email
+              </Label>
+              <div className="mt-1">
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="voce@restaurante.com"
+                  className="h-12 border-gray-200 focus:border-primary focus:ring-primary/20 bg-gray-50/50"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="password" className="text-sm font-semibold text-gray-700">
+                Crie uma Senha
+              </Label>
+              <div className="mt-1">
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  placeholder="Mínimo 6 caracteres"
+                  className="h-12 border-gray-200 focus:border-primary focus:ring-primary/20 bg-gray-50/50"
+                />
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-12 text-base font-bold bg-primary hover:bg-primary/90 text-white shadow-lg hover:shadow-xl transition-all mt-6"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Criando conta...' : 'Criar minha conta agora'} <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-          </Link>
+          </form>
+
+          <div className="mt-8 pt-6 border-t border-gray-100">
+             <div className="flex items-center gap-2 mb-4">
+                <Shield className="w-4 h-4 text-green-600" />
+                <span className="text-xs font-medium text-gray-600">Seus dados estão 100% seguros</span>
+             </div>
+             <p className="text-sm text-gray-500">
+              Já tem uma conta?{' '}
+              <Link href="/auth/login" className="font-bold text-primary hover:underline">
+                Fazer login
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 lg:py-12">
+      {/* Lado Direito - Banner/Visual */}
+      <div className="hidden lg:flex flex-1 relative bg-slate-50 items-center justify-center overflow-hidden">
+        {/* Background Decor */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-orange-100/50 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"></div>
         
-        {/* SEÇÃO 1: Vídeos + Por que escolher? - PARA TODOS */}
-        <div className="mb-8 max-w-4xl mx-auto">
-          
-          {/* Grid de Vídeos - 2 colunas em todas as telas */}
-          <div className="mb-6">
-            <div className="grid grid-cols-2 gap-3 lg:gap-6">
-              {/* Vídeo 1 - Simulação de Pedido */}
-              <div className="bg-gradient-to-br from-orange-100 to-orange-50 rounded-xl p-3 lg:p-4 border-2 border-orange-200">
-                <div className="aspect-video bg-black rounded-lg overflow-hidden mb-3 shadow-md">
-                  <video 
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline
-                    className="w-full h-full object-cover"
-                  >
-                    <source src="/videos/Simulação de pedido.mp4" type="video/mp4" />
-                  </video>
-                </div>
-                <h3 className="font-bold text-xs lg:text-sm text-gray-900 text-center">📱 Como Funciona</h3>
-                <p className="text-[10px] lg:text-xs text-gray-600 text-center mt-0.5 lg:mt-1">
-                  Veja um pedido real!
-                </p>
+        <div className="relative z-10 max-w-lg">
+           {/* iPhone Mockup (Simplificado para compor o layout) */}
+           <div className="relative mx-auto border-gray-800 bg-gray-800 border-[8px] rounded-[32px] h-[600px] w-[300px] shadow-2xl flex flex-col justify-center overflow-hidden transform rotate-[-5deg] hover:rotate-0 transition-all duration-700">
+              <div className="w-[100px] h-[24px] bg-gray-800 absolute top-0 left-1/2 -translate-x-1/2 z-20 rounded-b-[12px]"></div>
+              <div className="w-full h-full bg-white relative overflow-hidden">
+                <img 
+                  src="/videos/Escolhe os Produtos.gif" 
+                  className="w-full h-full object-cover" 
+                  alt="App Demo"
+                />
               </div>
+           </div>
 
-              {/* Vídeo 2 - Upsell */}
-              <div className="bg-gradient-to-br from-green-100 to-green-50 rounded-xl p-3 lg:p-4 border-2 border-green-200">
-                <div className="aspect-video bg-black rounded-lg overflow-hidden mb-3 shadow-md">
-                  <video 
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline
-                    className="w-full h-full object-cover"
-                  >
-                    <source src="/videos/Criar up sell .mp4" type="video/mp4" />
-                  </video>
-                </div>
-                <h3 className="font-bold text-xs lg:text-sm text-gray-900 text-center">💰 Upsell</h3>
-                <p className="text-[10px] lg:text-xs text-gray-600 text-center mt-0.5 lg:mt-1">
-                  Aumenta vendas!
-                </p>
+           {/* Floating Cards */}
+           <div className="absolute top-20 -right-10 bg-white p-4 rounded-xl shadow-xl border border-gray-100 animate-bounce delay-700">
+              <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                    <Check size={20} strokeWidth={3} />
+                 </div>
+                 <div>
+                    <p className="font-bold text-gray-900">Venda Aprovada</p>
+                    <p className="text-xs text-gray-500">R$ 48,90 via PIX</p>
+                 </div>
               </div>
-            </div>
-          </div>
+           </div>
 
-          {/* Card: Por que escolher? */}
-          <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-gray-100">
-            <h3 className="font-bold text-base text-gray-900 mb-4 flex items-center gap-2 justify-center lg:justify-start">
-              <TrendingUp className="w-5 h-5 text-green-600" />
-              Por que escolher?
-            </h3>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">
-                  <strong>0% de comissão</strong> por pedido
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">
-                  <strong>Economize até R$ 1.400/mês</strong> vs iFood
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">
-                  <strong>Seus clientes</strong> são seus para sempre
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700">
-                  <strong>Suporte rápido</strong> via WhatsApp
-                </span>
-              </li>
-            </ul>
-          </div>
-
+           <div className="absolute bottom-40 -left-10 bg-white p-4 rounded-xl shadow-xl border border-gray-100 animate-pulse">
+              <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold">
+                    30%
+                 </div>
+                 <div>
+                    <p className="font-bold text-gray-900">Mais Vendas</p>
+                    <p className="text-xs text-gray-500">Com cardápio digital</p>
+                 </div>
+              </div>
+           </div>
         </div>
-
-        {/* FORMULÁRIO CENTRALIZADO */}
-        <div className="max-w-2xl mx-auto mb-8">
-            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-orange-200">
-              {/* Header do Card */}
-              <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-8 text-center">
-                <h1 className="text-3xl md:text-4xl font-black mb-2">
-                  🚀 Comece Grátis
-                </h1>
-                <p className="text-orange-100 text-sm">
-                  Crie sua conta em 30 segundos
-                </p>
-                <div className="mt-4 inline-block bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
-                  <p className="text-sm font-bold">
-                    🎉 30 dias grátis • Sem cartão de crédito
-                  </p>
-                </div>
-              </div>
-
-              {/* Formulário */}
-              <div className="p-8">
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  
-                  <div>
-                    <Label htmlFor="whatsapp" className="text-base font-bold text-gray-700">
-                      📱 WhatsApp
-                    </Label>
-                    <Input
-                      id="whatsapp"
-                      name="whatsapp"
-                      type="tel"
-                      value={formData.whatsapp}
-                      onChange={handleChange}
-                      required
-                      placeholder="(11) 99999-9999"
-                      className="h-14 mt-2 text-base border-2 focus:border-orange-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1.5">Para contato e suporte</p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="email" className="text-base font-bold text-gray-700">
-                      ✉️ Email
-                    </Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      placeholder="seu@email.com"
-                      className="h-14 mt-2 text-base border-2 focus:border-orange-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1.5">Seu login no sistema</p>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="password" className="text-base font-bold text-gray-700">
-                      🔒 Senha
-                    </Label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      required
-                      placeholder="Mínimo 6 caracteres"
-                      className="h-14 mt-2 text-base border-2 focus:border-orange-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1.5">Mínimo 6 caracteres</p>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full h-14 text-lg font-black bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? '⏳ Criando sua conta...' : '✨ Criar Conta Grátis'}
-                  </Button>
-                  
-                  <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Shield className="w-5 h-5 text-green-600" />
-                      <p className="text-sm font-bold text-green-900">Garantia de 30 dias</p>
-                    </div>
-                    <p className="text-xs text-green-700">
-                      Teste grátis por 30 dias. Cancele quando quiser, sem burocracia.
-                    </p>
-                  </div>
-                </form>
-
-                <div className="mt-6 text-center border-t pt-6">
-                  <p className="text-sm text-gray-600">
-                    Já tem uma conta?{' '}
-                    <Link href="/auth/login" className="text-orange-600 hover:underline font-bold">
-                      Faça login aqui
-                    </Link>
-                  </p>
-                </div>
-              </div>
-            </div>
-        </div>
-
-        {/* SEÇÃO 3: Dicas + Oferta + O que está incluso - PARA TODOS */}
-        <div className="max-w-4xl mx-auto space-y-6">
-          
-          {/* Card: Dicas para Aumentar Conversões */}
-          <div className="bg-gradient-to-br from-green-100 to-green-50 rounded-xl p-5 border-2 border-green-200 shadow-lg">
-            <h3 className="font-black text-lg text-gray-900 mb-4 text-center">🔥 Dicas para AUMENTAR CONVERSÕES:</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <span className="text-2xl">👍</span>
-                <div>
-                  <p className="font-bold text-sm text-gray-900">USE DESCONTOS:</p>
-                  <p className="text-xs text-gray-700">10-20% de desconto aumenta conversão em até 300%!</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-2xl">🍕</span>
-                <div>
-                  <p className="font-bold text-sm text-gray-900">Produtos Complementares:</p>
-                  <p className="text-xs text-gray-700">Pizza + Refrigerante, Hambúrguer + Batata</p>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          {/* Card: Preço */}
-          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-5 text-white shadow-lg">
-            <h3 className="font-black text-xl mb-3 text-center">💰 Plano Mensal</h3>
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 mb-3">
-              <p className="text-xs font-bold mb-1 text-center">Mensalidade:</p>
-              <p className="text-3xl font-black text-center">R$ 69,90<span className="text-base">/mês</span></p>
-              <p className="text-xs opacity-90 mt-2 text-center">✨ Sem taxas por pedido!</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
-              <p className="text-xs font-bold mb-1">🎉 30 dias grátis</p>
-              <p className="text-xs opacity-90">Teste sem compromisso</p>
-            </div>
-          </div>
-
-          {/* Card: O que está incluso? */}
-          <div className="bg-white rounded-xl p-4 shadow-md border-2 border-gray-100">
-            <h3 className="font-bold text-sm text-gray-900 mb-3">📊 O que está incluso?</h3>
-            <ul className="space-y-2 text-xs text-gray-700">
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                Cardápio digital ilimitado
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                Pedidos via WhatsApp
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                Relatórios de vendas
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                Suporte prioritário
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                Atualizações gratuitas
-              </li>
-            </ul>
-          </div>
-
-        </div>
-
       </div>
     </div>
   );
