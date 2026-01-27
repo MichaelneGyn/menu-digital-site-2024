@@ -207,7 +207,7 @@ export default function ProductCustomizationModalImproved({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-2xl sm:rounded-2xl rounded-t-3xl max-h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-300">
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-red-50 flex-shrink-0">
@@ -432,7 +432,7 @@ export default function ProductCustomizationModalImproved({
         </div>
 
         {/* Footer */}
-        <div className="p-4 sm:p-6 border-t border-gray-200 bg-white flex-shrink-0">
+        <div className="p-4 sm:p-6 pb-8 sm:pb-6 border-t border-gray-200 bg-white flex-shrink-0">
           <div className="flex gap-3">
             {/* Botão Voltar */}
             {currentStepIndex > 0 && (
