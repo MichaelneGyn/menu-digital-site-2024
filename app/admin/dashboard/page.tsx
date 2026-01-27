@@ -441,6 +441,15 @@ function AdminDashboard() {
                   </div>
                 </div>
 
+                <a 
+                  href={`/${restaurant?.slug}`} 
+                  target="_blank"
+                  className="w-full mt-6 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-sm mb-3"
+                >
+                  <ExternalLink size={18} />
+                  Acessar meu Cardápio
+                </a>
+
                 <Button
                   onClick={() => router.push('/admin/settings')}
                   variant="outline"

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers";
 import { getServerSession } from "next-auth";
@@ -12,7 +12,8 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const revalidate = 0;
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-display" });
 
 export const metadata: Metadata = {
   title: "Cardápio Digital | Menu QR Code para Restaurante - 30 Dias Grátis",
@@ -88,7 +89,7 @@ export default async function RootLayout({
         <GoogleAnalytics />
         <GoogleTagManager />
       </head>
-      <body className={inter.className} suppressHydrationWarning>
+      <body className={`${inter.variable} ${outfit.variable} font-sans`} suppressHydrationWarning>
         <Providers session={session}>
           <LanguageProvider>
             {children}

@@ -12,7 +12,7 @@ export default function NotFound() {
             Página não encontrada
           </h2>
           <p className="text-xl mb-8 relative z-10">
-            O restaurante que você está procurando não existe ou foi removido.
+            Ops! A página que você está procurando não existe.
           </p>
           <div className="flex gap-4 justify-center">
             <Link href="/">
