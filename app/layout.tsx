@@ -58,6 +58,15 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://virtualcardapio.com.br',
   },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png', sizes: '32x32' },
+    ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
   verification: {
     google: 'google4b8f3a2228e927e8',
   },
