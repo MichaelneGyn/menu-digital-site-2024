@@ -218,10 +218,10 @@ function AdminDashboard() {
       {/* Main Content */}
       <main className="flex-1">
         {/* Header */}
-        <header className="bg-white border-b h-16 flex items-center justify-between px-8 sticky top-0 z-40">
+        <header className="bg-white border-b h-16 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
           <div className="flex items-center gap-4">
             {(restaurant?.logo || restaurant?.logoUrl) && (
-              <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-100 shadow-sm">
+              <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-100 shadow-sm flex-shrink-0">
                 <img
                   src={restaurant.logo || restaurant.logoUrl || ''}
                   alt={restaurant.name}
@@ -229,17 +229,17 @@ function AdminDashboard() {
                 />
               </div>
             )}
-            <div>
-              <h1 className="text-lg font-bold text-gray-900 leading-tight">{restaurant?.name || 'Seu Restaurante'}</h1>
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold text-gray-900 leading-tight truncate">{restaurant?.name || 'Seu Restaurante'}</h1>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                <span className="text-xs text-gray-500 font-medium">Loja aberta</span>
+                <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
+                <span className="text-xs text-gray-500 font-medium truncate">Loja aberta</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <div className="relative w-64">
+          <div className="flex items-center gap-2 md:gap-6">
+            <div className="hidden md:block relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
@@ -248,10 +248,12 @@ function AdminDashboard() {
               />
             </div>
 
-            <AdminNotifications />
+            <div className="flex-shrink-0">
+              <AdminNotifications />
+            </div>
 
-            <div className="flex items-center gap-3 pl-6 border-l">
-              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-xs">
+            <div className="flex items-center gap-3 pl-2 md:pl-6 md:border-l border-none">
+              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-xs flex-shrink-0">
                 {session.user?.name?.substring(0, 2).toUpperCase() || 'AD'}
               </div>
               <div className="text-sm hidden md:block">
