@@ -15,6 +15,66 @@
     display: none;
   }
 
+  /* Animation Delays */
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  /* Blob Animation */
+  @keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
+  }
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+
+  /* Dot Pattern Background */
+  .bg-dot-pattern {
+    background-image: radial-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Glassmorphism */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Mesh Gradient Background */
+  .bg-mesh {
+    background-color: #ffffff;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(28,100%,74%,0.2) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(24,100%,70%,0.2) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(22,100%,77%,0.2) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(22,100%,76%,0.2) 0px, transparent 50%);
+  }
+
+  /* Text Gradients */
+  .text-gradient-orange {
+    background: linear-gradient(to right, #ea580c, #f97316);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+  }
+
   /* Cards com sombra premium */
   .card-premium {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -181,26 +241,45 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+  /* Vibrant Orange & Deep Gray Palette */
+  --background: 30 20% 98%;
+  --foreground: 20 10% 10%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 20 10% 10%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 10% 10%;
+
+  /* Primary: Vibrant Orange (Original brand color) */
+  --primary: 25 95% 50%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary: Warm Dark Gray */
+  --secondary: 24 10% 15%;
+  --secondary-foreground: 0 0% 100%;
+
+  /* Muted: Soft Warm Gray */
+  --muted: 30 10% 94%;
+  --muted-foreground: 25 5% 45%;
+
+  /* Accent: Golden Yellow */
+  --accent: 45 90% 55%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 150 60% 40%;
+  --radius: 0.75rem;
+
+  --chart-1: 150 60% 40%;
+  --chart-2: 220 40% 12%;
+  --chart-3: 25 90% 65%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
 
     /* Custom Di Sarda Variables */
     --primary-color: #d32f2f;
@@ -214,25 +293,33 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+  --background: 20 15% 10%;
+  --foreground: 30 20% 98%;
+
+  --card: 20 15% 13%;
+  --card-foreground: 30 20% 98%;
+
+  --popover: 20 15% 13%;
+  --popover-foreground: 30 20% 98%;
+
+  --primary: 25 90% 55%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 30 20% 98%;
+  --secondary-foreground: 20 15% 10%;
+
+  --muted: 20 15% 20%;
+  --muted-foreground: 25 10% 65%;
+
+  --accent: 45 80% 50%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 220 30% 20%;
+  --input: 220 30% 20%;
+  --ring: 150 50% 45%;
   }
 }
 
