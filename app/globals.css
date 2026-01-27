@@ -282,13 +282,17 @@
   --chart-5: 27 87% 67%;
 
     /* Custom Di Sarda Variables */
-    --primary-color: #d32f2f;
-    --primary-dark: #9a0007;
-    --primary-light: #ff6659;
-    --secondary-color: #ffc107;
+    --primary-color: #ff6b35;
+    --primary-dark: #e55a2b;
+    --primary-light: #ff8555;
+    --secondary-color: #1a1a1a;
     --dark-color: #212121;
     --light-color: #f5f5f5;
-    --text-color: #424242;
+    --text-color: #333333;
+    --bg-color: #f9f9f9;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
     --shadow-color: rgba(0, 0, 0, 0.1);
   }
 
