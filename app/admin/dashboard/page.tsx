@@ -214,9 +214,9 @@ function AdminDashboard() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
-      {/* Sidebar */}
-      <aside className="w-20 bg-[#E53935] fixed h-full z-50 flex flex-col items-center py-6 gap-8 shadow-lg">
+    <div className="flex min-h-screen bg-gray-50 font-sans pb-20 md:pb-0">
+      {/* Sidebar - Desktop Only */}
+      <aside className="w-20 bg-[#E53935] fixed h-full z-50 hidden md:flex flex-col items-center py-6 gap-8 shadow-lg">
         <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white mb-2 overflow-hidden">
           <Home size={24} />
         </div>
