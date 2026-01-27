@@ -75,8 +75,8 @@ export default function RestaurantNav({
         zIndex: 100,
         backgroundColor: 'white',
         boxShadow: isScrolled 
-          ? '0 4px 12px rgba(0,0,0,0.15)' 
-          : '0 2px 8px rgba(0,0,0,0.1)',
+          ? '0 4px 20px rgba(0,0,0,0.08)' 
+          : '0 1px 3px rgba(0,0,0,0.05)',
         transition: 'box-shadow 0.3s ease'
       }}
     >
@@ -86,7 +86,8 @@ export default function RestaurantNav({
           padding: '12px 16px',
           borderBottom: '1px solid #e5e7eb',
           maxWidth: '1200px',
-          margin: '0 auto'
+          margin: '0 auto',
+          animation: 'slideDown 0.3s ease'
         }}>
           <div style={{
             position: 'relative',
@@ -167,7 +168,8 @@ export default function RestaurantNav({
             borderRadius: '50%',
             cursor: 'pointer',
             flexShrink: 0,
-            transition: 'all 0.3s'
+            transition: 'all 0.3s',
+            boxShadow: showSearch ? `0 4px 12px ${primaryColor}40` : 'none'
           }}
         >
           <Search size={20} />
@@ -193,18 +195,17 @@ export default function RestaurantNav({
               display: none;
             }
             
-            @keyframes pulse {
-              0% { transform: translateY(-2px) scale(1); }
-              50% { transform: translateY(-2px) scale(1.12); }
-              100% { transform: translateY(-2px) scale(1); }
+            @keyframes slideDown {
+              from { transform: translateY(-10px); opacity: 0; }
+              to { transform: translateY(0); opacity: 1; }
             }
             
             .category-button {
-               min-width: 100px;
-               height: 44px;
+               min-width: auto;
+               height: 40px;
                padding: 0 20px;
                border: none;
-               border-radius: 24px;
+               border-radius: 20px;
                font-size: 14px;
                font-weight: 600;
                cursor: pointer;
@@ -216,60 +217,46 @@ export default function RestaurantNav({
                flex-shrink: 0;
                position: relative;
                overflow: hidden;
+               letter-spacing: 0.01em;
              }
             
             .category-button.active {
-              background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+              background-color: ${primaryColor};
               color: white;
-              transform: translateY(-2px) scale(1.02);
-              box-shadow: 
-                0 8px 25px rgba(220, 38, 38, 0.4),
-                0 4px 12px rgba(0, 0, 0, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-              animation: pulse 2s ease-in-out infinite;
+              transform: translateY(0);
+              box-shadow: 0 4px 12px ${primaryColor}50;
             }
             
-            .category-button.active::before {
-              content: '';
-              position: absolute;
-              top: 0;
-              left: -100%;
-              width: 100%;
-              height: 100%;
-              background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-              animation: shine 2s ease-in-out infinite;
+            .category-button.active:active {
+              transform: scale(0.96);
             }
             
             .category-button.inactive {
-              background: #f9fafb;
+              background: #f3f4f6;
               color: #4b5563;
-              border: 1px solid #e5e7eb;
+              border: 1px solid transparent;
             }
             
             .category-button.inactive:hover {
-              background: #f3f4f6;
-              color: #374151;
-              transform: translateY(-1px);
-              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+              background: #e5e7eb;
+              color: #1f2937;
+              transform: translateY(0);
             }
-            
-            @keyframes shine {
-               0% { left: -100%; }
-               50% { left: 100%; }
-               100% { left: 100%; }
-             }
+
+            .category-button.inactive:active {
+              transform: scale(0.96);
+              background: #d1d5db;
+            }
             
             @media (max-width: 768px) {
               .category-button {
-                min-width: 100px;
-                height: 40px;
+                height: 36px;
                 padding: 0 16px;
                 font-size: 13px;
               }
               
               .category-menu-container {
-                padding: 10px 12px !important;
-                gap: 10px !important;
+                gap: 8px !important;
               }
             }
           `}</style>

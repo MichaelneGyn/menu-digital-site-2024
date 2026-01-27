@@ -1,9 +1,18 @@
+
 'use client';
 
 import { useState } from 'react';
 import { X, Check, Plus, Minus, ChevronLeft } from 'lucide-react';
 import { ClientMenuItem } from '@/lib/restaurant';
-import { ProductCustomization } from './product-card';
+
+export interface ProductCustomization {
+  size?: string;
+  flavors: string[];
+  extras: Array<{name: string; price: number}>;
+  ingredients: string[];
+  observations: string;
+  totalPrice: number;
+}
 
 interface ProductCustomizationModalImprovedProps {
   item: ClientMenuItem;
@@ -60,7 +69,22 @@ export default function ProductCustomizationModalImproved({
   onAdd, 
   onClose 
 }: ProductCustomizationModalImprovedProps) {
-  const [currentStep, setCurrentStep] = useState<Step>('size');
+  // 1. Definimos o tipo do item ANTES de inicializar o estado
+  const isPizza = item.name?.toLowerCase().includes('pizza');
+  const isBurger = item.name?.toLowerCase().includes('burger') || 
+                   item.name?.toLowerCase().includes('sanduíche') ||
+                   item.name?.toLowerCase().includes('lanche');
+
+  // 2. Função para determinar qual o primeiro passo válido
+  const getInitialStep = (): Step => {
+    if (isPizza) return 'size';
+    if (isBurger) return 'ingredients';
+    return 'observations';
+  };
+
+  // 3. Inicializamos o currentStep com o passo correto
+  const [currentStep, setCurrentStep] = useState<Step>(getInitialStep());
+  
   const [selectedSize, setSelectedSize] = useState<typeof PIZZA_SIZES[0] | null>(null);
   const [selectedFlavors, setSelectedFlavors] = useState<Array<{name: string; price: number}>>([]);
   const [selectedExtras, setSelectedExtras] = useState<Array<{name: string; price: number}>>([]);
@@ -68,11 +92,6 @@ export default function ProductCustomizationModalImproved({
     BURGER_INGREDIENTS.filter(i => i.included).map(i => i.id)
   );
   const [observations, setObservations] = useState('');
-  
-  const isPizza = item.name?.toLowerCase().includes('pizza');
-  const isBurger = item.name?.toLowerCase().includes('burger') || 
-                   item.name?.toLowerCase().includes('sanduíche') ||
-                   item.name?.toLowerCase().includes('lanche');
   
   const maxFlavors = selectedSize?.id === 'gigante' ? 4 : 
                      selectedSize?.id === 'grande' ? 3 : 2;
@@ -249,9 +268,7 @@ export default function ProductCustomizationModalImproved({
                     >
                       <div className="font-bold text-gray-900">{size.name}</div>
                       <div className="text-sm text-gray-600">{size.desc}</div>
-                      <div className="text-orange-600 font-bold mt-2">
-                        {formatPrice(sizePrice)}
-                      </div>
+                      {/* Removido o preço aqui pois confunde o cliente */}
                       {selectedSize?.id === size.id && (
                         <Check className="text-orange-500 mt-2 mx-auto" size={20} />
                       )}
@@ -394,20 +411,19 @@ export default function ProductCustomizationModalImproved({
 
           {/* STEP: Observações */}
           {currentStep === 'observations' && (
-            <div className="space-y-4">
+            <div className="space-y-4 flex flex-col h-full">
               <div className="sticky top-0 bg-white pt-4 pb-3 px-4 sm:px-6 z-10 border-b-2 border-gray-200 mb-4 -mx-4 sm:-mx-6 shadow-sm">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Observações</h3>
                 <p className="text-base text-gray-600 font-medium">
                   Opcional - Alguma preferência especial?
                 </p>
               </div>
-              <div className="px-4 sm:px-6">
+              <div className="px-4 sm:px-6 flex-1 flex flex-col">
                 <textarea
                   value={observations}
                   onChange={(e) => setObservations(e.target.value)}
                   placeholder="Ex: Sem cebola, bem passado, maionese à parte..."
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none resize-none text-gray-900"
-                  rows={5}
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none resize-none text-gray-900 flex-1 min-h-[150px]"
                 />
               </div>
             </div>
