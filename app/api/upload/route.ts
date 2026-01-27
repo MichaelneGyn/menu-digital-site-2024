@@ -117,13 +117,7 @@ export async function POST(request: NextRequest) {
     // 🔒 SEGURANÇA: Usar APENAS SERVICE_ROLE_KEY, nunca ANON_KEY para uploads
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
-    if (!supabaseKey) {
-      console.error('❌ [SECURITY] SUPABASE_SERVICE_ROLE_KEY não configurada!');
-      return NextResponse.json(
-        { error: 'Configuração de storage incorreta. Contate o administrador.' },
-        { status: 500 }
-      );
-    }
+    // Tenta usar Cloudinary se Supabase não estiver configurado
     const useSupabase = supabaseUrl && supabaseKey;
 
     if (useSupabase) {
@@ -147,7 +141,7 @@ export async function POST(request: NextRequest) {
     const cloudinaryName = process.env.CLOUDINARY_CLOUD_NAME;
     const cloudinaryKey = process.env.CLOUDINARY_API_KEY;
     const cloudinarySecret = process.env.CLOUDINARY_API_SECRET;
-    const useCloudinary = cloudinaryName && cloudinaryKey && cloudinarySecret;
+    const useCloudinary = !!(cloudinaryName && cloudinaryKey && cloudinarySecret);
 
     if (useCloudinary) {
       console.log('📸 [Upload] Tentando Cloudinary...');
@@ -177,7 +171,7 @@ export async function POST(request: NextRequest) {
         await fs.promises.mkdir(uploadsDir, { recursive: true });
         const baseName = `${Date.now()}-${file.name}`.replace(/[^a-zA-Z0-9._-]/g, '_');
         const filePath = path.join(uploadsDir, baseName);
-        await fs.promises.writeFile(filePath, buffer);
+        await fs.promises.writeFile(filePath, buffer as any);
         imageUrl = `/uploads/${baseName}`;
         console.info('Upload salvo localmente em:', filePath);
       } catch (localErr: any) {
@@ -199,7 +193,7 @@ export async function POST(request: NextRequest) {
             await fs.promises.mkdir(uploadsDir, { recursive: true });
             const baseName = `${Date.now()}-${file.name}`.replace(/[^a-zA-Z0-9._-]/g, '_');
             const filePath = path.join(uploadsDir, baseName);
-            await fs.promises.writeFile(filePath, buffer);
+            await fs.promises.writeFile(filePath, buffer as any);
             imageUrl = `/uploads/${baseName}`;
             console.info('Upload salvo localmente (fallback) em:', filePath);
           } catch (localErr: any) {

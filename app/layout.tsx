@@ -4,7 +4,6 @@ import "./globals.css";
 import Providers from "@/components/providers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { Toaster } from "sonner";
 import ConditionalWhatsApp from "@/components/ConditionalWhatsApp";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import GoogleTagManager from "@/components/GoogleTagManager";
@@ -95,21 +94,6 @@ export default async function RootLayout({
             {children}
             <ConditionalWhatsApp />
           </LanguageProvider>
-          <Toaster 
-            position="top-right" 
-            richColors 
-            closeButton
-            duration={4000}
-            toastOptions={{
-              style: {
-                background: 'white',
-                border: '1px solid #e5e7eb',
-                fontSize: '14px',
-              },
-              className: 'toast-custom',
-              descriptionClassName: 'toast-description',
-            }}
-          />
         </Providers>
       </body>
     </html>

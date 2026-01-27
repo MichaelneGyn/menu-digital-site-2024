@@ -1,5 +1,4 @@
 
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -73,8 +72,13 @@ export async function PUT(request: NextRequest) {
       name, 
       description,
       logo,
+      bannerUrl, // Novo campo
+      deliveryFee, // Novo campo
+      minOrderValue, // Novo campo
       primaryColor,
       secondaryColor,
+      headerColor,
+      headerTextColor,
       email,
       whatsapp, 
       address, 
@@ -88,8 +92,9 @@ export async function PUT(request: NextRequest) {
     console.log('📥 API Restaurant PUT - Dados recebidos:', {
       id,
       name,
-      logo: logo || 'VAZIO',
-      logoLength: logo?.length || 0
+      bannerUrl: bannerUrl ? 'PRESENTE' : 'VAZIO',
+      deliveryFee,
+      minOrderValue
     });
 
     if (!id) {
@@ -128,8 +133,6 @@ export async function PUT(request: NextRequest) {
       if (baseSlug && baseSlug !== current.slug) {
         let finalSlug = baseSlug;
         let counter = 1;
-        // Garantir unicidade: se slug existir e não for deste restaurante, incrementa sufixo
-        // eslint-disable-next-line no-constant-condition
         while (true) {
           const existing = await prisma.restaurant.findUnique({ where: { slug: finalSlug } });
           if (!existing || existing.id === id) break;
@@ -146,9 +149,15 @@ export async function PUT(request: NextRequest) {
         name,
         description: description || null,
         logo: logo || null,
-        logoUrl: logo || null, // Atualizar ambos os campos por compatibilidade
+        logoUrl: logo || null,
+        bannerImage: bannerUrl || null, // Atualiza ambos para compatibilidade
+        bannerUrl: bannerUrl || null,
+        deliveryFee: deliveryFee !== undefined ? parseFloat(deliveryFee) : undefined,
+        minOrderValue: minOrderValue !== undefined ? parseFloat(minOrderValue) : undefined,
         primaryColor: primaryColor || undefined,
         secondaryColor: secondaryColor || undefined,
+        headerColor: headerColor || undefined,
+        headerTextColor: headerTextColor || undefined,
         email: email || null,
         slug: slugToUse,
         whatsapp: whatsapp ? wpp : null,
@@ -171,13 +180,6 @@ export async function PUT(request: NextRequest) {
           }
         }
       }
-    });
-
-    console.log('✅ API Restaurant PUT - Restaurante atualizado:', {
-      id: updatedRestaurant.id,
-      name: updatedRestaurant.name,
-      logo: updatedRestaurant.logo || 'NULL',
-      logoUrl: updatedRestaurant.logoUrl || 'NULL'
     });
 
     return NextResponse.json(updatedRestaurant);
@@ -209,7 +211,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
     }
 
-    // Verificar se já tem restaurante
     const existingRestaurant = await prisma.restaurant.findFirst({
       where: { userId: user.id }
     });
@@ -218,16 +219,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Usuário já possui um restaurante' }, { status: 400 });
     }
 
-    // Create slug from restaurant name
     const slug = name
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove accents
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s-]/g, '')
       .trim()
-      .replace(/\s+/g, '-'); // Replace spaces with hyphens
+      .replace(/\s+/g, '-');
 
-    // Ensure unique slug
     let finalSlug = slug;
     let counter = 1;
     while (await prisma.restaurant.findUnique({ where: { slug: finalSlug } })) {
@@ -249,34 +248,17 @@ export async function POST(request: NextRequest) {
         userId: user.id,
       },
       include: {
-        categories: {
-          include: {
-            menuItems: true
-          }
-        },
-        menuItems: {
-          include: {
-            category: true
-          }
-        }
+        categories: { include: { menuItems: true } },
+        menuItems: { include: { category: true } }
       }
     });
 
     return NextResponse.json(restaurant, { status: 201 });
   } catch (error) {
     console.error('Erro ao criar restaurante:', error);
-    
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: error.errors[0]?.message || 'Dados inválidos' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: error.errors[0]?.message || 'Dados inválidos' }, { status: 400 });
     }
-
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
-

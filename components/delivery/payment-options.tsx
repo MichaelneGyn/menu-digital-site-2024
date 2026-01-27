@@ -198,42 +198,9 @@ export default function PaymentOptions({ onPaymentSelect, selectedPayment, total
                 
                 {pixDynamicQrCode && (
                   <div className="space-y-3">
-                    <p className="text-sm font-medium text-green-700">💳 Escaneie o QR Code PIX:</p>
-                    
-                    {/* Valor em destaque */}
-                    <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-green-800 font-medium">Valor total a pagar:</span>
-                        <span className="text-2xl font-bold text-green-700">R$ {totalAmount.toFixed(2)}</span>
-                      </div>
-                    </div>
-
-                    {/* QR Code */}
-                    <div className="bg-white p-4 rounded-lg border-2 border-green-200 flex justify-center">
-                      <img 
-                        src={pixDynamicQrCode} 
-                        alt="QR Code PIX" 
-                        className="max-w-[200px] max-h-[200px] w-full h-auto object-contain"
-                        onError={(e) => {
-                          console.error('Erro ao carregar QR Code');
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
+                    {/* QR Code Removido conforme solicitado */}
                   </div>
                 )}
-                
-                <div className="p-3 bg-green-100 rounded border border-green-300">
-                  <p className="text-sm text-green-800 font-medium mb-1">
-                    📱 Como pagar:
-                  </p>
-                  <ol className="text-xs text-green-700 space-y-1 list-decimal list-inside">
-                    <li>Copie a chave PIX ou escaneie o QR Code</li>
-                    <li>Abra o app do seu banco</li>
-                    <li>Faça o pagamento de <strong>R$ {totalAmount.toFixed(2)}</strong></li>
-                    <li>Envie o comprovante via WhatsApp</li>
-                  </ol>
-                </div>
               </div>
             ) : (
               <div className="space-y-2">

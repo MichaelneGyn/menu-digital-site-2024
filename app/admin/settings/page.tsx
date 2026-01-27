@@ -26,6 +26,15 @@ type Restaurant = {
   email: string | null;
   address: string | null;
   slug: string;
+  pixKey: string | null;
+  deliveryFee: number | null;
+  minOrderValue: number | null;
+  openTime: string | null;
+  closeTime: string | null;
+  headerColor: string | null;
+  headerTextColor: string | null;
+  bannerUrl: string | null;
+  bannerImage: string | null;
 };
 
 function SettingsPage() {
@@ -35,6 +44,7 @@ function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [showLogoGallery, setShowLogoGallery] = useState(false);
 
   // Form data
@@ -42,11 +52,19 @@ function SettingsPage() {
     name: '',
     description: '',
     logo: '',
+    bannerUrl: '', // Adicionar campo bannerUrl ao estado inicial
     primaryColor: '#d32f2f',
     secondaryColor: '#ffc107',
+    headerColor: '#6b7280', // Adicionar campo headerColor
+    headerTextColor: '#ffffff', // Adicionar campo headerTextColor
     whatsapp: '',
     email: '',
     address: '',
+    deliveryFee: 0,
+    minOrderValue: 0,
+    pixKey: '',
+    openTime: '',
+    closeTime: '',
   });
 
   // Verificar autenticação
@@ -66,27 +84,94 @@ function SettingsPage() {
       const res = await fetch('/api/restaurant');
       if (!res.ok) throw new Error('Erro ao buscar restaurante');
       const data = await res.json();
-      setRestaurant(data);
       
-      setFormData({
-        name: data.name || '',
-        description: data.description || '',
-        logo: data.logo || data.logoUrl || '',
-        primaryColor: data.primaryColor || '#d32f2f',
-        secondaryColor: data.secondaryColor || '#ffc107',
-        whatsapp: data.whatsapp || '',
-        email: data.email || '',
-        address: data.address || '',
-      });
-      
-      if (data.logo || data.logoUrl) {
-        setLogoPreview(data.logo || data.logoUrl);
+      if (data) {
+        setRestaurant(data);
+        setFormData({
+          name: data.name || '',
+          description: data.description || '',
+          logo: data.logo || data.logoUrl || '',
+          bannerUrl: data.bannerUrl || data.bannerImage || '',
+          primaryColor: data.primaryColor || '#d32f2f',
+          secondaryColor: data.secondaryColor || '#ffc107',
+          headerColor: data.headerColor || '#6b7280', // Carregar headerColor
+          headerTextColor: data.headerTextColor || '#ffffff', // Carregar headerTextColor
+          whatsapp: data.whatsapp || '',
+          email: data.email || '',
+          address: data.address || '',
+          pixKey: data.pixKey || '', // Carregar pixKey
+          deliveryFee: data.deliveryFee || 0,
+          minOrderValue: data.minOrderValue || 0,
+          openTime: data.openTime || '',
+          closeTime: data.closeTime || '',
+        });
+        
+        if (data.logo || data.logoUrl) {
+          setLogoPreview(data.logo || data.logoUrl);
+        }
+        if (data.bannerUrl || data.bannerImage) {
+          setBannerPreview(data.bannerUrl || data.bannerImage);
+        }
+      } else {
+        // No restaurant found - prepare for creation
+        setRestaurant(null);
       }
     } catch (error) {
       console.error('Erro:', error);
       toast.error('Erro ao carregar configurações');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecione uma imagem');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Imagem muito grande. Máximo 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setBannerPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    const formDataUpload = new FormData();
+    formDataUpload.append('file', file);
+
+    try {
+      toast.loading('Fazendo upload do banner...');
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Erro no upload');
+      }
+
+      const data = await res.json();
+      const imageUrl = data.image_url || data.url;
+      
+      if (!imageUrl) throw new Error('URL da imagem não retornada');
+      
+      setFormData(prev => ({ ...prev, bannerUrl: imageUrl }));
+      setBannerPreview(imageUrl);
+      toast.dismiss();
+      toast.success('✅ Banner carregado!');
+    } catch (error: any) {
+      console.error('❌ Erro no upload:', error);
+      toast.dismiss();
+      toast.error(error.message || 'Erro ao fazer upload');
     }
   };
 
@@ -139,7 +224,7 @@ function SettingsPage() {
         throw new Error('URL da imagem não retornada pela API');
       }
       
-      setFormData({ ...formData, logo: imageUrl });
+      setFormData(prev => ({ ...prev, logo: imageUrl }));
       setLogoPreview(imageUrl);
       toast.dismiss();
       toast.success('✅ Imagem carregada! Não esqueça de clicar em "Salvar Configurações"');
@@ -155,44 +240,38 @@ function SettingsPage() {
     setSaving(true);
 
     try {
-      if (!restaurant?.id) {
-        toast.error('Restaurante não encontrado');
-        setSaving(false);
-        return;
-      }
-
-      console.log('📤 Enviando configurações:', {
-        id: restaurant.id,
+      const url = '/api/restaurant';
+      const method = restaurant?.id ? 'PUT' : 'POST';
+      
+      const body = {
+        ...(restaurant?.id ? { id: restaurant.id } : {}),
         ...formData,
-        logo: formData.logo || 'VAZIO'
-      });
+      };
 
-      const res = await fetch('/api/restaurant', {
-        method: 'PUT',
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: restaurant.id, // ✅ ID obrigatório
-          ...formData,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        console.error('Erro da API:', errorData);
-        throw new Error(errorData.error || 'Erro ao salvar');
+        const errData = await res.json();
+        throw new Error(errData.error || 'Erro ao salvar');
       }
 
-      toast.success('✅ Configurações salvas! A logo será atualizada no site em até 10 segundos.');
+      const savedData = await res.json();
+      setRestaurant(savedData); // Update local state with new/updated restaurant
+      toast.success(restaurant?.id ? '✅ Configurações salvas!' : '✅ Restaurante criado com sucesso!');
       
-      // Forçar revalidação do cache do Next.js
       try {
-        await fetch(`/api/revalidate?path=/${restaurant.slug}`, {
-          method: 'POST',
-        });
+        if (savedData.slug) {
+           await fetch(`/api/revalidate?path=/${savedData.slug}`, { method: 'POST' });
+        }
       } catch (e) {
-        console.warn('Revalidação manual falhou, usando revalidação automática');
+        console.warn('Falha na revalidação automática');
       }
       
+      // Refresh data to be sure
       fetchRestaurant();
     } catch (error: any) {
       console.error('Erro:', error);
@@ -326,7 +405,7 @@ function SettingsPage() {
                       <Label htmlFor="logoUrl" className="text-xs">Ou cole a URL da imagem:</Label>
                       <Input
                         id="logoUrl"
-                        type="url"
+                        type="text"
                         placeholder="https://exemplo.com/logo.png"
                         value={formData.logo}
                         onChange={(e) => {
@@ -356,42 +435,93 @@ function SettingsPage() {
               </p>
             </div>
 
+            {/* Banner/Capa */}
+            <div>
+              <Label htmlFor="bannerUrl">Imagem de Capa (Banner)</Label>
+              <div className="mt-2 flex items-center gap-4">
+                 {/* Preview do Banner */}
+                 <div className="w-40 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 relative group">
+                    {bannerPreview ? (
+                      <img 
+                        src={bannerPreview} 
+                        alt="Banner preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-center p-2">
+                         <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-1" />
+                         <span className="text-[10px] text-gray-400">Sem banner</span>
+                      </div>
+                    )}
+                 </div>
+
+                 <div className="flex-1">
+                    <input
+                      type="file"
+                      id="banner-upload"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleBannerUpload}
+                    />
+                    <label htmlFor="banner-upload">
+                      <Button type="button" variant="outline" size="sm" asChild className="mb-2">
+                        <span className="cursor-pointer">
+                          <Upload className="w-4 h-4 mr-2" />
+                          Fazer Upload da Capa
+                        </span>
+                      </Button>
+                    </label>
+
+                    <div className="relative">
+                      <Label htmlFor="bannerUrlInput" className="text-xs">Ou URL da imagem:</Label>
+                      <Input
+                        id="bannerUrlInput"
+                        type="text"
+                        placeholder="https://exemplo.com/banner.jpg"
+                        value={formData.bannerUrl}
+                        onChange={(e) => {
+                          setFormData({ ...formData, bannerUrl: e.target.value });
+                          setBannerPreview(e.target.value);
+                        }}
+                        className="mt-1"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Recomendado: 1200x300px (Use uma URL de imagem externa ou faça upload)
+                    </p>
+                 </div>
+              </div>
+            </div>
+
             {/* Cores */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="primaryColor">Cor Primária</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="primaryColor"
-                    type="color"
-                    value={formData.primaryColor}
-                    onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
-                    className="w-16 h-10"
-                  />
-                  <Input
-                    type="text"
-                    value={formData.primaryColor}
-                    onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
-                    className="flex-1"
-                  />
+                <Label>Cor Principal</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input type="color" value={formData.primaryColor} onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })} className="w-12 p-1 h-10" />
+                  <Input value={formData.primaryColor} onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })} />
                 </div>
               </div>
               <div>
-                <Label htmlFor="secondaryColor">Cor Secundária</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="secondaryColor"
-                    type="color"
-                    value={formData.secondaryColor}
-                    onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
-                    className="w-16 h-10"
-                  />
-                  <Input
-                    type="text"
-                    value={formData.secondaryColor}
-                    onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
-                    className="flex-1"
-                  />
+                <Label>Cor Secundária</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input type="color" value={formData.secondaryColor} onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })} className="w-12 p-1 h-10" />
+                  <Input value={formData.secondaryColor} onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })} />
+                </div>
+              </div>
+              <div>
+                <Label>Cor do Cabeçalho (Fundo)</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input type="color" value={formData.headerColor} onChange={(e) => setFormData({ ...formData, headerColor: e.target.value })} className="w-12 p-1 h-10" />
+                  <Input value={formData.headerColor} onChange={(e) => setFormData({ ...formData, headerColor: e.target.value })} />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Caso não tenha banner de capa</p>
+              </div>
+              <div>
+                <Label>Cor do Texto (Cabeçalho)</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input type="color" value={formData.headerTextColor} onChange={(e) => setFormData({ ...formData, headerTextColor: e.target.value })} className="w-12 p-1 h-10" />
+                  <Input value={formData.headerTextColor} onChange={(e) => setFormData({ ...formData, headerTextColor: e.target.value })} />
                 </div>
               </div>
             </div>
@@ -447,6 +577,55 @@ function SettingsPage() {
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 rows={2}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Pagamento e Entrega */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Pagamento e Entrega</CardTitle>
+            <CardDescription>
+              Configure o PIX e taxas de entrega
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="pixKey">Chave PIX</Label>
+              <Input
+                id="pixKey"
+                placeholder="CPF, CNPJ, Email, Telefone ou Chave Aleatória"
+                value={formData.pixKey}
+                onChange={(e) => setFormData({ ...formData, pixKey: e.target.value })}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Esta chave será exibida para o cliente na hora do pagamento e usada para gerar o QR Code.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="deliveryFee">Taxa de Entrega (R$)</Label>
+                <Input
+                  id="deliveryFee"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.deliveryFee}
+                  onChange={(e) => setFormData({ ...formData, deliveryFee: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="minOrderValue">Pedido Mínimo (R$)</Label>
+                <Input
+                  id="minOrderValue"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.minOrderValue}
+                  onChange={(e) => setFormData({ ...formData, minOrderValue: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

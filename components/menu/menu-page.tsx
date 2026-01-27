@@ -439,6 +439,8 @@ export default function MenuPage({ restaurant, viewOnly = false }: MenuPageProps
               category={category}
               onAddToCart={handleAddToCart}
               viewOnly={viewOnly}
+              primaryColor={restaurant.primaryColor}
+              secondaryColor={restaurant.secondaryColor}
             />
           </section>
         ))}

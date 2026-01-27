@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getRestaurantBySlug } from '@/lib/restaurant';
-import MenuPage from '@/components/menu/menu-page';
+import MenuPageModern from '@/components/menu/menu-page-modern';
 
 interface PageProps {
   params: {
@@ -24,7 +24,7 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
 
   const viewOnly = searchParams.viewOnly === 'true';
 
-  return <MenuPage restaurant={restaurant} viewOnly={viewOnly} />;
+  return <MenuPageModern restaurant={restaurant} viewOnly={viewOnly} />;
 }
 
 export async function generateMetadata({ params }: PageProps) {

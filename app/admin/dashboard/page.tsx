@@ -111,8 +111,9 @@ function AdminDashboard() {
       const response = await fetch('/api/restaurant');
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Dados do restaurante carregados:', data);
         setRestaurant(data);
-        calculateStats(data);
+        if (data) calculateStats(data);
       }
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
@@ -287,12 +288,13 @@ function AdminDashboard() {
           <div className="w-8 h-[1px] bg-white/20 my-2"></div>
 
           <a 
-            href={`/${restaurant?.slug}`} 
-            target="_blank"
-            className="flex flex-col items-center gap-1 text-white/90 hover:text-white transition-colors group animate-pulse"
-            title="Ver como o cliente vê"
+            href={restaurant?.slug ? `/${restaurant.slug}` : '#'} 
+            target={restaurant?.slug ? "_blank" : undefined}
+            onClick={(e) => !restaurant?.slug && e.preventDefault()}
+            className={`flex flex-col items-center gap-1 transition-colors group ${restaurant?.slug ? 'text-white/90 hover:text-white cursor-pointer animate-pulse' : 'text-white/50 cursor-not-allowed'}`}
+            title={restaurant?.slug ? "Ver como o cliente vê" : "Loja indisponível"}
           >
-            <div className="p-2 bg-white text-red-600 rounded-lg shadow-lg hover:scale-110 transition-transform">
+            <div className={`p-2 rounded-lg shadow-lg transition-transform ${restaurant?.slug ? 'bg-white text-red-600 hover:scale-110' : 'bg-gray-400 text-gray-200'}`}>
               <ExternalLink size={20} strokeWidth={2.5} />
             </div>
             <span className="text-[10px] font-bold text-white">Ver Loja</span>

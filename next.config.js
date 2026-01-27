@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  // output: 'standalone', // Commented out for dev stability
+
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -40,6 +41,7 @@ const nextConfig = {
   },
   
   async headers() {
+    if (process.env.NODE_ENV === 'development') return [];
     return [
       // 🔒 Headers de Segurança Globais
       {
