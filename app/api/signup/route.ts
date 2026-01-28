@@ -7,6 +7,9 @@ import { onlyDigits, isValidWhatsapp } from '@/lib/phone';
 import { authRateLimiter } from '@/lib/rate-limit';
 import { notifyNewSignup } from '@/lib/notifications';
 import { notifyNewSignupEmail } from '@/lib/email-notifications';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const signUpSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -143,6 +146,33 @@ export async function POST(request: NextRequest) {
       result.restaurant?.name || null,
       result.restaurant?.slug || null
     );
+
+    // 📧 ENVIAR EMAIL DE BOAS-VINDAS PARA O CLIENTE
+    try {
+      await resend.emails.send({
+        from: 'Menu Digital <onboarding@resend.dev>',
+        to: result.user.email,
+        subject: 'Bem-vindo ao Menu Digital! 🚀',
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #ff6b35; text-align: center;">Olá, ${result.user.name || 'Parceiro'}!</h1>
+            <p style="font-size: 16px; color: #333; text-align: center;">Sua conta foi criada com sucesso.</p>
+            <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center;">
+              <p style="margin: 0; font-weight: bold; color: #555;">Seu Link de Acesso:</p>
+              <a href="https://virtualcardapio.com.br/auth/login" style="display: inline-block; background-color: #ff6b35; color: white; padding: 12px 24px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 10px;">
+                Acessar Painel
+              </a>
+            </div>
+            <p style="font-size: 14px; color: #666; text-align: center;">
+              Se tiver dúvidas, responda a este e-mail ou chame no WhatsApp.
+            </p>
+          </div>
+        `
+      });
+    } catch (emailError) {
+      console.error('Erro ao enviar e-mail de boas-vindas:', emailError);
+      // Não falhar o cadastro se o e-mail falhar, apenas logar
+    }
 
     // Determinar qual tipo de cliente é (para pricing)
     const finalUserCount = totalUsers + 1; // +1 porque acabamos de criar

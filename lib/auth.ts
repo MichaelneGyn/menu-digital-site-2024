@@ -1,9 +1,13 @@
 
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import EmailProvider from "next-auth/providers/email";
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
 import { prisma } from './db';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function getUserByEmail(email?: string) {
   if (!email) return null;
@@ -19,8 +23,43 @@ export async function userIsAdmin(email?: string) {
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma as any),
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development', // Debug apenas em desenvolvimento
+  debug: process.env.NODE_ENV === 'development',
   providers: [
+    EmailProvider({
+      server: {
+        host: process.env.EMAIL_SERVER_HOST,
+        port: process.env.EMAIL_SERVER_PORT,
+        auth: {
+          user: process.env.EMAIL_SERVER_USER,
+          pass: process.env.EMAIL_SERVER_PASSWORD
+        }
+      },
+      from: 'onboarding@resend.dev', // Mude para seu domínio quando configurar no Resend
+      async sendVerificationRequest({ identifier: email, url }) {
+        const { host } = new URL(url);
+        try {
+          await resend.emails.send({
+            from: 'Menu Digital <onboarding@resend.dev>',
+            to: email,
+            subject: `Ative sua conta no Menu Digital`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                <h1 style="color: #ff6b35;">Bem-vindo ao Menu Digital! 🚀</h1>
+                <p>Você está a um passo de criar seu cardápio digital.</p>
+                <p>Clique no botão abaixo para confirmar seu e-mail e acessar sua conta:</p>
+                <a href="${url}" style="display: inline-block; background-color: #ff6b35; color: white; padding: 12px 24px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 10px;">
+                  Confirmar E-mail e Entrar
+                </a>
+                <p style="margin-top: 20px; font-size: 12px; color: #666;">Se você não solicitou este e-mail, pode ignorá-lo com segurança.</p>
+              </div>
+            `
+          });
+        } catch (error) {
+          console.error('Erro ao enviar e-mail de verificação:', error);
+          throw new Error('Falha ao enviar e-mail de verificação');
+        }
+      },
+    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
