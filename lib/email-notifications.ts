@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const ADMIN_EMAIL = 'michaeldouglasqueiroz@gmail.com';
 // Usar domínio padrão do Resend (funciona sem verificação)
-const FROM_EMAIL = 'onboarding@resend.dev';
+const FROM_EMAIL = 'nao-responda@virtualcardapio.com.br';
 
 /**
  * 🎉 Notificar sobre novo cadastro

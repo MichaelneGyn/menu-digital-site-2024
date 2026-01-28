@@ -149,8 +149,11 @@ export async function POST(request: NextRequest) {
 
     // 📧 ENVIAR EMAIL DE BOAS-VINDAS PARA O CLIENTE
     try {
-      await resend.emails.send({
-        from: 'Menu Digital <onboarding@resend.dev>',
+      console.log('🚀 Tentando enviar e-mail de boas-vindas via Resend...');
+      console.log('Chave API configurada:', !!process.env.RESEND_API_KEY); // Log seguro (true/false)
+      
+      const emailResult = await resend.emails.send({
+        from: 'Menu Digital <nao-responda@virtualcardapio.com.br>',
         to: result.user.email,
         subject: 'Bem-vindo ao Menu Digital! 🚀',
         html: `
@@ -169,8 +172,9 @@ export async function POST(request: NextRequest) {
           </div>
         `
       });
+      console.log('✅ E-mail enviado com sucesso! ID:', emailResult.data?.id);
     } catch (emailError) {
-      console.error('Erro ao enviar e-mail de boas-vindas:', emailError);
+      console.error('❌ ERRO CRÍTICO ao enviar e-mail de boas-vindas:', emailError);
       // Não falhar o cadastro se o e-mail falhar, apenas logar
     }
 

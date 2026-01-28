@@ -34,12 +34,12 @@ export const authOptions: NextAuthOptions = {
           pass: process.env.EMAIL_SERVER_PASSWORD
         }
       },
-      from: 'onboarding@resend.dev', // Mude para seu domínio quando configurar no Resend
+      from: 'nao-responda@virtualcardapio.com.br',
       async sendVerificationRequest({ identifier: email, url }) {
         const { host } = new URL(url);
         try {
           await resend.emails.send({
-            from: 'Menu Digital <onboarding@resend.dev>',
+            from: 'Menu Digital <nao-responda@virtualcardapio.com.br>',
             to: email,
             subject: `Ative sua conta no Menu Digital`,
             html: `
