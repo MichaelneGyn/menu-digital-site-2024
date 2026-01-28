@@ -20,11 +20,25 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  // Lista de domínios de e-mail temporários bloqueados
+  const BLOCKED_DOMAINS = [
+    'tempmail.com', 'throwawaymail.com', 'yopmail.com', 'mailinator.com', 
+    'guerrillamail.com', '10minutemail.com', 'sharklasers.com', 'getnada.com',
+    'dispostable.com', 'grr.la', 'mailnesia.com'
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.email || !formData.password || !formData.whatsapp) {
       toast.error('Preencha todos os campos');
+      return;
+    }
+
+    // Validação de E-mail Temporário
+    const emailDomain = formData.email.split('@')[1];
+    if (BLOCKED_DOMAINS.includes(emailDomain)) {
+      toast.error('Por favor, use um e-mail corporativo ou pessoal válido (Gmail, Hotmail, etc).');
       return;
     }
 
