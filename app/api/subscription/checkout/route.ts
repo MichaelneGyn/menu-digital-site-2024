@@ -5,9 +5,12 @@ import { prisma } from '@/lib/db';
 
 // Configuração de Planos e Preços
 const PLANS = {
-  founder: { name: 'Fundador (10 primeiros)', price: 69.90 },
-  early: { name: 'Early Adopter (11-50)', price: 79.90 },
-  normal: { name: 'Normal', price: 89.90 },
+  pro: { name: 'Plano Mensal', price: 69.90 },
+  // Manter compatibilidade com chamadas antigas, redirecionando para o preço correto
+  basic: { name: 'Plano Mensal', price: 69.90 },
+  founder: { name: 'Plano Mensal', price: 69.90 },
+  early: { name: 'Plano Mensal', price: 69.90 },
+  normal: { name: 'Plano Mensal', price: 69.90 },
 };
 
 // 🔑 CHAVE PIX DO SISTEMA
@@ -30,6 +33,8 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { plan } = body;
+    
+    console.log('Iniciando checkout para plano:', plan); // Debug log para garantir deploy
 
     if (!plan || !PLANS[plan as keyof typeof PLANS]) {
       return NextResponse.json(
