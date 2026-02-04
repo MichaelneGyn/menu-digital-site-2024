@@ -458,3 +458,5 @@ Sistema completo, testado e documentado.
 ---
 
 **Desenvolvido com ❤️ usando Next.js 14**
+
+<!-- Update to force deploy -->

@@ -85,65 +85,51 @@ export default function SubscriptionExpiredPage() {
           )}
 
           {/* Planos */}
-          <div className="border-t pt-6">
-            <h3 className="font-semibold text-lg mb-4">Escolha seu plano:</h3>
-            
-            <div className="grid gap-4 md:grid-cols-2">
-              {/* Plano Básico */}
-              <Card className="border-2">
+          <div className="border-t pt-6 flex justify-center">
+            <div className="w-full max-w-md">
+              <h3 className="font-semibold text-lg mb-4 text-center">Escolha seu plano:</h3>
+              
+              <Card className="border-2 border-red-600 shadow-lg relative transform hover:scale-[1.02] transition-all">
+                <div className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
+                  Popular
+                </div>
                 <CardHeader>
-                  <CardTitle className="text-lg">Plano Básico</CardTitle>
-                  <CardDescription>Ideal para começar</CardDescription>
+                  <CardTitle className="text-xl">Plano Mensal</CardTitle>
+                  <CardDescription>Tudo que você precisa</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold">R$ 49,90</span>
+                  <div className="mb-6">
+                    <span className="text-4xl font-bold text-gray-900">R$ 69,90</span>
                     <span className="text-gray-600">/mês</span>
                   </div>
-                  <ul className="space-y-2 text-sm text-gray-600 mb-4">
-                    <li>✅ Cardápio digital ilimitado</li>
-                    <li>✅ Pedidos online</li>
-                    <li>✅ Relatórios básicos</li>
-                    <li>✅ Suporte por email</li>
+                  <ul className="space-y-3 mb-8">
+                    <li className="flex items-center text-sm text-gray-600">
+                      <span className="mr-2">✅</span>
+                      Cardápio digital ilimitado
+                    </li>
+                    <li className="flex items-center text-sm text-gray-600">
+                      <span className="mr-2">✅</span>
+                      Pedidos via WhatsApp
+                    </li>
+                    <li className="flex items-center text-sm text-gray-600">
+                      <span className="mr-2">✅</span>
+                      Painel de gestão completo
+                    </li>
+                    <li className="flex items-center text-sm text-gray-600">
+                      <span className="mr-2">✅</span>
+                      Relatórios de vendas
+                    </li>
+                    <li className="flex items-center text-sm text-gray-600">
+                      <span className="mr-2">✅</span>
+                      Suporte prioritário
+                    </li>
                   </ul>
                   <Button 
-                    className="w-full" 
-                    variant="outline"
-                    onClick={() => router.push('/subscription/checkout?plan=basic')}
-                  >
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Assinar Básico
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Plano Pro */}
-              <Card className="border-2 border-red-500">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">Plano Pro</CardTitle>
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">Popular</span>
-                  </div>
-                  <CardDescription>Mais recursos</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold">R$ 99,90</span>
-                    <span className="text-gray-600">/mês</span>
-                  </div>
-                  <ul className="space-y-2 text-sm text-gray-600 mb-4">
-                    <li>✅ Tudo do Básico</li>
-                    <li>✅ Análise de CMV</li>
-                    <li>✅ Relatórios avançados</li>
-                    <li>✅ Suporte prioritário</li>
-                    <li>✅ Integração WhatsApp</li>
-                  </ul>
-                  <Button 
-                    className="w-full bg-red-600 hover:bg-red-700"
+                    className="w-full bg-red-600 hover:bg-red-700 text-white font-bold h-12 rounded-xl shadow-md"
                     onClick={() => router.push('/subscription/checkout?plan=pro')}
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Assinar Pro
+                    Assinar Agora
                   </Button>
                 </CardContent>
               </Card>

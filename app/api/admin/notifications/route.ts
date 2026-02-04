@@ -47,6 +47,16 @@ export async function GET(req: NextRequest) {
     });
   } catch (error: any) {
     console.error('Erro ao buscar notificações:', error);
+    
+    // Se for erro de validação do Prisma (ex: enum inválido no banco), retornar lista vazia para não quebrar o painel
+    if (error.message && error.message.includes('Value') && error.message.includes('not found in enum')) {
+        console.warn('⚠️ Ignorando erro de enum inválido no banco de dados. Retornando lista vazia.');
+        return NextResponse.json({
+            notifications: [],
+            unreadCount: 0
+        });
+    }
+
     return NextResponse.json(
       { error: 'Erro ao buscar notificações' },
       { status: 500 }
