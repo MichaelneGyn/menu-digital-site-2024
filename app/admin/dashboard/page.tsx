@@ -79,6 +79,11 @@ function AdminDashboard() {
     totalCategories: 0,
     promoItems: 0
   });
+  const [dashboardStats, setDashboardStats] = useState({
+    today: { count: 0, revenue: 0, itemsSold: 0, averageTicket: 0 },
+    yesterday: { count: 0, revenue: 0, itemsSold: 0, averageTicket: 0 },
+    growth: { orders: 0, revenue: 0, itemsSold: 0, averageTicket: 0 }
+  });
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showEditItemModal, setShowEditItemModal] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
@@ -104,7 +109,20 @@ function AdminDashboard() {
     }
 
     fetchRestaurantData();
+    fetchDashboardStats();
   }, [session, status, router]);
+
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await fetch('/api/dashboard/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setDashboardStats(data);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas:', error);
+    }
+  };
 
   const fetchRestaurantData = async () => {
     try {
@@ -274,33 +292,40 @@ function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <p className="text-sm text-gray-500 mb-2">Pedidos hoje</p>
-              <div className="text-3xl font-bold text-gray-900 mb-1">12</div>
-              <p className="text-xs font-medium text-green-600 flex items-center gap-1">
-                <TrendingUp size={12} /> +8% vs ontem
+              <div className="text-3xl font-bold text-gray-900 mb-1">{dashboardStats.today.count}</div>
+              <p className={`text-xs font-medium flex items-center gap-1 ${dashboardStats.growth.orders >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <TrendingUp size={12} className={dashboardStats.growth.orders < 0 ? 'rotate-180' : ''} /> 
+                {dashboardStats.growth.orders > 0 ? '+' : ''}{dashboardStats.growth.orders.toFixed(0)}% vs ontem
               </p>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <p className="text-sm text-gray-500 mb-2">Faturamento</p>
-              <div className="text-3xl font-bold text-gray-900 mb-1">R$ 486,00</div>
-              <p className="text-xs font-medium text-green-600 flex items-center gap-1">
-                <TrendingUp size={12} /> +12% vs ontem
+              <div className="text-3xl font-bold text-gray-900 mb-1">
+                {dashboardStats.today.revenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </div>
+              <p className={`text-xs font-medium flex items-center gap-1 ${dashboardStats.growth.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <TrendingUp size={12} className={dashboardStats.growth.revenue < 0 ? 'rotate-180' : ''} />
+                {dashboardStats.growth.revenue > 0 ? '+' : ''}{dashboardStats.growth.revenue.toFixed(0)}% vs ontem
               </p>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <p className="text-sm text-gray-500 mb-2">Ticket médio</p>
-              <div className="text-3xl font-bold text-gray-900 mb-1">R$ 40,50</div>
-              <p className="text-xs font-medium text-red-600 flex items-center gap-1">
-                <TrendingUp size={12} className="rotate-180" /> -3% vs ontem
+              <div className="text-3xl font-bold text-gray-900 mb-1">
+                {dashboardStats.today.averageTicket.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </div>
+              <p className={`text-xs font-medium flex items-center gap-1 ${dashboardStats.growth.averageTicket >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <TrendingUp size={12} className={dashboardStats.growth.averageTicket < 0 ? 'rotate-180' : ''} />
+                {dashboardStats.growth.averageTicket > 0 ? '+' : ''}{dashboardStats.growth.averageTicket.toFixed(0)}% vs ontem
               </p>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <p className="text-sm text-gray-500 mb-2">Itens vendidos</p>
-              <div className="text-3xl font-bold text-gray-900 mb-1">34</div>
+              <div className="text-3xl font-bold text-gray-900 mb-1">{dashboardStats.today.itemsSold}</div>
               <p className="text-xs text-gray-400">
-                Total de vendas
+                Total de vendas hoje
               </p>
             </div>
           </div>
