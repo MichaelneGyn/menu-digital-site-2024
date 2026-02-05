@@ -210,8 +210,14 @@ function AdminDashboard() {
     { icon: LayoutGrid, label: 'Painel Comandas', action: () => router.push('/admin/kitchen'), badge: 'NOVO' },
     { icon: LayoutGrid, label: 'Gestão Mesas', action: () => router.push('/admin/tables'), badge: null },
     { icon: Phone, label: 'Chamadas', action: () => router.push('/admin/waiter-calls'), badge: 'NOVO' },
-    { icon: Users, label: 'Usuários', action: () => router.push('/admin/usuarios'), badge: null },
-  ];
+    { icon: Users, label: 'Usuários', action: () => router.push('/admin/customers'), badge: null },
+  ].filter(item => {
+    // Esconde itens restritos se não for admin
+    if (['Usuários', 'Integrações'].includes(item.label) && !isAdmin) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans">
@@ -302,17 +308,17 @@ function AdminDashboard() {
           {/* Quick Access */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h2 className="text-lg font-bold text-gray-900 mb-6">Acesso rápido</h2>
-            <div className="grid grid-cols-4 md:grid-cols-8 gap-y-8 gap-x-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-y-8 gap-x-2 sm:gap-x-4">
               {quickAccessItems.map((item, index) => (
                 <button
                   key={index}
                   onClick={item.action}
-                  className="flex flex-col items-center gap-3 group relative"
+                  className="flex flex-col items-center gap-3 group relative w-full"
                 >
                   <div className="w-12 h-12 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-red-50 group-hover:text-red-600 group-hover:border-red-100 transition-all">
                     <item.icon size={20} strokeWidth={1.5} />
                   </div>
-                  <span className="text-xs font-medium text-gray-600 group-hover:text-red-600 transition-colors text-center">
+                  <span className="text-xs font-medium text-gray-600 group-hover:text-red-600 transition-colors text-center w-full px-1 break-words leading-tight">
                     {item.label}
                   </span>
                   {item.badge && (
