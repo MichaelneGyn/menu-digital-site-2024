@@ -69,11 +69,6 @@ export function AdminSidebar() {
       href: '/admin/relatorios',
     },
     {
-      label: 'Financeiro',
-      icon: DollarSign,
-      href: '/admin/payments',
-    },
-    {
       label: 'Upsell',
       icon: TrendingUp,
       href: '/admin/upsell',
@@ -110,6 +105,11 @@ export function AdminSidebar() {
       label: 'Usuários',
       icon: Users,
       href: '/admin/customers',
+    });
+    routes.push({
+      label: 'Financeiro',
+      icon: DollarSign,
+      href: '/admin/payments',
     });
   }
 

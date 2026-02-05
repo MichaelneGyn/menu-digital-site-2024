@@ -43,10 +43,17 @@ export default function AdminCustomersPage() {
   const [data, setData] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Verifica se é ADMIN
+  const isAdmin = session?.user?.email === 'michaeldouglasqueiroz@gmail.com';
+
   useEffect(() => {
     if (status === 'loading') return;
     if (!session) {
       router.replace('/auth/login');
+      return;
+    }
+    if (!isAdmin) {
+      router.replace('/admin/dashboard');
       return;
     }
 
@@ -96,6 +103,10 @@ export default function AdminCustomersPage() {
         </div>
       </div>
     );
+  }
+
+  if (!isAdmin) {
+    return null;
   }
 
   return (
