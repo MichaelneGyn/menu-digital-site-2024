@@ -10,34 +10,23 @@ import { Check, CreditCard, QrCode, Copy, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const PLANS = {
-  basic: {
-    name: 'Básico',
-    price: 49.90,
-    features: [
-      'Cardápio digital ilimitado',
-      'Pedidos online',
-      'Relatórios básicos',
-      'Suporte por email',
-      'Até 100 itens no menu',
-    ],
-  },
   pro: {
-    name: 'Profissional',
-    price: 99.90,
+    name: 'Plano Mensal',
+    price: 69.90,
     popular: true,
     features: [
-      'Tudo do plano Básico',
-      'Análise de CMV completa',
-      'Relatórios avançados',
+      'Cardápio digital ilimitado',
+      'Pedidos via WhatsApp',
+      'Painel de gestão completo',
+      'Relatórios de vendas',
       'Suporte prioritário',
-      'Integração WhatsApp',
       'Itens ilimitados',
       'Cupons de desconto',
     ],
   },
 };
 
-type Plan = 'basic' | 'pro';
+type Plan = 'pro';
 
 type PaymentData = {
   id: string;
@@ -51,20 +40,14 @@ type PaymentData = {
 function CheckoutPageContent() {
   const { data: session } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [selectedPlan, setSelectedPlan] = useState<Plan>('basic');
-  const [step, setStep] = useState<'select' | 'payment'>('select');
+  const [selectedPlan, setSelectedPlan] = useState<Plan>('pro');
+  const [step, setStep] = useState<'confirm' | 'payment'>('select'); // Inicia no select mas vamos pular visualmente se só tem um
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(false);
 
-  useEffect(() => {
-    const plan = searchParams?.get('plan') as Plan;
-    if (plan && (plan === 'basic' || plan === 'pro')) {
-      setSelectedPlan(plan);
-    }
-  }, [searchParams]);
-
+  // Como só tem um plano, podemos pular a etapa de seleção ou apenas mostrar o resumo
+  
   const handleCreatePayment = async () => {
     setIsLoading(true);
     try {
@@ -72,13 +55,18 @@ function CheckoutPageContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          plan: selectedPlan,
+          plan: 'pro', // Sempre envia 'pro' pois é o único plano agora
         }),
       });
 
       if (!res.ok) {
         const error = await res.text();
-        throw new Error(error || 'Erro ao criar pagamento');
+        try {
+            const jsonError = JSON.parse(error);
+            throw new Error(jsonError.error || 'Erro ao criar pagamento');
+        } catch (e) {
+            throw new Error(error || 'Erro ao criar pagamento');
+        }
       }
 
       const data = await res.json();
@@ -146,13 +134,13 @@ function CheckoutPageContent() {
   }
 
   if (step === 'payment' && paymentData) {
-    const plan = PLANS[selectedPlan];
+    const plan = PLANS.pro;
     return (
       <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-4xl mx-auto pt-8">
+        <div className="max-w-md mx-auto pt-8">
           <Button
             variant="ghost"
-            onClick={() => setStep('select')}
+            onClick={() => setStep('confirm' as any)}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -170,10 +158,12 @@ function CheckoutPageContent() {
               {/* QR Code */}
               <div className="flex flex-col items-center">
                 <div className="bg-white p-4 rounded-lg border-2 mb-4">
-                  <div className="w-64 h-64 bg-gray-100 flex items-center justify-center rounded">
-                    <QrCode className="w-32 h-32 text-gray-400" />
-                    <p className="text-xs text-gray-500 absolute">QR Code PIX aqui</p>
-                  </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={paymentData.pixQrCode} 
+                    alt="QR Code PIX" 
+                    className="w-64 h-64 object-contain"
+                  />
                 </div>
                 
                 {checkingPayment && (
@@ -195,6 +185,7 @@ function CheckoutPageContent() {
                     value={paymentData.pixCopyPaste}
                     readOnly
                     className="flex-1 p-2 border rounded text-sm bg-gray-50 font-mono"
+                    onClick={(e) => e.currentTarget.select()}
                   />
                   <Button onClick={copyPixCode} variant="outline">
                     <Copy className="w-4 h-4" />
@@ -210,14 +201,8 @@ function CheckoutPageContent() {
                   <li>2. Escolha pagar com PIX</li>
                   <li>3. Escaneie o QR Code ou cole o código</li>
                   <li>4. Confirme o pagamento</li>
-                  <li>5. Aguarde a confirmação (geralmente instantânea)</li>
+                  <li>5. Aguarde a confirmação automática</li>
                 </ol>
-              </div>
-
-              {/* Status */}
-              <div className="text-center text-sm text-gray-600">
-                <p>💡 O pagamento será confirmado automaticamente</p>
-                <p className="mt-1">Você será redirecionado assim que confirmarmos</p>
               </div>
             </CardContent>
           </Card>
@@ -226,77 +211,64 @@ function CheckoutPageContent() {
     );
   }
 
+  // Tela de Confirmação do Plano Único
+  const plan = PLANS.pro;
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-6xl mx-auto pt-8">
+      <div className="max-w-4xl mx-auto pt-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Escolha seu Plano</h1>
-          <p className="text-gray-600">Selecione o plano ideal para seu restaurante</p>
+          <h1 className="text-3xl font-bold mb-2">Finalizar Assinatura</h1>
+          <p className="text-gray-600">Confirme os detalhes do seu plano</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          {Object.entries(PLANS).map(([key, plan]) => {
-            const isSelected = selectedPlan === key;
-            return (
-              <Card
-                key={key}
-                className={`cursor-pointer transition-all ${
-                  isSelected ? 'border-red-500 border-2 shadow-lg' : 'hover:shadow-md'
-                }`}
-                onClick={() => setSelectedPlan(key as Plan)}
-              >
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl">{plan.name}</CardTitle>
-                    {(plan as any).popular && (
-                      <Badge className="bg-red-500">Popular</Badge>
-                    )}
-                  </div>
-                  <CardDescription>
-                    <span className="text-3xl font-bold text-gray-900">
-                      R$ {plan.price.toFixed(2)}
-                    </span>
-                    <span className="text-gray-600">/mês</span>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        <div className="text-center">
-          <Button
-            size="lg"
-            className="bg-red-600 hover:bg-red-700 text-white px-8"
-            onClick={handleCreatePayment}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                Processando...
-              </>
-            ) : (
-              <>
-                <CreditCard className="w-5 h-5 mr-2" />
-                Continuar para Pagamento
-              </>
-            )}
-          </Button>
-          
-          <p className="text-sm text-gray-600 mt-4">
-            🔒 Pagamento 100% seguro | 💯 Cancele quando quiser
-          </p>
+        <div className="max-w-md mx-auto">
+            <Card className="border-red-500 border-2 shadow-lg">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl">{plan.name}</CardTitle>
+                  <Badge className="bg-red-500">Popular</Badge>
+                </div>
+                <CardDescription>
+                  <span className="text-3xl font-bold text-gray-900">
+                    R$ {plan.price.toFixed(2)}
+                  </span>
+                  <span className="text-gray-600">/mês</span>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3 mb-6">
+                  {plan.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                <Button
+                  size="lg"
+                  className="w-full bg-red-600 hover:bg-red-700 text-white"
+                  onClick={handleCreatePayment}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Gerando PIX...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-5 h-5 mr-2" />
+                      Pagar com PIX
+                    </>
+                  )}
+                </Button>
+                
+                <p className="text-xs text-center text-gray-500 mt-4">
+                  Pagamento seguro via PIX. Liberação imediata.
+                </p>
+              </CardContent>
+            </Card>
         </div>
       </div>
     </div>
