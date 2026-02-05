@@ -41,7 +41,7 @@ function CheckoutPageContent() {
   const { data: session } = useSession();
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState<Plan>('pro');
-  const [step, setStep] = useState<'confirm' | 'payment'>('select'); // Inicia no select mas vamos pular visualmente se só tem um
+  const [step, setStep] = useState<'confirm' | 'payment'>('confirm'); // Inicia na confirmação
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(false);
