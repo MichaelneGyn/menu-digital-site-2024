@@ -14,6 +14,7 @@ interface BottomNavProps {
 export function BottomNav({ slug, cartItemCount = 0, primaryColor = '#EA1D2C' }: BottomNavProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchValue = searchParams?.get('search');
   const resolvedPrimaryColor = normalizeHexColor(primaryColor, '#EA1D2C');
   const badgeTextColor = getContrastTextColor(resolvedPrimaryColor);
 
@@ -22,13 +23,13 @@ export function BottomNav({ slug, cartItemCount = 0, primaryColor = '#EA1D2C' }:
       icon: Home,
       label: "Início",
       href: `/${slug}`,
-      match: () => pathname === `/${slug}` && searchParams.get('search') !== 'true'
+      match: () => pathname === `/${slug}` && searchValue !== 'true'
     },
     {
       icon: Search,
       label: "Buscar",
       href: `/${slug}?search=true`,
-      match: () => pathname === `/${slug}` && searchParams.get('search') === 'true'
+      match: () => pathname === `/${slug}` && searchValue === 'true'
     },
     { icon: ShoppingBag, label: "Pedidos", href: `/${slug}/meus-pedidos`, hasBadge: true },
     { icon: User, label: "Perfil", href: slug ? `/${slug}/perfil` : '#' },
