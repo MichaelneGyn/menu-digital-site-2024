@@ -203,7 +203,7 @@ export default function BlogPost() {
 
               <div>
                 <h3 className="text-xl font-bold mb-2">Quanto custa?</h3>
-                <p className="text-gray-700">Teste grátis por 30 dias. Depois, planos a partir de R$ 49,90/mês com todos os recursos.</p>
+                <p className="text-gray-700">Teste grátis por 30 dias. Depois, planos R$ 69,90/mês com todos os recursos.</p>
               </div>
 
               <div>

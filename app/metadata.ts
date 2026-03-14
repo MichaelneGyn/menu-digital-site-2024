@@ -157,7 +157,7 @@ export const faqSchema = {
       name: 'Quanto custa o sistema de cardápio digital?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Oferecemos teste grátis por 30 dias. Após o período de teste, os planos começam a partir de R$ 49,90/mês com todos os recursos incluídos.',
+        text: 'Oferecemos teste grátis por 30 dias. Após o período de teste, os planos começam R$ 69,90/mês com todos os recursos incluídos.',
       },
     },
     {

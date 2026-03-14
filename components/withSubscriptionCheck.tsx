@@ -11,7 +11,7 @@ type SubscriptionStatus = {
 };
 
 /**
- * HOC que verifica se o usuário tem assinatura ativa
+ * HOC que verifica se o usuario tem assinatura ativa
  * Redireciona para /subscription-expired se expirado
  * ADMIN sempre tem acesso
  */
@@ -27,9 +27,10 @@ export function withSubscriptionCheck<P extends object>(
     useEffect(() => {
       const checkSubscription = async () => {
         if (status === 'loading') return;
-        
+
         if (!session) {
           router.push('/auth/login');
+          setIsChecking(false);
           return;
         }
 
@@ -37,23 +38,19 @@ export function withSubscriptionCheck<P extends object>(
           const res = await fetch('/api/subscription/status');
           if (res.ok) {
             const data: SubscriptionStatus = await res.json();
-            
-            // ADMIN ou assinatura ativa = acesso permitido
+
             if (data.isActive || data.isAdmin) {
               setHasAccess(true);
             } else {
-              // Redireciona para página de assinatura expirada
               router.push('/subscription-expired');
             }
           } else {
-            // Se erro na API, permite acesso temporário (evita bloquear por erro de rede)
-            console.error('Erro ao verificar assinatura');
-            setHasAccess(true);
+            // Fail-closed: em caso de erro, nao libera recurso pago
+            router.push('/subscription-expired');
           }
         } catch (error) {
           console.error('Erro ao verificar assinatura:', error);
-          // Permite acesso temporário em caso de erro
-          setHasAccess(true);
+          router.push('/subscription-expired');
         } finally {
           setIsChecking(false);
         }

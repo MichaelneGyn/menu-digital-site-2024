@@ -1,81 +1,78 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { authOptions, userIsAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const ADMIN_EMAIL = 'michaeldouglasqueiroz@gmail.com';
+async function ensureAdmin() {
+  const session = await getServerSession(authOptions);
+  const email = session?.user?.email ?? undefined;
+
+  if (!email) {
+    return { ok: false as const, response: NextResponse.json({ error: 'Nao autorizado' }, { status: 401 }) };
+  }
+
+  if (!(await userIsAdmin(email))) {
+    return { ok: false as const, response: NextResponse.json({ error: 'Acesso negado' }, { status: 403 }) };
+  }
+
+  return { ok: true as const, email };
+}
 
 /**
  * GET /api/admin/notifications
- * Lista todas as notificações (apenas para o admin)
+ * Lista notificacoes (apenas admin)
  */
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-    }
-
-    // Verificar se é o admin
-    if (session.user.email !== ADMIN_EMAIL) {
-      return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
-    }
+    const auth = await ensureAdmin();
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(req.url);
     const unreadOnly = searchParams.get('unreadOnly') === 'true';
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const limit = parseInt(searchParams.get('limit') || '50', 10);
 
     const where = unreadOnly ? { isRead: false } : {};
 
     const notifications = await prisma.adminNotification.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      take: limit,
+      take: Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 200) : 50,
     });
 
     const unreadCount = await prisma.adminNotification.count({
       where: { isRead: false },
     });
 
-    return NextResponse.json({
-      notifications,
-      unreadCount,
-    });
+    return NextResponse.json({ notifications, unreadCount });
   } catch (error: any) {
-    console.error('Erro ao buscar notificações:', error);
-    
-    // Se for erro de validação do Prisma (ex: enum inválido no banco), retornar lista vazia para não quebrar o painel
-    if (error.message && error.message.includes('Value') && error.message.includes('not found in enum')) {
-        console.warn('⚠️ Ignorando erro de enum inválido no banco de dados. Retornando lista vazia.');
-        return NextResponse.json({
-            notifications: [],
-            unreadCount: 0
-        });
+    console.error('Erro ao buscar notificacoes:', error);
+
+    if (error?.message?.includes('not found in enum')) {
+      return NextResponse.json({ notifications: [], unreadCount: 0 });
     }
 
-    return NextResponse.json(
-      { error: 'Erro ao buscar notificações' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro ao buscar notificacoes' }, { status: 500 });
   }
 }
 
 /**
  * POST /api/admin/notifications
- * Cria uma nova notificação (uso interno)
+ * Cria notificacao (uso interno/admin)
  */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await ensureAdmin();
+    if (!auth.ok) return auth.response;
+
     const body = await req.json();
     const { type, title, message, userId, userName, userEmail, amount, metadata } = body;
 
     if (!type || !title || !message) {
       return NextResponse.json(
-        { error: 'Campos obrigatórios: type, title, message' },
+        { error: 'Campos obrigatorios: type, title, message' },
         { status: 400 }
       );
     }
@@ -94,72 +91,45 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ notification }, { status: 201 });
-  } catch (error: any) {
-    console.error('Erro ao criar notificação:', error);
-    return NextResponse.json(
-      { error: 'Erro ao criar notificação' },
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error('Erro ao criar notificacao:', error);
+    return NextResponse.json({ error: 'Erro ao criar notificacao' }, { status: 500 });
   }
 }
 
 /**
  * PATCH /api/admin/notifications
- * Marca notificações como lidas
+ * Marca notificacoes como lidas
  */
 export async function PATCH(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-    }
-
-    // Verificar se é o admin
-    if (session.user.email !== ADMIN_EMAIL) {
-      return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
-    }
+    const auth = await ensureAdmin();
+    if (!auth.ok) return auth.response;
 
     const body = await req.json();
     const { notificationIds, markAllAsRead } = body;
 
     if (markAllAsRead) {
-      // Marcar todas como lidas
       await prisma.adminNotification.updateMany({
         where: { isRead: false },
-        data: {
-          isRead: true,
-          readAt: new Date(),
-        },
+        data: { isRead: true, readAt: new Date() },
       });
 
-      return NextResponse.json({ message: 'Todas notificações marcadas como lidas' });
+      return NextResponse.json({ message: 'Todas notificacoes marcadas como lidas' });
     }
 
     if (!notificationIds || !Array.isArray(notificationIds)) {
-      return NextResponse.json(
-        { error: 'notificationIds deve ser um array' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'notificationIds deve ser um array' }, { status: 400 });
     }
 
-    // Marcar notificações específicas como lidas
     await prisma.adminNotification.updateMany({
-      where: {
-        id: { in: notificationIds },
-      },
-      data: {
-        isRead: true,
-        readAt: new Date(),
-      },
+      where: { id: { in: notificationIds } },
+      data: { isRead: true, readAt: new Date() },
     });
 
-    return NextResponse.json({ message: 'Notificações marcadas como lidas' });
-  } catch (error: any) {
-    console.error('Erro ao atualizar notificações:', error);
-    return NextResponse.json(
-      { error: 'Erro ao atualizar notificações' },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: 'Notificacoes marcadas como lidas' });
+  } catch (error) {
+    console.error('Erro ao atualizar notificacoes:', error);
+    return NextResponse.json({ error: 'Erro ao atualizar notificacoes' }, { status: 500 });
   }
 }

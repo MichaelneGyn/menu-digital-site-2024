@@ -355,6 +355,7 @@ export default function MenuPageModern({ restaurant, viewOnly = false }: MenuPag
         <BottomNav 
           slug={restaurant.slug || ''} 
           cartItemCount={getTotalItems()}
+          primaryColor={restaurant.primaryColor}
         />
       )}
     </div>

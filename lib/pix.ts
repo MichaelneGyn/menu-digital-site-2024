@@ -3,7 +3,7 @@
  * Usando biblioteca emv-qrcps validada pela comunidade
  */
 
-// @ts-ignore
+// @ts-expect-error Biblioteca sem tipos oficiais
 import EMVQR from 'emv-qrcps';
 
 interface PixPayloadOptions {

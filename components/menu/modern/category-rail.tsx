@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { cn } from "@/lib/utils";
+import { cn, getContrastTextColor, normalizeHexColor, shiftHexColor, withAlpha } from "@/lib/utils";
 
 interface Category {
   id: string;
@@ -23,6 +23,8 @@ export function CategoryRail({
   primaryColor = '#EA1D2C',
   isSticky = true
 }: CategoryRailProps & { isSticky?: boolean }) {
+  const resolvedPrimaryColor = normalizeHexColor(primaryColor, '#EA1D2C');
+  const activeTextColor = getContrastTextColor(resolvedPrimaryColor);
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     align: "start", 
     containScroll: "trimSnaps",
@@ -51,12 +53,21 @@ export function CategoryRail({
               key={category.id}
               onClick={() => onSelectCategory(category.id)}
               className={cn(
-                "flex-[0_0_auto] px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border whitespace-nowrap",
+                "flex-[0_0_auto] px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border whitespace-nowrap hover:brightness-[0.98]",
                 activeCategory === category.id
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm scale-105"
-                  : "bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary hover:text-foreground"
+                  ? "shadow-sm scale-105"
+                  : ""
               )}
-              style={activeCategory === category.id ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
+              style={activeCategory === category.id ? {
+                backgroundColor: resolvedPrimaryColor,
+                borderColor: resolvedPrimaryColor,
+                color: activeTextColor,
+                boxShadow: `0 8px 20px ${withAlpha(resolvedPrimaryColor, 0.22)}`
+              } : {
+                backgroundColor: withAlpha(resolvedPrimaryColor, 0.1),
+                borderColor: withAlpha(resolvedPrimaryColor, 0.2),
+                color: shiftHexColor(resolvedPrimaryColor, -18),
+              }}
             >
               {category.name}
             </button>

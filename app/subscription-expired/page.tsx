@@ -17,20 +17,27 @@ type SubscriptionInfo = {
 };
 
 export default function SubscriptionExpiredPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [info, setInfo] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (status === 'loading') return;
+
+    if (!session) {
+      router.push('/auth/login');
+      setLoading(false);
+      return;
+    }
+
     const checkStatus = async () => {
       try {
         const res = await fetch('/api/subscription/status');
         if (res.ok) {
           const data = await res.json();
           setInfo(data);
-          
-          // Se tiver acesso ativo, redireciona
+
           if (data.isActive || data.isAdmin) {
             router.push('/admin/dashboard');
           }
@@ -42,10 +49,8 @@ export default function SubscriptionExpiredPage() {
       }
     };
 
-    if (session) {
-      checkStatus();
-    }
-  }, [session, router]);
+    checkStatus();
+  }, [session, status, router]);
 
   if (loading) {
     return (
@@ -65,16 +70,13 @@ export default function SubscriptionExpiredPage() {
           <div className="mx-auto mb-4 w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
             <AlertCircle className="w-8 h-8 text-red-600" />
           </div>
-          <CardTitle className="text-2xl font-bold text-red-600">
-            Assinatura Expirada
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold text-red-600">Assinatura Expirada</CardTitle>
           <CardDescription className="text-base mt-2">
-            Seu período de teste gratuito terminou. Assine agora para continuar usando todas as funcionalidades!
+            Seu periodo de teste terminou. Assine agora para continuar usando todas as funcionalidades.
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
-          {/* Status Info */}
           {info && (
             <div className="bg-gray-100 p-4 rounded-lg">
               <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -84,47 +86,31 @@ export default function SubscriptionExpiredPage() {
             </div>
           )}
 
-          {/* Planos */}
           <div className="border-t pt-6 flex justify-center">
             <div className="w-full max-w-md">
               <h3 className="font-semibold text-lg mb-4 text-center">Escolha seu plano:</h3>
-              
+
               <Card className="border-2 border-red-600 shadow-lg relative transform hover:scale-[1.02] transition-all">
                 <div className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
                   Popular
                 </div>
                 <CardHeader>
                   <CardTitle className="text-xl">Plano Mensal</CardTitle>
-                  <CardDescription>Tudo que você precisa</CardDescription>
+                  <CardDescription>Tudo que voce precisa</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="mb-6">
                     <span className="text-4xl font-bold text-gray-900">R$ 69,90</span>
-                    <span className="text-gray-600">/mês</span>
+                    <span className="text-gray-600">/mes</span>
                   </div>
                   <ul className="space-y-3 mb-8">
-                    <li className="flex items-center text-sm text-gray-600">
-                      <span className="mr-2">✅</span>
-                      Cardápio digital ilimitado
-                    </li>
-                    <li className="flex items-center text-sm text-gray-600">
-                      <span className="mr-2">✅</span>
-                      Pedidos via WhatsApp
-                    </li>
-                    <li className="flex items-center text-sm text-gray-600">
-                      <span className="mr-2">✅</span>
-                      Painel de gestão completo
-                    </li>
-                    <li className="flex items-center text-sm text-gray-600">
-                      <span className="mr-2">✅</span>
-                      Relatórios de vendas
-                    </li>
-                    <li className="flex items-center text-sm text-gray-600">
-                      <span className="mr-2">✅</span>
-                      Suporte prioritário
-                    </li>
+                    <li className="flex items-center text-sm text-gray-600"><span className="mr-2">?</span>Cardapio digital ilimitado</li>
+                    <li className="flex items-center text-sm text-gray-600"><span className="mr-2">?</span>Pedidos via WhatsApp</li>
+                    <li className="flex items-center text-sm text-gray-600"><span className="mr-2">?</span>Painel de gestao completo</li>
+                    <li className="flex items-center text-sm text-gray-600"><span className="mr-2">?</span>Relatorios de vendas</li>
+                    <li className="flex items-center text-sm text-gray-600"><span className="mr-2">?</span>Suporte prioritario</li>
                   </ul>
-                  <Button 
+                  <Button
                     className="w-full bg-red-600 hover:bg-red-700 text-white font-bold h-12 rounded-xl shadow-md"
                     onClick={() => router.push('/subscription/checkout?plan=pro')}
                   >
@@ -136,19 +122,13 @@ export default function SubscriptionExpiredPage() {
             </div>
           </div>
 
-          {/* Garantia */}
           <div className="text-center text-sm text-gray-600 pt-4 border-t">
-            <p>🔒 Pagamento 100% seguro via PIX ou Cartão</p>
-            <p className="mt-1">💯 Garantia de 7 dias - Cancele quando quiser</p>
+            <p>Pagamento seguro via PIX com confirmacao automatica</p>
+            <p className="mt-1">Sem fidelidade: voce pode cancelar a renovacao quando quiser</p>
           </div>
 
-          {/* Logout */}
           <div className="text-center">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => router.push('/auth/logout')}
-            >
+            <Button variant="ghost" size="sm" onClick={() => router.push('/auth/logout')}>
               Fazer logout
             </Button>
           </div>

@@ -1,90 +1,180 @@
 'use client';
 
-import { Star, MapPin, Clock, Truck } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Star, Clock, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ClientRestaurant } from '@/lib/restaurant';
 import { isRestaurantOpen } from '@/lib/business-hours';
+import { getContrastTextColor, normalizeHexColor, shiftHexColor, withAlpha } from "@/lib/utils";
 
 interface RestaurantHeaderProps {
   restaurant: ClientRestaurant;
 }
 
 export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
-  const hasBanner = !!(restaurant.bannerImage || restaurant.bannerUrl);
-  const bannerUrl = restaurant.bannerImage || restaurant.bannerUrl || "/placeholder-banner.png";
-  const logoUrl = restaurant.logo || restaurant.logoUrl || "/placeholder-logo.png";
-  
+  const primaryColor = normalizeHexColor(restaurant.primaryColor, '#EA1D2C');
+  const headerColor = normalizeHexColor(restaurant.headerColor, primaryColor);
+  const headerTextColor = normalizeHexColor(restaurant.headerTextColor, getContrastTextColor(headerColor));
+
+  const [bannerFailed, setBannerFailed] = useState(false);
+  const [logoFailed, setLogoFailed] = useState(false);
+
+  const bannerSource = restaurant.bannerImage || restaurant.bannerUrl || '';
+  const logoSource = restaurant.logo || restaurant.logoUrl || '';
+  const hasBanner = Boolean(bannerSource) && !bannerFailed;
+  const hasLogo = Boolean(logoSource) && !logoFailed;
+
   const status = isRestaurantOpen({
     openTime: restaurant.openTime || null,
     closeTime: restaurant.closeTime || null,
     workingDays: restaurant.workingDays || null
   });
 
+  const deliveryFeeLabel = useMemo(() => {
+    if (restaurant.deliveryFee === 0) {
+      return 'Grátis';
+    }
+
+    return restaurant.deliveryFee.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  }, [restaurant.deliveryFee]);
+
+  const minOrderLabel = useMemo(() => {
+    if (restaurant.minOrderValue <= 0) {
+      return null;
+    }
+
+    return restaurant.minOrderValue.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  }, [restaurant.minOrderValue]);
+
   return (
     <div className="relative pb-6">
-      {/* Hero Banner */}
       <div className="h-48 md:h-64 w-full overflow-hidden relative">
-        <img 
-          src={bannerUrl} 
-          alt="Banner" 
-          className="w-full h-full object-cover"
+        {hasBanner ? (
+          <img
+            src={bannerSource}
+            alt={`Capa de ${restaurant.name}`}
+            className="w-full h-full object-cover"
+            onError={() => setBannerFailed(true)}
+          />
+        ) : (
+          <div
+            className="w-full h-full"
+            style={{
+              background: `linear-gradient(135deg, ${headerColor} 0%, ${shiftHexColor(headerColor, -32)} 100%)`
+            }}
+          />
+        )}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: hasBanner
+              ? 'linear-gradient(to top, rgba(248,250,252,0.98) 0%, rgba(248,250,252,0.3) 38%, rgba(0,0,0,0.08) 100%)'
+              : `linear-gradient(to top, ${withAlpha(headerColor, 0.1)} 0%, ${withAlpha(headerColor, 0.04)} 100%)`
+          }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
+        {!hasBanner && (
+          <div className="absolute inset-0 flex items-center justify-center px-4 text-center">
+            <div>
+              <p
+                className="text-sm uppercase tracking-[0.28em] font-semibold"
+                style={{ color: withAlpha(headerTextColor, 0.78) }}
+              >
+                Cardápio digital
+              </p>
+              <p
+                className="mt-2 text-2xl md:text-4xl font-bold"
+                style={{ color: headerTextColor }}
+              >
+                {restaurant.name}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Restaurant Info */}
       <div className="px-4 -mt-12 relative z-10 flex flex-col md:flex-row md:items-end gap-4">
-        <div className="h-24 w-24 rounded-2xl bg-card border-4 border-background shadow-xl overflow-hidden flex-shrink-0">
-          <img 
-            src={logoUrl} 
-            alt="Logo" 
-            className="w-full h-full object-cover"
-          />
+        <div className="h-24 w-24 rounded-2xl bg-card border-4 border-background shadow-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
+          {hasLogo ? (
+            <img
+              src={logoSource}
+              alt={`Logo de ${restaurant.name}`}
+              className="w-full h-full object-cover"
+              onError={() => setLogoFailed(true)}
+            />
+          ) : (
+            <span className="text-3xl font-bold" style={{ color: primaryColor }}>
+              {restaurant.name.charAt(0).toUpperCase()}
+            </span>
+          )}
         </div>
-        
+
         <div className="flex-1 space-y-2">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-3">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">{restaurant.name}</h1>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                <span className="flex items-center text-amber-500 font-medium">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mt-1">
+                <span className="flex items-center font-medium" style={{ color: '#f59e0b' }}>
                   <Star className="w-4 h-4 fill-current mr-1" />
                   4.8
                 </span>
                 <span>•</span>
                 <span>Lanches</span>
                 {restaurant.address && (
-                   <>
+                  <>
                     <span>•</span>
-                    <span className="flex items-center">
-                        {restaurant.address || 'Local'}
-                    </span>
-                   </>
+                    <span>{restaurant.address}</span>
+                  </>
                 )}
               </div>
             </div>
-            <Badge variant="secondary" className={`
-              ${status.isOpen ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}
-              hover:bg-opacity-80
-            `}>
+            <Badge
+              variant="secondary"
+              className={status.isOpen
+                ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-100'
+                : 'bg-red-100 text-red-700 border-red-200 hover:bg-red-100'}
+            >
               {status.isOpen ? 'Aberto' : 'Fechado'}
             </Badge>
           </div>
 
           <div className="flex flex-wrap gap-3 text-xs md:text-sm pt-2">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 text-secondary-foreground font-medium">
-              <Clock className="w-4 h-4 text-primary" />
+            <div
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium"
+              style={{
+                backgroundColor: withAlpha(primaryColor, 0.12),
+                color: shiftHexColor(primaryColor, -26)
+              }}
+            >
+              <Clock className="w-4 h-4" style={{ color: primaryColor }} />
               40-50 min
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 text-secondary-foreground font-medium">
-              <Truck className="w-4 h-4 text-primary" />
-              {restaurant.deliveryFee === 0 ? 'Grátis' : `R$ ${restaurant.deliveryFee.toFixed(2)}`}
+            <div
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium"
+              style={{
+                backgroundColor: withAlpha(primaryColor, 0.12),
+                color: shiftHexColor(primaryColor, -26)
+              }}
+            >
+              <Truck className="w-4 h-4" style={{ color: primaryColor }} />
+              {deliveryFeeLabel}
             </div>
-            {restaurant.minOrderValue > 0 && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 font-medium">
+            {minOrderLabel && (
+              <div
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium"
+                style={{
+                  backgroundColor: withAlpha(primaryColor, 0.08),
+                  color: shiftHexColor(primaryColor, -34)
+                }}
+              >
                 <span className="font-bold">Min:</span>
-                R$ {restaurant.minOrderValue.toFixed(2)}
-                </div>
+                {minOrderLabel}
+              </div>
             )}
           </div>
         </div>

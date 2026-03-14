@@ -13,6 +13,7 @@ type Payment = {
   amount: number;
   status: string;
   paymentMethod: string | null;
+  paymentProvider: string;
   paidAt: string | null;
   createdAt: string;
   user: {
@@ -27,7 +28,6 @@ export default function AdminPaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Verifica se é ADMIN
   const isAdmin = session?.user?.email === 'michaeldouglasqueiroz@gmail.com';
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function AdminPaymentsPage() {
       return;
     }
 
-    loadPayments();
+    void loadPayments();
   }, [session, status, router, isAdmin]);
 
   const loadPayments = async () => {
@@ -59,7 +59,7 @@ export default function AdminPaymentsPage() {
   };
 
   const handleConfirmPayment = async (paymentId: string) => {
-    if (!confirm('Confirmar este pagamento?')) return;
+    if (!confirm('Confirmar este pagamento manualmente?')) return;
 
     try {
       const res = await fetch('/api/subscription/confirm-payment', {
@@ -68,12 +68,12 @@ export default function AdminPaymentsPage() {
         body: JSON.stringify({ paymentId }),
       });
 
+      const data = await res.json();
       if (res.ok) {
-        toast.success('✅ Pagamento confirmado e assinatura ativada!');
-        loadPayments();
+        toast.success(data.message || 'Pagamento confirmado e assinatura ativada!');
+        void loadPayments();
       } else {
-        const error = await res.text();
-        toast.error(error || 'Erro ao confirmar pagamento');
+        toast.error(data.error || 'Erro ao confirmar pagamento');
       }
     } catch (error) {
       toast.error('Erro ao confirmar pagamento');
@@ -87,7 +87,7 @@ export default function AdminPaymentsPage() {
       COMPLETED: { label: 'Pago', variant: 'default' },
       FAILED: { label: 'Falhou', variant: 'destructive' },
     };
-    
+
     const { label, variant } = config[status] || { label: status, variant: 'outline' };
     return <Badge variant={variant}>{label}</Badge>;
   };
@@ -112,7 +112,7 @@ export default function AdminPaymentsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Gerenciar Pagamentos</h1>
-          <p className="text-gray-600 mt-1">Confirme pagamentos pendentes</p>
+          <p className="text-gray-600 mt-1">Acompanhe pagamentos e confirme fallback manual</p>
         </div>
         <Button onClick={() => router.push('/admin/dashboard')}>Voltar</Button>
       </div>
@@ -129,12 +129,12 @@ export default function AdminPaymentsPage() {
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="text-left border-b">
-                    <th className="p-3 font-semibold">Usuário</th>
+                    <th className="p-3 font-semibold">Usuario</th>
                     <th className="p-3 font-semibold">Valor</th>
-                    <th className="p-3 font-semibold">Método</th>
+                    <th className="p-3 font-semibold">Metodo</th>
                     <th className="p-3 font-semibold">Status</th>
                     <th className="p-3 font-semibold">Data</th>
-                    <th className="p-3 font-semibold">Ações</th>
+                    <th className="p-3 font-semibold">Acoes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -144,35 +144,28 @@ export default function AdminPaymentsPage() {
                         <div className="font-medium">{payment.user.name || 'Sem nome'}</div>
                         <div className="text-xs text-gray-500">{payment.user.email}</div>
                       </td>
-                      <td className="p-3 font-semibold">
-                        R$ {payment.amount.toFixed(2)}
+                      <td className="p-3 font-semibold">R$ {payment.amount.toFixed(2)}</td>
+                      <td className="p-3">
+                        <div>{payment.paymentMethod || 'PIX'}</div>
+                        <div className="text-xs text-gray-500">{payment.paymentProvider}</div>
+                      </td>
+                      <td className="p-3">{getStatusBadge(payment.status)}</td>
+                      <td className="p-3">
+                        <div className="text-sm">{new Date(payment.createdAt).toLocaleDateString('pt-BR')}</div>
+                        <div className="text-xs text-gray-500">{new Date(payment.createdAt).toLocaleTimeString('pt-BR')}</div>
                       </td>
                       <td className="p-3">
-                        {payment.paymentMethod || 'PIX'}
-                      </td>
-                      <td className="p-3">
-                        {getStatusBadge(payment.status)}
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">
-                          {new Date(payment.createdAt).toLocaleDateString('pt-BR')}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(payment.createdAt).toLocaleTimeString('pt-BR')}
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        {payment.status === 'PENDING' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleConfirmPayment(payment.id)}
-                          >
-                            Confirmar Pagamento
+                        {payment.status === 'PENDING' && payment.paymentProvider === 'manual' && (
+                          <Button size="sm" onClick={() => handleConfirmPayment(payment.id)}>
+                            Confirmar manual
                           </Button>
+                        )}
+                        {payment.status === 'PENDING' && payment.paymentProvider !== 'manual' && (
+                          <span className="text-xs text-gray-500">Aguardando webhook</span>
                         )}
                         {payment.status === 'COMPLETED' && (
                           <span className="text-xs text-gray-500">
-                            Pago em {new Date(payment.paidAt!).toLocaleDateString('pt-BR')}
+                            Pago em {new Date(payment.paidAt || payment.createdAt).toLocaleDateString('pt-BR')}
                           </span>
                         )}
                       </td>
@@ -185,11 +178,10 @@ export default function AdminPaymentsPage() {
         </CardContent>
       </Card>
 
-      <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <h3 className="font-semibold text-yellow-800 mb-2">⚠️ Página de Testes</h3>
-        <p className="text-sm text-yellow-700">
-          Esta página é para simular a confirmação de pagamentos durante o desenvolvimento.
-          Em produção, a confirmação será automática via webhook do provedor de pagamento.
+      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <h3 className="font-semibold text-blue-800 mb-2">Monitoramento de pagamentos</h3>
+        <p className="text-sm text-blue-700">
+          Pagamentos com provedor automatico sao confirmados por webhook. O botao manual aparece apenas para fallback.
         </p>
       </div>
     </div>
