@@ -5,7 +5,7 @@ import { Star, Clock, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ClientRestaurant } from '@/lib/restaurant';
 import { isRestaurantOpen } from '@/lib/business-hours';
-import { getContrastTextColor, normalizeHexColor, shiftHexColor, withAlpha } from "@/lib/utils";
+import { getContrastTextColor, normalizeHexColor, resolvePreferredImageSource, shiftHexColor, withAlpha } from "@/lib/utils";
 
 interface RestaurantHeaderProps {
   restaurant: ClientRestaurant;
@@ -19,8 +19,8 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
   const [bannerFailed, setBannerFailed] = useState(false);
   const [logoFailed, setLogoFailed] = useState(false);
 
-  const bannerSource = restaurant.bannerImage || restaurant.bannerUrl || '';
-  const logoSource = restaurant.logo || restaurant.logoUrl || '';
+  const bannerSource = resolvePreferredImageSource(restaurant.bannerUrl, restaurant.bannerImage);
+  const logoSource = resolvePreferredImageSource(restaurant.logoUrl, restaurant.logo);
   const hasBanner = Boolean(bannerSource) && !bannerFailed;
   const hasLogo = Boolean(logoSource) && !logoFailed;
 

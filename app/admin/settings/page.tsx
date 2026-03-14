@@ -13,6 +13,7 @@ import { Upload, Save, ImageIcon, AlertTriangle, ArrowLeft, Sparkles } from 'luc
 import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
 import Link from 'next/link';
 import LogoGalleryFlat from '@/components/LogoGalleryFlat';
+import { resolvePreferredImageSource } from '@/lib/utils';
 
 type Restaurant = {
   id: string;
@@ -90,8 +91,8 @@ function SettingsPage() {
         setFormData({
           name: data.name || '',
           description: data.description || '',
-          logo: data.logo || data.logoUrl || '',
-          bannerUrl: data.bannerUrl || data.bannerImage || '',
+          logo: resolvePreferredImageSource(data.logoUrl, data.logo),
+          bannerUrl: resolvePreferredImageSource(data.bannerUrl, data.bannerImage),
           primaryColor: data.primaryColor || '#d32f2f',
           secondaryColor: data.secondaryColor || '#ffc107',
           headerColor: data.headerColor || '#6b7280', // Carregar headerColor
@@ -107,10 +108,10 @@ function SettingsPage() {
         });
         
         if (data.logo || data.logoUrl) {
-          setLogoPreview(data.logo || data.logoUrl);
+          setLogoPreview(resolvePreferredImageSource(data.logoUrl, data.logo));
         }
         if (data.bannerUrl || data.bannerImage) {
-          setBannerPreview(data.bannerUrl || data.bannerImage);
+          setBannerPreview(resolvePreferredImageSource(data.bannerUrl, data.bannerImage));
         }
       } else {
         // No restaurant found - prepare for creation

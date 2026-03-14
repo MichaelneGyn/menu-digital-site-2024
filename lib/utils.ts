@@ -73,3 +73,35 @@ export function getContrastTextColor(color?: string | null, fallback = '#EA1D2C'
 
   return brightness > 160 ? '#111827' : '#FFFFFF'
 }
+
+export function resolvePreferredImageSource(...sources: Array<string | null | undefined>): string {
+  const validSources = sources
+    .map(source => source?.trim())
+    .filter((source): source is string => Boolean(source))
+
+  if (validSources.length === 0) {
+    return ''
+  }
+
+  const scoreSource = (source: string) => {
+    if (source.startsWith('data:image/') || source.startsWith('http://') || source.startsWith('https://')) {
+      return 4
+    }
+
+    if (source.startsWith('/api/image')) {
+      return 3
+    }
+
+    if (source.startsWith('/') && !source.startsWith('/uploads/')) {
+      return 2
+    }
+
+    if (source.startsWith('/uploads/') || source.startsWith('uploads/')) {
+      return 1
+    }
+
+    return 0
+  }
+
+  return [...validSources].sort((a, b) => scoreSource(b) - scoreSource(a))[0]
+}
