@@ -38,6 +38,16 @@ type Restaurant = {
   bannerImage: string | null;
 };
 
+const MIN_BANNER_WIDTH = 1200;
+const MIN_BANNER_HEIGHT = 375;
+const IDEAL_BANNER_WIDTH = 1600;
+const IDEAL_BANNER_HEIGHT = 500;
+
+type BannerMeta = {
+  width: number;
+  height: number;
+} | null;
+
 function SettingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -46,6 +56,7 @@ function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [bannerMeta, setBannerMeta] = useState<BannerMeta>(null);
   const [showLogoGallery, setShowLogoGallery] = useState(false);
 
   // Form data
@@ -79,6 +90,25 @@ function SettingsPage() {
     
     fetchRestaurant();
   }, [session, status, router]);
+
+  useEffect(() => {
+    if (!bannerPreview) {
+      setBannerMeta(null);
+      return;
+    }
+
+    const image = new window.Image();
+    image.onload = () => {
+      setBannerMeta({
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+      });
+    };
+    image.onerror = () => {
+      setBannerMeta(null);
+    };
+    image.src = bannerPreview;
+  }, [bannerPreview]);
 
   const fetchRestaurant = async () => {
     try {
@@ -175,6 +205,35 @@ function SettingsPage() {
     }
   };
 
+  const validateBannerDimensions = async (file: File) => {
+    const objectUrl = URL.createObjectURL(file);
+
+    try {
+      const dimensions = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+        const image = new window.Image();
+        image.onload = () => {
+          resolve({
+            width: image.naturalWidth,
+            height: image.naturalHeight,
+          });
+        };
+        image.onerror = () => reject(new Error('Nao foi possivel ler a imagem'));
+        image.src = objectUrl;
+      });
+
+      if (dimensions.width < MIN_BANNER_WIDTH || dimensions.height < MIN_BANNER_HEIGHT) {
+        throw new Error(
+          `A capa precisa ter no minimo ${MIN_BANNER_WIDTH}x${MIN_BANNER_HEIGHT}px. A sua imagem tem ${dimensions.width}x${dimensions.height}px.`
+        );
+      }
+
+      setBannerMeta(dimensions);
+      return dimensions;
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  };
+
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -186,6 +245,13 @@ function SettingsPage() {
 
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Imagem muito grande. Máximo 5MB');
+      return;
+    }
+
+    try {
+      await validateBannerDimensions(file);
+    } catch (error: any) {
+      toast.error(error.message || 'A imagem da capa nao atende o tamanho minimo.');
       return;
     }
 
@@ -498,15 +564,31 @@ function SettingsPage() {
             {/* Banner/Capa */}
             <div>
               <Label htmlFor="bannerUrl">Imagem de Capa (Banner)</Label>
-              <div className="mt-2 flex items-center gap-4">
+              <div className="mt-2 flex flex-col gap-4 lg:flex-row">
                  {/* Preview do Banner */}
-                 <div className="w-40 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 relative group">
+                 <div className="w-full max-w-xl aspect-[16/5] border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center overflow-hidden bg-gray-50 relative group">
                     {bannerPreview ? (
-                      <img 
-                        src={bannerPreview} 
-                        alt="Banner preview" 
-                        className="w-full h-full object-cover"
-                      />
+                      <>
+                        <img 
+                          src={bannerPreview} 
+                          alt="Banner preview" 
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/10" />
+                        <div className="absolute inset-x-[10%] top-[14%] bottom-[18%] rounded-lg border border-white/70">
+                          <div className="absolute left-4 bottom-4 rounded-lg bg-white/90 px-3 py-2 shadow-sm">
+                            <div className="mb-2 h-10 w-10 rounded-md bg-gray-200" />
+                            <div className="mb-1 h-3 w-24 rounded bg-gray-300" />
+                            <div className="h-2 w-16 rounded bg-gray-200" />
+                          </div>
+                          <div className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[10px] font-semibold text-gray-700 shadow-sm">
+                            Status
+                          </div>
+                        </div>
+                        <div className="absolute left-3 top-3 rounded-full bg-black/65 px-2.5 py-1 text-[10px] font-medium text-white">
+                          Area segura
+                        </div>
+                      </>
                     ) : (
                       <div className="text-center p-2">
                          <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-1" />
@@ -549,6 +631,24 @@ function SettingsPage() {
                     <p className="text-xs text-gray-500 mt-1">
                       Recomendado: 1200x300px (Use uma URL de imagem externa ou faça upload)
                     </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Ideal: {IDEAL_BANNER_WIDTH}x{IDEAL_BANNER_HEIGHT}px. Minimo: {MIN_BANNER_WIDTH}x{MIN_BANNER_HEIGHT}px.
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Use uma imagem horizontal e evite texto, logo ou promocao nas bordas e na faixa inferior.
+                    </p>
+                    {bannerMeta && (
+                      <div className={`mt-3 rounded-lg border px-3 py-2 text-xs ${
+                        bannerMeta.width >= IDEAL_BANNER_WIDTH && bannerMeta.height >= IDEAL_BANNER_HEIGHT
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                          : 'border-amber-200 bg-amber-50 text-amber-700'
+                      }`}>
+                        Tamanho atual: {bannerMeta.width}x{bannerMeta.height}px.
+                        {bannerMeta.width >= IDEAL_BANNER_WIDTH && bannerMeta.height >= IDEAL_BANNER_HEIGHT
+                          ? ' Qualidade recomendada.'
+                          : ' Funciona, mas para ficar mais nitida use uma arte maior.'}
+                      </div>
+                    )}
                  </div>
               </div>
             </div>
