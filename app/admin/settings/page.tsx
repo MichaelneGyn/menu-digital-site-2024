@@ -125,6 +125,56 @@ function SettingsPage() {
     }
   };
 
+  const persistVisualIdentity = async (
+    overrides: Partial<typeof formData>,
+    loadingMessage: string,
+    successMessage: string
+  ) => {
+    const nextFormData = { ...formData, ...overrides };
+    setFormData(nextFormData);
+
+    if (!restaurant?.id) {
+      toast.success('Imagem carregada. Clique em "Salvar Configuracoes" para aplicar.');
+      return;
+    }
+
+    const toastId = 'visual-identity-save';
+
+    try {
+      toast.loading(loadingMessage, { id: toastId });
+
+      const res = await fetch('/api/restaurant', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: restaurant.id,
+          ...nextFormData,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Erro ao salvar imagem');
+      }
+
+      const savedData = await res.json();
+      setRestaurant(savedData);
+
+      try {
+        if (savedData.slug) {
+          await fetch(`/api/revalidate?path=/${savedData.slug}`, { method: 'POST' });
+        }
+      } catch (e) {
+        console.warn('Falha na revalidacao automatica');
+      }
+
+      toast.success(successMessage, { id: toastId });
+    } catch (error: any) {
+      console.error('Erro ao persistir identidade visual:', error);
+      toast.error(error.message || 'Erro ao salvar imagem', { id: toastId });
+    }
+  };
+
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -165,9 +215,13 @@ function SettingsPage() {
       
       if (!imageUrl) throw new Error('URL da imagem não retornada');
       
-      setFormData(prev => ({ ...prev, bannerUrl: imageUrl }));
       setBannerPreview(imageUrl);
       toast.dismiss();
+      await persistVisualIdentity(
+        { bannerUrl: imageUrl },
+        'Salvando banner...',
+        'Banner salvo com sucesso!'
+      );
       toast.success('✅ Banner carregado!');
     } catch (error: any) {
       console.error('❌ Erro no upload:', error);
@@ -228,6 +282,11 @@ function SettingsPage() {
       setFormData(prev => ({ ...prev, logo: imageUrl }));
       setLogoPreview(imageUrl);
       toast.dismiss();
+      await persistVisualIdentity(
+        { logo: imageUrl },
+        'Salvando logo...',
+        'Logo salvo com sucesso!'
+      );
       toast.success('✅ Imagem carregada! Não esqueça de clicar em "Salvar Configurações"');
     } catch (error: any) {
       console.error('❌ Erro no upload:', error);
