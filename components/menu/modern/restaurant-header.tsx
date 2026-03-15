@@ -54,12 +54,13 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
 
   return (
     <div className="relative pb-6">
-      <div className="h-48 md:h-64 w-full overflow-hidden relative">
+      <div className="px-4">
+        <div className="max-w-6xl mx-auto h-40 md:h-52 w-full overflow-hidden relative rounded-[28px] bg-black">
         {hasBanner ? (
           <img
             src={bannerSource}
             alt={`Capa de ${restaurant.name}`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center"
             onError={() => setBannerFailed(true)}
           />
         ) : (
@@ -75,7 +76,7 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
           className="absolute inset-0"
           style={{
             background: hasBanner
-              ? 'linear-gradient(to top, rgba(15,23,42,0.18) 0%, rgba(15,23,42,0.02) 45%, rgba(15,23,42,0.08) 100%)'
+              ? 'linear-gradient(to top, rgba(15,23,42,0.14) 0%, rgba(15,23,42,0.01) 40%, rgba(15,23,42,0.08) 100%)'
               : `linear-gradient(to top, ${withAlpha(headerColor, 0.12)} 0%, ${withAlpha(headerColor, 0.03)} 100%)`
           }}
         />
@@ -98,10 +99,11 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
             </div>
           </div>
         )}
+        </div>
       </div>
 
-      <div className="px-4 -mt-10 relative z-10">
-        <div className="rounded-[28px] border border-slate-100 bg-white/98 shadow-[0_20px_45px_rgba(15,23,42,0.12)] p-4 md:p-5">
+      <div className="px-4 mt-4 relative z-10">
+        <div className="max-w-6xl mx-auto rounded-[28px] border border-slate-100 bg-white/98 shadow-[0_20px_45px_rgba(15,23,42,0.12)] p-4 md:p-5">
           <div className="flex flex-col md:flex-row md:items-end gap-4">
             <div className="h-24 w-24 rounded-2xl bg-card border-4 border-white shadow-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
               {hasLogo ? (
