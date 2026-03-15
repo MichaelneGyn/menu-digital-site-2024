@@ -4,11 +4,12 @@ import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import { onlyDigits, isValidWhatsapp } from '@/lib/phone';
 import { authRateLimiter } from '@/lib/rate-limit';
-import { notifyNewSignup } from '@/lib/notifications';
-import { notifyNewSignupEmail } from '@/lib/email-notifications';
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import {
+  isBlockedEmailDomain,
+  normalizeEmail,
+  sendEmailVerificationEmail,
+  SIGNUP_TRIAL_DAYS,
+} from '@/lib/email-verification';
 
 const signUpSchema = z.object({
   name: z.string().min(2, 'Nome e obrigatorio'),
@@ -17,8 +18,6 @@ const signUpSchema = z.object({
   restaurantName: z.string().min(2, 'Nome do restaurante e obrigatorio'),
   whatsapp: z.string().min(10, 'WhatsApp e obrigatorio (minimo 10 digitos)'),
 });
-
-const TRIAL_DAYS = 30;
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +31,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = signUpSchema.parse(body);
 
-    const email = parsed.email.toLowerCase().trim();
+    const email = normalizeEmail(parsed.email);
     const name = parsed.name.trim();
     const restaurantName = parsed.restaurantName.trim();
     const whatsappDigits = onlyDigits(parsed.whatsapp);
@@ -41,8 +40,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'WhatsApp invalido' }, { status: 400 });
     }
 
+    if (isBlockedEmailDomain(email)) {
+      return NextResponse.json(
+        { error: 'Use um email pessoal ou corporativo valido (Gmail, Outlook, dominio proprio, etc).' },
+        { status: 400 }
+      );
+    }
+
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
+      if (!existingUser.emailVerified) {
+        const resendResult = await sendEmailVerificationEmail({
+          email: existingUser.email,
+          name: existingUser.name,
+          baseUrl: request.nextUrl.origin,
+        });
+
+        return NextResponse.json(
+          {
+            created: false,
+            pendingVerification: true,
+            verificationEmailSent: resendResult.sent,
+            message: resendResult.sent
+              ? 'Ja existe um cadastro pendente com este email. Reenviamos o link de verificacao.'
+              : 'Ja existe um cadastro pendente com este email. O envio do link falhou agora, tente reenviar na tela de login.',
+          },
+          { status: 200 }
+        );
+      }
+
       return NextResponse.json({ error: 'Usuario ja existe com este email' }, { status: 400 });
     }
 
@@ -58,7 +84,7 @@ export async function POST(request: NextRequest) {
       });
 
       const trialEndsAt = new Date();
-      trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DAYS);
+      trialEndsAt.setDate(trialEndsAt.getDate() + SIGNUP_TRIAL_DAYS);
 
       const subscription = await tx.subscription.create({
         data: {
@@ -98,46 +124,22 @@ export async function POST(request: NextRequest) {
       return { user, restaurant, subscription };
     });
 
-    await notifyNewSignup(result.user.id, result.user.name || 'Sem nome', result.user.email);
-
-    await notifyNewSignupEmail(
-      result.user.name || 'Sem nome',
-      result.user.email,
-      whatsappDigits,
-      result.restaurant?.name || null,
-      result.restaurant?.slug || null
-    );
-
-    try {
-      await resend.emails.send({
-        from: 'Menu Digital <nao-responda@virtualcardapio.com.br>',
-        to: result.user.email,
-        subject: 'Bem-vindo ao Menu Digital!',
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #ff6b35; text-align: center;">Ola, ${result.user.name || 'Parceiro'}!</h1>
-            <p style="font-size: 16px; color: #333; text-align: center;">Sua conta foi criada com sucesso.</p>
-            <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center;">
-              <p style="margin: 0; font-weight: bold; color: #555;">Seu acesso:</p>
-              <a href="https://virtualcardapio.com.br/auth/login" style="display: inline-block; background-color: #ff6b35; color: white; padding: 12px 24px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 10px;">
-                Acessar Painel
-              </a>
-            </div>
-            <p style="font-size: 14px; color: #666; text-align: center;">
-              Voce ganhou ${TRIAL_DAYS} dias de teste gratis.
-            </p>
-          </div>
-        `,
-      });
-    } catch (emailError) {
-      console.error('Erro ao enviar email de boas-vindas:', emailError);
-    }
+    const verificationResult = await sendEmailVerificationEmail({
+      email: result.user.email,
+      name: result.user.name,
+      baseUrl: request.nextUrl.origin,
+    });
 
     return NextResponse.json(
       {
-        message: 'Conta criada com sucesso!',
+        created: true,
+        pendingVerification: true,
+        verificationEmailSent: verificationResult.sent,
+        message: verificationResult.sent
+          ? 'Conta criada. Confirme seu email para liberar o acesso.'
+          : 'Conta criada, mas nao conseguimos enviar o email agora. Use a opcao de reenviar na tela de login.',
         restaurantSlug: result.restaurant?.slug || null,
-        trialDays: TRIAL_DAYS,
+        trialDays: SIGNUP_TRIAL_DAYS,
       },
       { status: 201 }
     );

@@ -1,17 +1,17 @@
-
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import EmailProvider from "next-auth/providers/email";
+import EmailProvider from 'next-auth/providers/email';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
-import { prisma } from './db';
 import { Resend } from 'resend';
+import { prisma } from './db';
+import { normalizeEmail } from './email-verification';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function getUserByEmail(email?: string) {
   if (!email) return null;
-  return prisma.user.findUnique({ where: { email } });
+  return prisma.user.findUnique({ where: { email: normalizeEmail(email) } });
 }
 
 export async function userIsAdmin(email?: string) {
@@ -21,7 +21,7 @@ export async function userIsAdmin(email?: string) {
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma as any),
+  adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
   providers: [
@@ -31,32 +31,31 @@ export const authOptions: NextAuthOptions = {
         port: Number(process.env.EMAIL_SERVER_PORT),
         auth: {
           user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD
-        }
+          pass: process.env.EMAIL_SERVER_PASSWORD,
+        },
       },
       from: 'nao-responda@virtualcardapio.com.br',
       async sendVerificationRequest({ identifier: email, url }) {
-        const { host } = new URL(url);
         try {
           await resend.emails.send({
             from: 'Menu Digital <nao-responda@virtualcardapio.com.br>',
             to: email,
-            subject: `Ative sua conta no Menu Digital`,
+            subject: 'Ative sua conta no Menu Digital',
             html: `
               <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-                <h1 style="color: #ff6b35;">Bem-vindo ao Menu Digital! 🚀</h1>
-                <p>Você está a um passo de criar seu cardápio digital.</p>
-                <p>Clique no botão abaixo para confirmar seu e-mail e acessar sua conta:</p>
+                <h1 style="color: #ff6b35;">Bem-vindo ao Menu Digital!</h1>
+                <p>Voce esta a um passo de criar seu cardapio digital.</p>
+                <p>Clique no botao abaixo para confirmar seu email e acessar sua conta:</p>
                 <a href="${url}" style="display: inline-block; background-color: #ff6b35; color: white; padding: 12px 24px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 10px;">
-                  Confirmar E-mail e Entrar
+                  Confirmar email e entrar
                 </a>
-                <p style="margin-top: 20px; font-size: 12px; color: #666;">Se você não solicitou este e-mail, pode ignorá-lo com segurança.</p>
+                <p style="margin-top: 20px; font-size: 12px; color: #666;">Se voce nao solicitou este email, pode ignora-lo com seguranca.</p>
               </div>
-            `
+            `,
           });
         } catch (error) {
-          console.error('Erro ao enviar e-mail de verificação:', error);
-          throw new Error('Falha ao enviar e-mail de verificação');
+          console.error('Erro ao enviar e-mail de verificacao:', error);
+          throw new Error('Falha ao enviar e-mail de verificacao');
         }
       },
     }),
@@ -64,70 +63,72 @@ export const authOptions: NextAuthOptions = {
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        // 🔒 SEGURANÇA: Logs apenas em desenvolvimento
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔐 Tentativa de login:', { email: credentials?.email });
+          console.log('Tentativa de login:', { email: credentials?.email });
         }
-        
+
         if (!credentials?.email || !credentials?.password) {
           if (process.env.NODE_ENV === 'development') {
-            console.log('❌ Credenciais inválidas');
+            console.log('Credenciais invalidas');
           }
           return null;
         }
 
         try {
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email },
-            include: { restaurants: true }
+            where: { email: normalizeEmail(credentials.email) },
+            include: { restaurants: true },
           });
 
           if (process.env.NODE_ENV === 'development') {
-            console.log('👤 Usuário encontrado:', user ? 'Sim' : 'Não');
+            console.log('Usuario encontrado:', user ? 'Sim' : 'Nao');
           }
 
           if (!user?.password) {
             if (process.env.NODE_ENV === 'development') {
-              console.log('❌ Usuário não tem senha');
+              console.log('Usuario nao tem senha');
             }
             return null;
           }
 
-          const isPasswordValid = await bcrypt.compare(
-            credentials.password,
-            user.password
-          );
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
 
-          // 🔒 Não logar resultado de validação em produção (facilita brute force)
           if (process.env.NODE_ENV === 'development') {
-            console.log('🔑 Senha válida:', isPasswordValid ? 'Sim' : 'Não');
+            console.log('Senha valida:', isPasswordValid ? 'Sim' : 'Nao');
           }
 
           if (!isPasswordValid) {
             return null;
           }
 
-          if (process.env.NODE_ENV === 'development') {
-            console.log('✅ Login bem-sucedido para:', user.email);
+          if (!user.emailVerified) {
+            throw new Error('EMAIL_NOT_VERIFIED');
           }
+
           return {
             id: user.id,
             email: user.email,
             name: user.name,
           };
         } catch (error) {
-          // 🔒 Sempre logar erros (mas sem expor detalhes sensíveis)
-          console.error('❌ Erro na autenticação:', process.env.NODE_ENV === 'development' ? error : 'Erro interno');
+          if (error instanceof Error && error.message === 'EMAIL_NOT_VERIFIED') {
+            throw error;
+          }
+
+          console.error(
+            'Erro na autenticacao:',
+            process.env.NODE_ENV === 'development' ? error : 'Erro interno'
+          );
           return null;
         }
-      }
-    })
+      },
+    }),
   ],
   session: {
-    strategy: 'jwt'
+    strategy: 'jwt',
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -138,17 +139,15 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user && token.id) {
-        (session.user as any).id = token.id as string;
+        (session.user as typeof session.user & { id: string }).id = token.id as string;
       }
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Permite redirecionamentos para URLs do mesmo domínio
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // Permite redirecionamentos para o baseUrl
-      else if (new URL(url).origin === baseUrl) return url;
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
-    }
+    },
   },
   pages: {
     signIn: '/auth/login',
@@ -156,4 +155,5 @@ export const authOptions: NextAuthOptions = {
 };
 
 const handler = NextAuth(authOptions);
+
 export { handler as GET, handler as POST };

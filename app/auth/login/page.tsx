@@ -7,8 +7,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import Image from 'next/image';
 import toast from 'react-hot-toast';
+import { GTMEvents } from '@/lib/gtm';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -16,6 +16,7 @@ export default function LoginPage() {
     password: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -26,6 +27,48 @@ export default function LoginPage() {
       router.push('/auth/register');
     }
   }, [searchParams, router]);
+
+  useEffect(() => {
+    const email = searchParams?.get('email');
+    const verification = searchParams?.get('verification');
+    const verified = searchParams?.get('verified');
+
+    if (email) {
+      setFormData((current) => (
+        current.email === email
+          ? current
+          : {
+              ...current,
+              email,
+            }
+      ));
+    }
+
+    if (verification === 'sent') {
+      toast.success('Conta criada. Enviamos o link de verificacao para seu email.');
+    }
+
+    if (verification === 'resent') {
+      toast.success('Seu cadastro ainda estava pendente. Reenviamos o link de verificacao.');
+    }
+
+    if (verified === 'success') {
+      GTMEvents.startTrial();
+      toast.success('Email confirmado. Agora voce ja pode fazer login.');
+    }
+
+    if (verified === 'already') {
+      toast.success('Esse email ja estava confirmado. Voce ja pode entrar.');
+    }
+
+    if (verified === 'expired') {
+      toast.error('Seu link expirou. Reenvie a verificacao abaixo.');
+    }
+
+    if (verified === 'invalid') {
+      toast.error('Link de verificacao invalido ou indisponivel.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +82,11 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        toast.error('Email ou senha incorretos');
+        if (result.error.includes('EMAIL_NOT_VERIFIED')) {
+          toast.error('Confirme seu email antes de entrar.');
+        } else {
+          toast.error('Email ou senha incorretos');
+        }
         setIsLoading(false);
       } else {
         setIsSuccess(true);
@@ -60,6 +107,39 @@ export default function LoginPage() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleResendVerification = async () => {
+    const email = formData.email.trim().toLowerCase();
+
+    if (!email) {
+      toast.error('Informe seu email para reenviar a verificacao.');
+      return;
+    }
+
+    setIsResending(true);
+
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok) {
+        toast.success(data?.message || 'Se houver uma conta pendente, o novo link foi enviado.');
+      } else {
+        toast.error(data?.error || 'Nao foi possivel reenviar agora.');
+      }
+    } catch (error) {
+      toast.error('Nao foi possivel reenviar agora.');
+    } finally {
+      setIsResending(false);
+    }
   };
 
 
@@ -146,6 +226,20 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
+
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <p className="text-sm text-amber-900 font-medium">
+              No primeiro acesso, voce precisa confirmar o email do cadastro.
+            </p>
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={isResending}
+              className="mt-2 text-sm font-semibold text-amber-700 hover:text-amber-900 disabled:opacity-60"
+            >
+              {isResending ? 'Reenviando link...' : 'Nao recebeu o email? Reenviar verificacao'}
+            </button>
+          </div>
 
           {/* Forgot Password Link */}
           <div className="mt-4 text-center">

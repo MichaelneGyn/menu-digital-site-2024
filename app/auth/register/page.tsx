@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { GTMEvents } from '@/lib/gtm';
 import { Check, Shield, ArrowRight } from 'lucide-react';
@@ -68,11 +69,14 @@ export default function RegisterPage() {
       const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
-        GTMEvents.signup();
-        GTMEvents.startTrial();
+        if (data?.created) {
+          GTMEvents.signup();
+        }
 
-        toast.success('Conta criada! Faca login para comecar.');
-        router.push('/auth/login');
+        toast.success(data?.message || 'Cadastro pendente. Confirme seu email para entrar.');
+        const normalizedEmail = formData.email.trim().toLowerCase();
+        const verificationState = data?.created ? 'sent' : 'resent';
+        router.push(`/auth/login?verification=${verificationState}&email=${encodeURIComponent(normalizedEmail)}`);
       } else {
         toast.error(data?.error || 'Erro ao criar conta');
       }
@@ -213,6 +217,9 @@ export default function RegisterPage() {
               <span className="text-xs font-medium text-gray-600">Seus dados estao 100% seguros</span>
             </div>
             <p className="text-sm text-gray-500">
+              Voce vai confirmar seu email antes do primeiro acesso.
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
               Ja tem uma conta?{' '}
               <Link href="/auth/login" className="font-bold text-primary hover:underline">
                 Fazer login
@@ -230,7 +237,14 @@ export default function RegisterPage() {
           <div className="relative mx-auto border-gray-800 bg-gray-800 border-[8px] rounded-[32px] h-[600px] w-[300px] shadow-2xl flex flex-col justify-center overflow-hidden transform rotate-[-5deg] hover:rotate-0 transition-all duration-700">
             <div className="w-[100px] h-[24px] bg-gray-800 absolute top-0 left-1/2 -translate-x-1/2 z-20 rounded-b-[12px]"></div>
             <div className="w-full h-full bg-white relative overflow-hidden">
-              <img src="/videos/Escolhe os Produtos.gif" className="w-full h-full object-cover" alt="App Demo" />
+              <Image
+                src="/videos/Escolhe os Produtos.gif"
+                alt="App Demo"
+                fill
+                className="object-cover"
+                priority
+                unoptimized
+              />
             </div>
           </div>
 
