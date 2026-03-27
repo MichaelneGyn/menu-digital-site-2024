@@ -8,15 +8,15 @@ import { z } from 'zod';
 
 const createItemSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
-  description: z.string().min(1, 'Descrição é obrigatória'),
-  price: z.number().min(0, 'Preço deve ser maior ou igual a zero'), // ✅ Permite 0 para produtos com preço variável
+  description: z.string().optional().nullable().transform((value) => value?.trim() || ''),
+  price: z.number().min(0, 'Preço deve ser maior ou igual a zero'),
   categoryId: z.string().min(1, 'Categoria é obrigatória'),
   restaurantId: z.string().min(1, 'Restaurante é obrigatório'),
-  image: z.union([z.string(), z.null()]).optional(), // ✅ IMAGEM OPCIONAL - aceita string ou null
+  image: z.union([z.string(), z.null()]).optional(),
   isPromo: z.boolean().optional().default(false),
   oldPrice: z.number().positive().optional(),
   promoTag: z.string().optional(),
-  hasCustomizations: z.boolean().optional().default(false), // ✅ Flag de personalização
+  hasCustomizations: z.boolean().optional().default(false),
 });
 
 export async function DELETE(request: NextRequest) {
