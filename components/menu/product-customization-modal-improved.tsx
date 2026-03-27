@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState } from 'react';
-import { X, Check, Plus, Minus, ChevronLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { X, Check, ChevronLeft } from 'lucide-react';
 import { ClientMenuItem } from '@/lib/restaurant';
 
 export interface ProductCustomization {
@@ -88,6 +88,7 @@ export default function ProductCustomizationModalImproved({
   const [selectedSize, setSelectedSize] = useState<typeof PIZZA_SIZES[0] | null>(null);
   const [selectedFlavors, setSelectedFlavors] = useState<Array<{name: string; price: number}>>([]);
   const [selectedExtras, setSelectedExtras] = useState<Array<{name: string; price: number}>>([]);
+  const [categoryExtras, setCategoryExtras] = useState<Array<{name: string; price: number}>>([]);
   const [selectedIngredients, setSelectedIngredients] = useState<number[]>(
     BURGER_INGREDIENTS.filter(i => i.included).map(i => i.id)
   );
@@ -95,6 +96,29 @@ export default function ProductCustomizationModalImproved({
   
   const maxFlavors = selectedSize?.id === 'gigante' ? 4 : 
                      selectedSize?.id === 'grande' ? 3 : 2;
+  const extrasOptions = categoryExtras.length > 0 ? categoryExtras : (isPizza ? PIZZA_EXTRAS : []);
+
+  useEffect(() => {
+    const fetchCategoryExtras = async () => {
+      try {
+        const response = await fetch(`/api/menu-items/${item.id}/category-customization`);
+        if (!response.ok) {
+          setCategoryExtras([]);
+          return;
+        }
+        const data = await response.json();
+        setCategoryExtras((data?.extras || []).map((extra: { name: string; price: number }) => ({
+          name: extra.name,
+          price: Number(extra.price || 0)
+        })));
+      } catch (error) {
+        console.error('Erro ao buscar adicionais da categoria:', error);
+        setCategoryExtras([]);
+      }
+    };
+
+    fetchCategoryExtras();
+  }, [item.id]);
 
   const calculateTotalPrice = () => {
     let total = 0;
@@ -180,15 +204,30 @@ export default function ProductCustomizationModalImproved({
 
   const getSteps = (): Step[] => {
     if (isPizza) {
-      return ['size', 'flavors', 'extras', 'observations'];
+      return extrasOptions.length > 0
+        ? ['size', 'flavors', 'extras', 'observations']
+        : ['size', 'flavors', 'observations'];
     }
     if (isBurger) {
-      return ['ingredients', 'observations'];
+      return extrasOptions.length > 0
+        ? ['ingredients', 'extras', 'observations']
+        : ['ingredients', 'observations'];
     }
-    return ['observations'];
+    return extrasOptions.length > 0 ? ['extras', 'observations'] : ['observations'];
   };
 
   const steps = getSteps();
+
+  useEffect(() => {
+    if (!steps.includes(currentStep)) {
+      setCurrentStep(steps[0]);
+      return;
+    }
+    if (!isPizza && !isBurger && extrasOptions.length > 0 && currentStep === 'observations') {
+      setCurrentStep('extras');
+    }
+  }, [steps, currentStep, isPizza, isBurger, extrasOptions.length]);
+
   const currentStepIndex = steps.indexOf(currentStep);
   const isLastStep = currentStepIndex === steps.length - 1;
 
@@ -255,7 +294,6 @@ export default function ProductCustomizationModalImproved({
               </div>
               <div className="grid grid-cols-2 gap-3 px-4 sm:px-6">
                 {PIZZA_SIZES.map(size => {
-                  const sizePrice = Number(item.price) * size.priceMultiplier;
                   return (
                     <button
                       key={size.id}
@@ -323,15 +361,15 @@ export default function ProductCustomizationModalImproved({
             </div>
           )}
 
-          {/* STEP: Extras (Pizza) */}
-          {currentStep === 'extras' && isPizza && (
+          {/* STEP: Extras */}
+          {currentStep === 'extras' && (
             <div className="space-y-4">
               <div className="sticky top-0 bg-white pt-4 pb-3 px-4 sm:px-6 z-10 border-b-2 border-gray-200 mb-4 -mx-4 sm:-mx-6 shadow-sm">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Adicionais</h3>
                 <p className="text-base text-gray-600 font-medium">Opcional</p>
               </div>
               <div className="space-y-3 px-4 sm:px-6">
-                {PIZZA_EXTRAS.map(extra => {
+                {extrasOptions.map(extra => {
                   const isSelected = selectedExtras.some(e => e.name === extra.name);
                   return (
                     <button
