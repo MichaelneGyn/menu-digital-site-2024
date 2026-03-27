@@ -69,6 +69,22 @@ export async function PATCH(
       );
     }
 
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: {
+        restaurants: {
+          select: { id: true }
+        }
+      }
+    });
+
+    if (!user || !user.restaurants.some((restaurant) => restaurant.id === order.restaurantId)) {
+      return NextResponse.json(
+        { error: 'Não autorizado para este pedido' },
+        { status: 403 }
+      );
+    }
+
     // Define timestamps baseado no status
     const now = new Date();
     const updateData: any = {

@@ -17,18 +17,33 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const restaurantId = searchParams.get('restaurantId') ?? undefined;
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: {
+      restaurants: {
+        select: { id: true }
+      }
+    },
+  });
 
-  // Limitar pedidos ao restaurante do usuário, quando informado
+  if (!user || user.restaurants.length === 0) {
+    return NextResponse.json([]);
+  }
+
+  const userRestaurantIds = user.restaurants.map((restaurant) => restaurant.id);
   let where: any = {};
+
   if (restaurantId) {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user!.email },
-      include: { restaurants: true },
-    });
-    if (!user || !user.restaurants?.find((r) => r.id === restaurantId)) {
+    if (!userRestaurantIds.includes(restaurantId)) {
       return NextResponse.json({ error: 'Não autorizado para este restaurante' }, { status: 403 });
     }
-    where.restaurantId = restaurantId;
+    where = { restaurantId };
+  } else {
+    where = {
+      restaurantId: {
+        in: userRestaurantIds
+      }
+    };
   }
 
   const orders = await prisma.order.findMany({
