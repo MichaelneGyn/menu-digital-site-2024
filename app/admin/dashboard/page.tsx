@@ -99,6 +99,11 @@ function AdminDashboard() {
   const isAdminEmail = (email?: string) => email === ADMIN_EMAIL;
   const isAdmin = isAdminEmail(session?.user?.email ?? undefined);
 
+  const toSafeNumber = (value: unknown) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
   useEffect(() => {
     if (status === 'loading') return;
 
@@ -117,7 +122,26 @@ function AdminDashboard() {
       const response = await fetch('/api/dashboard/stats');
       if (response.ok) {
         const data = await response.json();
-        setDashboardStats(data);
+        setDashboardStats({
+          today: {
+            count: toSafeNumber(data?.today?.count),
+            revenue: toSafeNumber(data?.today?.revenue),
+            itemsSold: toSafeNumber(data?.today?.itemsSold),
+            averageTicket: toSafeNumber(data?.today?.averageTicket),
+          },
+          yesterday: {
+            count: toSafeNumber(data?.yesterday?.count),
+            revenue: toSafeNumber(data?.yesterday?.revenue),
+            itemsSold: toSafeNumber(data?.yesterday?.itemsSold),
+            averageTicket: toSafeNumber(data?.yesterday?.averageTicket),
+          },
+          growth: {
+            orders: toSafeNumber(data?.growth?.orders),
+            revenue: toSafeNumber(data?.growth?.revenue),
+            itemsSold: toSafeNumber(data?.growth?.itemsSold),
+            averageTicket: toSafeNumber(data?.growth?.averageTicket),
+          }
+        });
       }
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error);
