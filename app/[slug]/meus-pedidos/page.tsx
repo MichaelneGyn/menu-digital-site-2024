@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Clock, CheckCircle, XCircle, Package } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle, XCircle, Package, ShoppingCart } from 'lucide-react';
 
 interface Order {
   id: string;
@@ -16,10 +16,26 @@ interface Order {
   }[];
 }
 
+interface CartItemPreview {
+  cartId: string;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface RawCartItem {
+  cartId?: string;
+  id?: string;
+  name?: string;
+  quantity?: number;
+  price?: number;
+}
+
 export default function MeusPedidosPage() {
   const params = useParams();
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [cartPreviewItems, setCartPreviewItems] = useState<CartItemPreview[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,6 +63,39 @@ export default function MeusPedidosPage() {
     };
 
     fetchOrders();
+  }, [params?.slug]);
+
+  useEffect(() => {
+    const slug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
+    if (!slug) return;
+
+    const storageKey = `menu-cart:${slug}`;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) {
+        setCartPreviewItems([]);
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) {
+        setCartPreviewItems([]);
+        return;
+      }
+
+      const sanitized = (parsed as RawCartItem[])
+        .filter((item) => item && item.name && item.quantity)
+        .map((item) => ({
+          cartId: String(item.cartId || item.id || Math.random()),
+          name: String(item.name),
+          quantity: Number(item.quantity) || 1,
+          price: Number(item.price) || 0
+        }));
+
+      setCartPreviewItems(sanitized);
+    } catch (error) {
+      console.error('Erro ao carregar carrinho:', error);
+      setCartPreviewItems([]);
+    }
   }, [params?.slug]);
 
   const getStatusIcon = (status: string) => {
@@ -119,16 +168,35 @@ export default function MeusPedidosPage() {
           <div className="text-center py-12">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-700 mb-2">
-              Nenhum pedido ainda
+              Nenhum pedido finalizado ainda
             </h2>
             <p className="text-gray-500 mb-6">
-              Faça seu primeiro pedido e ele aparecerá aqui!
+              Adicionar no carrinho não cria pedido. Finalize o checkout para aparecer aqui.
             </p>
+            {cartPreviewItems.length > 0 && (
+              <div className="max-w-md mx-auto mb-6 text-left bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <ShoppingCart className="w-5 h-5 text-red-600" />
+                  <h3 className="font-semibold text-gray-800">Itens no carrinho</h3>
+                </div>
+                <div className="space-y-2">
+                  {cartPreviewItems.slice(0, 5).map((item) => (
+                    <div key={item.cartId} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-700">{item.quantity}x {item.name}</span>
+                      <span className="font-medium text-gray-800">{formatPrice(item.price * item.quantity)}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-3">
+                  Volte e finalize o pedido no carrinho para ele aparecer nesta tela.
+                </p>
+              </div>
+            )}
             <button
               onClick={() => router.back()}
               className="bg-red-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-red-700 transition-colors"
             >
-              Ver Cardápio
+              Voltar para finalizar pedido
             </button>
           </div>
         ) : (
