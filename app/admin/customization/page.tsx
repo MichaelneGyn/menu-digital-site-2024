@@ -381,7 +381,7 @@ export default function CustomizationPage() {
               )}
               
               <button
-                onClick={saveCustomization}
+                onClick={() => saveCustomization()}
                 className="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
               >
                 <Save size={18} />
