@@ -33,7 +33,6 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   const [hasCustomizations, setHasCustomizations] = useState(false);
-  const [checkingCustomizations, setCheckingCustomizations] = useState(false);
 
   useEffect(() => {
     checkForCustomizations();
@@ -41,16 +40,21 @@ export default function ProductCard({
 
   const checkForCustomizations = async () => {
     try {
-      setCheckingCustomizations(true);
-      const response = await fetch(`/api/menu-items/${item.id}/customizations`);
-      if (response.ok) {
-        const customizations = await response.json();
-        setHasCustomizations(customizations.length > 0);
-      }
+      const [groupsResponse, categoryResponse] = await Promise.all([
+        fetch(`/api/menu-items/${item.id}/customizations`),
+        fetch(`/api/menu-items/${item.id}/category-customization`)
+      ]);
+
+      const hasGroups = groupsResponse.ok
+        ? (await groupsResponse.json()).length > 0
+        : false;
+      const hasCategoryExtras = categoryResponse.ok
+        ? ((await categoryResponse.json())?.extras || []).length > 0
+        : false;
+
+      setHasCustomizations(hasGroups || hasCategoryExtras);
     } catch (error) {
       console.error('❌ Error checking customizations:', error);
-    } finally {
-      setCheckingCustomizations(false);
     }
   };
 

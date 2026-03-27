@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PriceInput } from '@/components/PriceInput';
 import { toast } from 'sonner';
-import { X } from 'lucide-react';
+import { Plus, Trash2, X } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -58,8 +58,9 @@ export default function AddItemWithCustomizationsModal({
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(item?.image || null);
-  const [simpleAdditionalName, setSimpleAdditionalName] = useState('');
-  const [simpleAdditionalPrice, setSimpleAdditionalPrice] = useState('');
+  const [simpleAdditionals, setSimpleAdditionals] = useState<Array<{ name: string; price: string }>>([
+    { name: '', price: '' }
+  ]);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,7 +74,8 @@ export default function AddItemWithCustomizationsModal({
   };
 
   const saveSimpleAdditional = async (categoryId: string) => {
-    if (!simpleAdditionalName.trim()) return;
+    const extrasToSave = simpleAdditionals.filter((additional) => additional.name.trim());
+    if (extrasToSave.length === 0) return;
 
     const customizationResponse = await fetch(`/api/customization?categoryId=${categoryId}`);
     const customizationData = customizationResponse.ok ? await customizationResponse.json() : null;
@@ -98,14 +100,37 @@ export default function AddItemWithCustomizationsModal({
     const upsertData = await upsertResponse.json();
     if (!upsertData?.customizationId) return;
 
-    await fetch('/api/customization/extras', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customizationId: upsertData.customizationId,
-        name: simpleAdditionalName.trim(),
-        price: parseFloat(simpleAdditionalPrice || '0')
-      })
+    await Promise.all(
+      extrasToSave.map((additional) =>
+        fetch('/api/customization/extras', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customizationId: upsertData.customizationId,
+            name: additional.name.trim(),
+            price: parseFloat(additional.price || '0')
+          })
+        })
+      )
+    );
+  };
+
+  const updateAdditional = (index: number, field: 'name' | 'price', value: string) => {
+    setSimpleAdditionals((prev) =>
+      prev.map((additional, currentIndex) =>
+        currentIndex === index ? { ...additional, [field]: value } : additional
+      )
+    );
+  };
+
+  const addAdditionalRow = () => {
+    setSimpleAdditionals((prev) => [...prev, { name: '', price: '' }]);
+  };
+
+  const removeAdditionalRow = (index: number) => {
+    setSimpleAdditionals((prev) => {
+      if (prev.length === 1) return [{ name: '', price: '' }];
+      return prev.filter((_, currentIndex) => currentIndex !== index);
     });
   };
 
@@ -184,7 +209,7 @@ export default function AddItemWithCustomizationsModal({
       }
 
       const createdItem = await itemResponse.json();
-      if (formData.categoryId && simpleAdditionalName.trim()) {
+      if (formData.categoryId && simpleAdditionals.some((additional) => additional.name.trim())) {
         try {
           await saveSimpleAdditional(formData.categoryId);
         } catch (extraError) {
@@ -264,18 +289,36 @@ export default function AddItemWithCustomizationsModal({
 
             {formData.categoryId && (
               <div className="border border-orange-200 rounded-lg p-4 bg-orange-50">
-                <h4 className="font-semibold text-gray-900 mb-3">Adicional (opcional)</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Input
-                    value={simpleAdditionalName}
-                    onChange={(e) => setSimpleAdditionalName(e.target.value)}
-                    placeholder="Ex: Bacon extra"
-                  />
-                  <PriceInput
-                    value={simpleAdditionalPrice}
-                    onChange={(val) => setSimpleAdditionalPrice(val)}
-                    placeholder="Valor do adicional"
-                  />
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold text-gray-900">Adicionais (opcional)</h4>
+                  <Button type="button" variant="outline" size="sm" onClick={addAdditionalRow}>
+                    <Plus className="w-4 h-4 mr-1" />
+                    Novo adicional
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {simpleAdditionals.map((additional, index) => (
+                    <div key={`additional-${index}`} className="grid grid-cols-1 md:grid-cols-[1fr_180px_44px] gap-3">
+                      <Input
+                        value={additional.name}
+                        onChange={(e) => updateAdditional(index, 'name', e.target.value)}
+                        placeholder="Ex: Bacon extra"
+                      />
+                      <PriceInput
+                        value={additional.price}
+                        onChange={(val) => updateAdditional(index, 'price', val)}
+                        placeholder="Valor"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => removeAdditionalRow(index)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

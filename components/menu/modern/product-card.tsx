@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { cn } from '@/lib/utils';
 import { ClientMenuItem } from '@/lib/restaurant';
 import ProductCustomizationModalImproved, { ProductCustomization } from '../product-customization-modal-improved';
 
@@ -27,11 +26,19 @@ export function ProductCard({
 
   const checkForCustomizations = async () => {
     try {
-      const response = await fetch(`/api/menu-items/${item.id}/customizations`);
-      if (response.ok) {
-        const customizations = await response.json();
-        setHasCustomizations(customizations.length > 0);
-      }
+      const [groupsResponse, categoryResponse] = await Promise.all([
+        fetch(`/api/menu-items/${item.id}/customizations`),
+        fetch(`/api/menu-items/${item.id}/category-customization`)
+      ]);
+
+      const hasGroups = groupsResponse.ok
+        ? (await groupsResponse.json()).length > 0
+        : false;
+      const hasCategoryExtras = categoryResponse.ok
+        ? ((await categoryResponse.json())?.extras || []).length > 0
+        : false;
+
+      setHasCustomizations(hasGroups || hasCategoryExtras);
     } catch (error) {
       console.error('❌ Error checking customizations:', error);
     }
