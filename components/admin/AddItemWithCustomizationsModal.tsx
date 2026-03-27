@@ -494,7 +494,7 @@ export default function AddItemWithCustomizationsModal({
                     </p>
                     <Button
                       type="button"
-                      onClick={() => window.open('/dashboard/customization', '_blank')}
+                      onClick={() => window.open('/admin/customization', '_blank')}
                       className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg"
                     >
                       🎨 Acessar Personalização por Categoria
