@@ -21,7 +21,6 @@ export async function GET(
       return NextResponse.json({ error: 'Menu item not found' }, { status: 404 })
     }
 
-    // @ts-expect-error prisma extension model
     const customization = await prisma.categoryCustomization.findUnique({
       where: {
         categoryId_restaurantId: {
