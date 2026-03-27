@@ -89,6 +89,7 @@ export default function ProductCustomizationModalImproved({
   const [selectedFlavors, setSelectedFlavors] = useState<Array<{name: string; price: number}>>([]);
   const [selectedExtras, setSelectedExtras] = useState<Array<{name: string; price: number}>>([]);
   const [categoryExtras, setCategoryExtras] = useState<Array<{name: string; price: number}>>([]);
+  const [maxExtras, setMaxExtras] = useState(5);
   const [selectedIngredients, setSelectedIngredients] = useState<number[]>(
     BURGER_INGREDIENTS.filter(i => i.included).map(i => i.id)
   );
@@ -111,9 +112,11 @@ export default function ProductCustomizationModalImproved({
           name: extra.name,
           price: Number(extra.price || 0)
         })));
+        setMaxExtras(Math.max(1, Number(data?.maxExtras) || 5));
       } catch (error) {
         console.error('Erro ao buscar adicionais da categoria:', error);
         setCategoryExtras([]);
+        setMaxExtras(5);
       }
     };
 
@@ -165,7 +168,7 @@ export default function ProductCustomizationModalImproved({
   const handleExtraToggle = (extra: {name: string; price: number}) => {
     if (selectedExtras.some(e => e.name === extra.name)) {
       setSelectedExtras(selectedExtras.filter(e => e.name !== extra.name));
-    } else {
+    } else if (selectedExtras.length < maxExtras) {
       setSelectedExtras([...selectedExtras, extra]);
     }
   };
@@ -219,14 +222,11 @@ export default function ProductCustomizationModalImproved({
   const steps = getSteps();
 
   useEffect(() => {
+    if (steps.length === 0) return;
     if (!steps.includes(currentStep)) {
       setCurrentStep(steps[0]);
-      return;
     }
-    if (!isPizza && !isBurger && extrasOptions.length > 0 && currentStep === 'observations') {
-      setCurrentStep('extras');
-    }
-  }, [steps, currentStep, isPizza, isBurger, extrasOptions.length]);
+  }, [steps, currentStep]);
 
   const currentStepIndex = steps.indexOf(currentStep);
   const isLastStep = currentStepIndex === steps.length - 1;
@@ -365,27 +365,48 @@ export default function ProductCustomizationModalImproved({
           {currentStep === 'extras' && (
             <div className="space-y-4">
               <div className="sticky top-0 bg-white pt-4 pb-3 px-4 sm:px-6 z-10 border-b-2 border-gray-200 mb-4 -mx-4 sm:-mx-6 shadow-sm">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Adicionais</h3>
-                <p className="text-base text-gray-600 font-medium">Opcional</p>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">ADICIONAIS</h3>
+                    <p className="text-base text-gray-600 font-medium">
+                      Escolha até {maxExtras} opções
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 rounded-md bg-gray-700 text-white text-sm font-bold">
+                    {selectedExtras.length}/{maxExtras}
+                  </span>
+                </div>
               </div>
               <div className="space-y-3 px-4 sm:px-6">
                 {extrasOptions.map(extra => {
                   const isSelected = selectedExtras.some(e => e.name === extra.name);
+                  const isDisabled = !isSelected && selectedExtras.length >= maxExtras;
                   return (
                     <button
                       key={extra.name}
                       onClick={() => handleExtraToggle(extra)}
+                      disabled={isDisabled}
                       className={`w-full p-4 rounded-xl border-2 transition-all bg-white ${
                         isSelected
-                          ? 'border-gray-300 shadow-md'
-                          : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                          ? 'border-orange-300 shadow-md'
+                          : isDisabled
+                            ? 'border-gray-200 opacity-60 cursor-not-allowed'
+                            : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-900">{extra.name}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-orange-600 font-bold">+ {formatPrice(extra.price)}</span>
-                          {isSelected && <Check className="text-green-600" size={20} />}
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="text-left">
+                          <p className="font-semibold text-gray-900 uppercase">{extra.name}</p>
+                          <p className="text-base font-bold text-blue-900">
+                            {extra.price > 0 ? `+ ${formatPrice(extra.price)}` : 'Grátis'}
+                          </p>
+                        </div>
+                        <div className="text-xl font-bold text-red-600">
+                          {isSelected ? (
+                            <Check className="text-green-600" size={20} />
+                          ) : (
+                            '+'
+                          )}
                         </div>
                       </div>
                     </button>

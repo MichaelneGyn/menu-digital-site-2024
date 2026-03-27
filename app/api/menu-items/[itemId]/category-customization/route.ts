@@ -37,6 +37,7 @@ export async function GET(
     })
 
     return NextResponse.json({
+      maxExtras: customization?.maxFlavors || 5,
       extras: ((customization?.extras || []) as Array<{ id: string; name: string; price: number | string | null }>).map((extra) => ({
         id: extra.id,
         name: extra.name,

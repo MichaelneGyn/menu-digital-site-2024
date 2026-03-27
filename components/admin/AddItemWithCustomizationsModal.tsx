@@ -61,6 +61,7 @@ export default function AddItemWithCustomizationsModal({
   const [simpleAdditionals, setSimpleAdditionals] = useState<Array<{ name: string; price: string }>>([
     { name: '', price: '' }
   ]);
+  const [maxAdditionals, setMaxAdditionals] = useState('5');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +91,7 @@ export default function AddItemWithCustomizationsModal({
         hasSizes: existingCustomization?.has_sizes ?? false,
         hasFlavors: existingCustomization?.has_flavors ?? false,
         hasExtras: true,
-        maxFlavors: existingCustomization?.max_flavors ?? 1,
+        maxFlavors: Math.max(1, Number(maxAdditionals) || existingCustomization?.max_flavors || 5),
         flavorsRequired: existingCustomization?.flavors_required ?? false
       })
     });
@@ -295,6 +296,19 @@ export default function AddItemWithCustomizationsModal({
                     <Plus className="w-4 h-4 mr-1" />
                     Novo adicional
                   </Button>
+                </div>
+                <div className="mb-3">
+                  <Label>Máximo de adicionais para o cliente</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={maxAdditionals}
+                    onChange={(e) => setMaxAdditionals(e.target.value)}
+                    placeholder="Ex: 5"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    O cliente poderá escolher até esse total. Itens com preço R$ 0,00 são grátis.
+                  </p>
                 </div>
                 <div className="space-y-3">
                   {simpleAdditionals.map((additional, index) => (
