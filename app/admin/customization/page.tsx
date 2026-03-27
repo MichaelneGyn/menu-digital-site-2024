@@ -50,6 +50,7 @@ export default function CustomizationPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [customizationLoading, setCustomizationLoading] = useState(false);
   
   // Configuração
   const [customization, setCustomization] = useState<Customization>({
@@ -99,7 +100,7 @@ export default function CustomizationPage() {
   const loadCustomization = async () => {
     if (!selectedCategory) return;
     
-    setLoading(true);
+    setCustomizationLoading(true);
     try {
       const res = await fetch(`/api/customization?categoryId=${selectedCategory}`);
       const data = await res.json();
@@ -127,15 +128,17 @@ export default function CustomizationPage() {
       console.error('Erro ao carregar personalização:', error);
       toast.error('Erro ao carregar personalização');
     } finally {
-      setLoading(false);
+      setCustomizationLoading(false);
     }
   };
 
-  const saveCustomization = async () => {
+  const saveCustomization = async (customizationOverride?: Customization) => {
     if (!selectedCategory) {
       toast.error('Selecione uma categoria');
       return;
     }
+
+    const config = customizationOverride ?? customization;
     
     try {
       const res = await fetch('/api/customization', {
@@ -143,20 +146,24 @@ export default function CustomizationPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           categoryId: selectedCategory,
-          isCustomizable: customization.is_customizable,
-          hasSizes: customization.has_sizes,
-          hasFlavors: customization.has_flavors,
-          hasExtras: customization.has_extras,
-          maxFlavors: customization.max_flavors,
-          flavorsRequired: customization.flavors_required
+          isCustomizable: config.is_customizable,
+          hasSizes: config.has_sizes,
+          hasFlavors: config.has_flavors,
+          hasExtras: config.has_extras,
+          maxFlavors: config.max_flavors,
+          flavorsRequired: config.flavors_required
         })
       });
       
       if (res.ok) {
         const data = await res.json();
         toast.success('Configuração salva com sucesso!');
-        // Recarregar para pegar o ID criado
-        await loadCustomization();
+        if (data?.customizationId) {
+          setCustomization((current) => ({
+            ...current,
+            id: data.customizationId
+          }));
+        }
       } else {
         const error = await res.json();
         toast.error(error.error || 'Erro ao salvar');
@@ -343,6 +350,9 @@ export default function CustomizationPage() {
               </option>
             ))}
           </select>
+          {customizationLoading && (
+            <p className="text-sm text-orange-600 mt-3">Carregando personalização da categoria...</p>
+          )}
         </div>
 
         {/* Configuração */}
@@ -397,8 +407,9 @@ export default function CustomizationPage() {
                         type="checkbox"
                         checked={customization.has_sizes}
                         onChange={(e) => {
-                          setCustomization({ ...customization, has_sizes: e.target.checked });
-                          saveCustomization();
+                          const updated = { ...customization, has_sizes: e.target.checked };
+                          setCustomization(updated);
+                          saveCustomization(updated);
                         }}
                         className="w-4 h-4 text-orange-500 rounded"
                       />
@@ -481,8 +492,9 @@ export default function CustomizationPage() {
                         type="checkbox"
                         checked={customization.has_flavors}
                         onChange={(e) => {
-                          setCustomization({ ...customization, has_flavors: e.target.checked });
-                          saveCustomization();
+                          const updated = { ...customization, has_flavors: e.target.checked };
+                          setCustomization(updated);
+                          saveCustomization(updated);
                         }}
                         className="w-4 h-4 text-orange-500 rounded"
                       />
@@ -502,8 +514,9 @@ export default function CustomizationPage() {
                           min="1"
                           value={customization.max_flavors}
                           onChange={(e) => {
-                            setCustomization({ ...customization, max_flavors: parseInt(e.target.value) });
-                            saveCustomization();
+                            const updated = { ...customization, max_flavors: parseInt(e.target.value) || 1 };
+                            setCustomization(updated);
+                            saveCustomization(updated);
                           }}
                           className="w-24 p-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none"
                         />
@@ -574,8 +587,9 @@ export default function CustomizationPage() {
                         type="checkbox"
                         checked={customization.has_extras}
                         onChange={(e) => {
-                          setCustomization({ ...customization, has_extras: e.target.checked });
-                          saveCustomization();
+                          const updated = { ...customization, has_extras: e.target.checked };
+                          setCustomization(updated);
+                          saveCustomization(updated);
                         }}
                         className="w-4 h-4 text-orange-500 rounded"
                       />
