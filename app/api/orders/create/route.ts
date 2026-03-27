@@ -12,7 +12,7 @@ const corsHeaders = {
   'Access-Control-Allow-Credentials': 'true',
 };
 
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
@@ -125,6 +125,16 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    if (customerPhone) {
+      cookieStore.set('customerPhone', customerPhone, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 365,
+        path: '/',
+      });
+    }
+
     // Gerar URL de rastreamento
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const trackingUrl = `${baseUrl}/track/${code.replace('#', '')}`;
@@ -181,7 +191,7 @@ export async function POST(req: NextRequest) {
     console.log('Pedido criado com sucesso:', order);
     
     return NextResponse.json(order, { status: 201, headers: corsHeaders });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Erro ao criar pedido completo:', error);
     
     if (error instanceof z.ZodError) {
@@ -192,7 +202,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: error.message || 'Erro ao criar pedido' },
+      { error: error instanceof Error ? error.message : 'Erro ao criar pedido' },
       { status: 500, headers: corsHeaders }
     );
   }

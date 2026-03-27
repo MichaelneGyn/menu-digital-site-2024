@@ -30,17 +30,20 @@ export async function GET(request: NextRequest) {
     // Buscar ID do cliente no cookie
     const cookieStore = cookies();
     const customerId = cookieStore.get('customerId')?.value;
+    const customerPhone = cookieStore.get('customerPhone')?.value;
 
-    // Se não tem cookie, retorna array vazio
-    if (!customerId) {
+    if (!customerId && !customerPhone) {
       return NextResponse.json([]);
     }
 
-    // Buscar pedidos deste cliente neste restaurante
+    const customerIdentifiers = [customerId, customerPhone].filter(Boolean) as string[];
+
     const orders = await prisma.order.findMany({
       where: {
         restaurantId: restaurant.id,
-        customerPhone: customerId, // Usando customerPhone para armazenar o customerId
+        customerPhone: {
+          in: customerIdentifiers
+        }
       },
       include: {
         orderItems: {
@@ -59,13 +62,26 @@ export async function GET(request: NextRequest) {
       take: 50
     });
 
+    type OrderWithItems = {
+      id: string;
+      code: string | null;
+      status: string;
+      total: number;
+      createdAt: Date;
+      orderItems: Array<{
+        quantity: number;
+        unitPrice: number;
+        menuItem: { name: string };
+      }>;
+    };
+
     // Formatar resposta
-    const formattedOrders = orders.map((order: any) => ({
+    const formattedOrders = (orders as OrderWithItems[]).map((order) => ({
       id: order.code || order.id,
       status: order.status,
       total: Number(order.total),
       createdAt: order.createdAt.toISOString(),
-      items: order.orderItems.map((item: any) => ({
+      items: order.orderItems.map((item) => ({
         name: item.menuItem.name,
         quantity: item.quantity,
         price: item.unitPrice,

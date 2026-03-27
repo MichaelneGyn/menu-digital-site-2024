@@ -44,6 +44,7 @@ export default function MenuPageModern({ restaurant, viewOnly = false }: MenuPag
   const [searchTerm, setSearchTerm] = useState('');
   
   const [emblaRef] = useEmblaCarousel({ align: "start", containScroll: "trimSnaps" });
+  const cartStorageKey = `menu-cart:${restaurant.slug}`;
 
   // Check admin
   useEffect(() => {
@@ -94,6 +95,24 @@ export default function MenuPageModern({ restaurant, viewOnly = false }: MenuPag
     const timer = setTimeout(() => setIsLoading(false), 1000);
     return () => clearTimeout(timer);
   }, [restaurant?.categories]);
+
+  useEffect(() => {
+    try {
+      const savedCart = localStorage.getItem(cartStorageKey);
+      if (!savedCart) return;
+      const parsed = JSON.parse(savedCart);
+      if (Array.isArray(parsed)) {
+        setCartItems(parsed);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar carrinho salvo:', error);
+      localStorage.removeItem(cartStorageKey);
+    }
+  }, [cartStorageKey]);
+
+  useEffect(() => {
+    localStorage.setItem(cartStorageKey, JSON.stringify(cartItems));
+  }, [cartItems, cartStorageKey]);
 
   // ScrollSpy Logic (Exact match from home.tsx)
   useEffect(() => {
