@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { PriceInput } from '@/components/PriceInput';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import {
@@ -77,7 +78,8 @@ export default function IngredientsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.pricePerUnit) {
+    const pricePerUnit = parseFloat(formData.pricePerUnit) || 0;
+    if (!formData.name || pricePerUnit <= 0) {
       toast.error('Nome e preço são obrigatórios');
       return;
     }
@@ -94,7 +96,7 @@ export default function IngredientsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          pricePerUnit: parseFloat(formData.pricePerUnit)
+          pricePerUnit
         })
       });
 
@@ -118,7 +120,7 @@ export default function IngredientsPage() {
     setFormData({
       name: ingredient.name,
       unit: ingredient.unit,
-      pricePerUnit: ingredient.pricePerUnit.toString(),
+      pricePerUnit: ingredient.pricePerUnit.toFixed(2),
       supplier: ingredient.supplier || '',
       lastPurchase: ingredient.lastPurchase ? ingredient.lastPurchase.split('T')[0] : '',
       notes: ingredient.notes || ''
@@ -408,14 +410,10 @@ export default function IngredientsPage() {
 
                   <div>
                     <Label htmlFor="pricePerUnit">Preço por unidade *</Label>
-                    <Input
-                      id="pricePerUnit"
-                      type="number"
-                      step="0.01"
+                    <PriceInput
                       value={formData.pricePerUnit}
-                      onChange={(e) => setFormData({ ...formData, pricePerUnit: e.target.value })}
-                      placeholder="0.00"
-                      required
+                      onChange={(value) => setFormData({ ...formData, pricePerUnit: value })}
+                      placeholder="Ex: 12,50"
                     />
                   </div>
 

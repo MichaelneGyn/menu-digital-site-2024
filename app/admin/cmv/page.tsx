@@ -9,11 +9,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Calculator, Plus, Trash2, TrendingUp, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { PriceInput } from '@/components/PriceInput';
 
 interface Ingrediente {
   id: string;
   nome: string;
   custo: string;
+}
+
+interface CalculoSalvo {
+  id: string;
+  nomeProduto: string;
+  precoVenda: string;
+  ingredientes: Ingrediente[];
+  custoTotal: number;
+  cmvPercentual: number;
+  lucro: number;
+  createdAt: string;
 }
 
 export default function CMVSimples() {
@@ -32,6 +44,7 @@ export default function CMVSimples() {
   const [cmvPercentual, setCmvPercentual] = useState(0);
   const [lucro, setLucro] = useState(0);
   const [statusCMV, setStatusCMV] = useState<'bom' | 'atencao' | 'ruim' | null>(null);
+  const [calculosSalvos, setCalculosSalvos] = useState<CalculoSalvo[]>([]);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -39,6 +52,21 @@ export default function CMVSimples() {
       router.replace('/auth/login');
     }
   }, [session, status]);
+
+  useEffect(() => {
+    if (!session?.user?.email) return;
+    const storageKey = `cmv_calculos:${session.user.email}`;
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        setCalculosSalvos(parsed);
+      }
+    } catch {
+      localStorage.removeItem(storageKey);
+    }
+  }, [session?.user?.email]);
 
   // Calcular custo total dos ingredientes
   useEffect(() => {
@@ -112,8 +140,54 @@ export default function CMVSimples() {
       return;
     }
 
-    toast.success(`✅ Cálculo de "${nomeProduto}" salvo!`);
+    if (!session?.user?.email) {
+      toast.error('Você precisa estar logado para salvar');
+      return;
+    }
+
+    const storageKey = `cmv_calculos:${session.user.email}`;
+    const novoCalculo: CalculoSalvo = {
+      id: Date.now().toString(),
+      nomeProduto: nomeProduto.trim(),
+      precoVenda,
+      ingredientes: ingredientes
+        .filter((ing) => ing.nome.trim() || ing.custo)
+        .map((ing) => ({ ...ing, nome: ing.nome.trim() })),
+      custoTotal,
+      cmvPercentual,
+      lucro,
+      createdAt: new Date().toISOString()
+    };
+
+    const atualizados = [novoCalculo, ...calculosSalvos].slice(0, 50);
+    setCalculosSalvos(atualizados);
+    localStorage.setItem(storageKey, JSON.stringify(atualizados));
+    toast.success(`✅ Cálculo de "${novoCalculo.nomeProduto}" salvo!`);
     limparCampos();
+  };
+
+  const carregarCalculo = (calculo: CalculoSalvo) => {
+    setNomeProduto(calculo.nomeProduto);
+    setPrecoVenda(calculo.precoVenda);
+    setIngredientes(
+      calculo.ingredientes.length > 0
+        ? calculo.ingredientes.map((ing) => ({
+            id: ing.id || Date.now().toString(),
+            nome: ing.nome,
+            custo: ing.custo
+          }))
+        : [{ id: '1', nome: '', custo: '' }]
+    );
+    toast.success('Cálculo carregado');
+  };
+
+  const excluirCalculo = (id: string) => {
+    if (!session?.user?.email) return;
+    const storageKey = `cmv_calculos:${session.user.email}`;
+    const atualizados = calculosSalvos.filter((c) => c.id !== id);
+    setCalculosSalvos(atualizados);
+    localStorage.setItem(storageKey, JSON.stringify(atualizados));
+    toast.success('Cálculo removido');
   };
 
   return (
@@ -166,17 +240,12 @@ export default function CMVSimples() {
                 <span className="bg-blue-500 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm">2</span>
                 Por quanto você VENDE?
               </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg">R$</span>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="45.00"
-                  value={precoVenda}
-                  onChange={(e) => setPrecoVenda(e.target.value)}
-                  className="text-lg h-12 pl-12"
-                />
-              </div>
+              <PriceInput
+                value={precoVenda}
+                onChange={setPrecoVenda}
+                placeholder="Ex: 45,00"
+                className="text-lg h-12"
+              />
               <p className="text-sm text-gray-500">💡 Quanto o cliente paga por este produto</p>
             </div>
 
@@ -200,15 +269,12 @@ export default function CMVSimples() {
                         className="h-11"
                       />
                     </div>
-                    <div className="w-32 relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
+                    <div className="w-32">
+                      <PriceInput
                         value={ingrediente.custo}
-                        onChange={(e) => atualizarIngrediente(ingrediente.id, 'custo', e.target.value)}
-                        className="h-11 pl-10"
+                        onChange={(value) => atualizarIngrediente(ingrediente.id, 'custo', value)}
+                        placeholder="0,00"
+                        className="h-11"
                       />
                     </div>
                     <Button
@@ -352,6 +418,34 @@ export default function CMVSimples() {
             </div>
           </CardContent>
         </Card>
+
+        {calculosSalvos.length > 0 && (
+          <Card className="mt-6 border-2 border-gray-100">
+            <CardHeader className="bg-gray-50">
+              <CardTitle className="text-lg">📌 Cálculos salvos</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-3">
+              {calculosSalvos.slice(0, 10).map((calculo) => (
+                <div key={calculo.id} className="flex items-center justify-between gap-3 bg-white border rounded-lg p-4">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 truncate">{calculo.nomeProduto}</p>
+                    <p className="text-sm text-gray-600">
+                      CMV {calculo.cmvPercentual.toFixed(1)}% • Lucro R$ {calculo.lucro.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" onClick={() => carregarCalculo(calculo)}>
+                      Abrir
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => excluirCalculo(calculo.id)}>
+                      Remover
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Dicas */}
         <Card className="mt-6 border-2 border-purple-100">

@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { PriceInput } from '@/components/PriceInput';
 import toast from 'react-hot-toast';
-import { Upload, Save, ImageIcon, AlertTriangle, ArrowLeft, Sparkles } from 'lucide-react';
+import { Upload, Save, ImageIcon, ArrowLeft, Sparkles } from 'lucide-react';
 import { withSubscriptionCheck } from '@/components/withSubscriptionCheck';
 import Link from 'next/link';
 import LogoGalleryFlat from '@/components/LogoGalleryFlat';
@@ -72,8 +73,8 @@ function SettingsPage() {
     whatsapp: '',
     email: '',
     address: '',
-    deliveryFee: 0,
-    minOrderValue: 0,
+    deliveryFee: '0.00',
+    minOrderValue: '0.00',
     pixKey: '',
     openTime: '',
     closeTime: '',
@@ -131,8 +132,8 @@ function SettingsPage() {
           email: data.email || '',
           address: data.address || '',
           pixKey: data.pixKey || '', // Carregar pixKey
-          deliveryFee: data.deliveryFee || 0,
-          minOrderValue: data.minOrderValue || 0,
+          deliveryFee: typeof data.deliveryFee === 'number' ? data.deliveryFee.toFixed(2) : '0.00',
+          minOrderValue: typeof data.minOrderValue === 'number' ? data.minOrderValue.toFixed(2) : '0.00',
           openTime: data.openTime || '',
           closeTime: data.closeTime || '',
         });
@@ -766,24 +767,18 @@ function SettingsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="deliveryFee">Taxa de Entrega (R$)</Label>
-                <Input
-                  id="deliveryFee"
-                  type="number"
-                  step="0.01"
-                  min="0"
+                <PriceInput
                   value={formData.deliveryFee}
-                  onChange={(e) => setFormData({ ...formData, deliveryFee: parseFloat(e.target.value) || 0 })}
+                  onChange={(value) => setFormData({ ...formData, deliveryFee: value })}
+                  placeholder="Ex: 5,00"
                 />
               </div>
               <div>
                 <Label htmlFor="minOrderValue">Pedido Mínimo (R$)</Label>
-                <Input
-                  id="minOrderValue"
-                  type="number"
-                  step="0.01"
-                  min="0"
+                <PriceInput
                   value={formData.minOrderValue}
-                  onChange={(e) => setFormData({ ...formData, minOrderValue: parseFloat(e.target.value) || 0 })}
+                  onChange={(value) => setFormData({ ...formData, minOrderValue: value })}
+                  placeholder="Ex: 25,00"
                 />
               </div>
             </div>
