@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PriceInput } from '@/components/PriceInput';
 import { toast } from 'sonner';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -45,9 +45,8 @@ export default function AddItemWithCustomizationsModal({
   onSuccess,
   item
 }: AddItemWithCustomizationsModalProps) {
-  const isEditing = !!item; // Modo de edição se item estiver presente
-  
-  // Basic info
+  const isEditing = !!item;
+
   const [formData, setFormData] = useState({
     name: item?.name || '',
     description: item?.description || '',
@@ -59,20 +58,8 @@ export default function AddItemWithCustomizationsModal({
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(item?.image || null);
-  
-  // Customizations
-  const [hasCustomizations, setHasCustomizations] = useState(false);
-  const [customizationGroups, setCustomizationGroups] = useState<Array<{
-    id: string;
-    name: string;
-    description?: string;
-    isRequired: boolean;
-    minSelections: number;
-    maxSelections: number;
-    options: Array<{id: string; name: string; price: string}>;
-  }>>([]);
-  
-  const [tempGroupInputs, setTempGroupInputs] = useState<Record<string, {optionName: string; optionPrice: string}>>({});
+  const [simpleAdditionalName, setSimpleAdditionalName] = useState('');
+  const [simpleAdditionalPrice, setSimpleAdditionalPrice] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,141 +72,41 @@ export default function AddItemWithCustomizationsModal({
     }
   };
 
-  const addCustomizationGroup = () => {
-    const newGroup = {
-      id: `temp-${Date.now()}`,
-      name: '',
-      description: '',
-      isRequired: false,
-      minSelections: 0,
-      maxSelections: 1,
-      options: []
-    };
-    setCustomizationGroups([...customizationGroups, newGroup]);
-  };
+  const saveSimpleAdditional = async (categoryId: string) => {
+    if (!simpleAdditionalName.trim()) return;
 
-  const removeCustomizationGroup = (groupId: string) => {
-    setCustomizationGroups(customizationGroups.filter(g => g.id !== groupId));
-  };
+    const customizationResponse = await fetch(`/api/customization?categoryId=${categoryId}`);
+    const customizationData = customizationResponse.ok ? await customizationResponse.json() : null;
+    const existingCustomization = customizationData?.customization;
 
-  const updateGroupField = (groupId: string, field: string, value: any) => {
-    setCustomizationGroups(groups =>
-      groups.map(g =>
-        g.id === groupId ? { ...g, [field]: value } : g
-      )
-    );
-  };
-
-  const addOptionToGroup = (groupId: string) => {
-    const input = tempGroupInputs[groupId];
-    if (!input?.optionName?.trim()) {
-      toast.error('Digite o nome da opção');
-      return;
-    }
-
-    const newOption = {
-      id: `temp-opt-${Date.now()}`,
-      name: input.optionName.trim(),
-      price: input.optionPrice || '0'
-    };
-
-    setCustomizationGroups(groups =>
-      groups.map(g =>
-        g.id === groupId
-          ? { ...g, options: [...g.options, newOption] }
-          : g
-      )
-    );
-
-    setTempGroupInputs({
-      ...tempGroupInputs,
-      [groupId]: { optionName: '', optionPrice: '' }
+    const upsertResponse = await fetch('/api/customization', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        categoryId,
+        isCustomizable: existingCustomization?.is_customizable ?? true,
+        hasSizes: existingCustomization?.has_sizes ?? false,
+        hasFlavors: existingCustomization?.has_flavors ?? false,
+        hasExtras: true,
+        maxFlavors: existingCustomization?.max_flavors ?? 1,
+        flavorsRequired: existingCustomization?.flavors_required ?? false
+      })
     });
-  };
 
-  const removeOptionFromGroup = (groupId: string, optionId: string) => {
-    setCustomizationGroups(groups =>
-      groups.map(g =>
-        g.id === groupId
-          ? { ...g, options: g.options.filter(o => o.id !== optionId) }
-          : g
-      )
-    );
-  };
+    if (!upsertResponse.ok) return;
 
-  const applyQuickSuggestions = () => {
-    const selectedCategory = categories.find(c => c.id === formData.categoryId);
-    const categoryName = selectedCategory?.name?.toLowerCase() || '';
-    
-    let suggestedGroups: typeof customizationGroups = [];
+    const upsertData = await upsertResponse.json();
+    if (!upsertData?.customizationId) return;
 
-    if (categoryName.includes('pizza')) {
-      suggestedGroups = [
-        {
-          id: `temp-${Date.now()}-1`,
-          name: 'Escolha o sabor',
-          description: '',
-          isRequired: true,
-          minSelections: 1,
-          maxSelections: 2,
-          options: []
-        },
-        {
-          id: `temp-${Date.now()}-2`,
-          name: 'Borda recheada',
-          description: '',
-          isRequired: false,
-          minSelections: 0,
-          maxSelections: 1,
-          options: []
-        },
-        {
-          id: `temp-${Date.now()}-3`,
-          name: 'Adicionais',
-          description: '',
-          isRequired: false,
-          minSelections: 0,
-          maxSelections: 10,
-          options: []
-        }
-      ];
-    } else if (categoryName.includes('hambur') || categoryName.includes('lanche')) {
-      suggestedGroups = [
-        {
-          id: `temp-${Date.now()}-1`,
-          name: 'Ponto da carne',
-          description: '',
-          isRequired: true,
-          minSelections: 1,
-          maxSelections: 1,
-          options: []
-        },
-        {
-          id: `temp-${Date.now()}-2`,
-          name: 'Adicionais',
-          description: '',
-          isRequired: false,
-          minSelections: 0,
-          maxSelections: 10,
-          options: []
-        }
-      ];
-    } else {
-      suggestedGroups = [
-        {
-          id: `temp-${Date.now()}-1`,
-          name: 'Opções',
-          description: '',
-          isRequired: false,
-          minSelections: 0,
-          maxSelections: 5,
-          options: []
-        }
-      ];
-    }
-
-    setCustomizationGroups(suggestedGroups);
-    toast.success(`✨ ${suggestedGroups.length} grupo(s) criado(s) para ${categoryName}!`);
+    await fetch('/api/customization/extras', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customizationId: upsertData.customizationId,
+        name: simpleAdditionalName.trim(),
+        price: parseFloat(simpleAdditionalPrice || '0')
+      })
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -261,32 +148,25 @@ export default function AddItemWithCustomizationsModal({
             setIsLoading(false);
             return;
           }
-        } catch (uploadError: any) {
-          // Se o upload falhou, mostra erro ao usuário
-          toast.error(uploadError?.message || 'Erro ao fazer upload da imagem');
+        } catch (uploadError: unknown) {
+          toast.error(uploadError instanceof Error ? uploadError.message : 'Erro ao fazer upload da imagem');
           setIsLoading(false);
           return;
         }
       }
 
-      // Validação: Se não tem personalização, preço é obrigatório
-      if (!hasCustomizations && (!formData.price || parseFloat(formData.price) <= 0)) {
-        toast.error('❌ Preço é obrigatório quando o produto não tem personalização');
+      if (!formData.price || parseFloat(formData.price) <= 0) {
+        toast.error('❌ Preço é obrigatório');
         setIsLoading(false);
         return;
       }
 
-      // Create item
       const itemData = {
         ...formData,
-        // Se tem personalização e preço vazio, define como 0
         price: formData.price ? parseFloat(formData.price) : 0,
         oldPrice: formData.oldPrice ? parseFloat(formData.oldPrice) : undefined,
         restaurantId,
-        // ✅ Se editando e não escolheu nova imagem, mantém a antiga
         image: imageUrl || (isEditing ? item.image : null),
-        // ✅ Adicionar flag de personalização
-        hasCustomizations: hasCustomizations
       };
 
       console.log('💾 [MODAL] Salvando item com dados:', itemData);
@@ -304,58 +184,12 @@ export default function AddItemWithCustomizationsModal({
       }
 
       const createdItem = await itemResponse.json();
-
-      // Create customization groups if needed
-      if (hasCustomizations && customizationGroups.length > 0) {
-        const createdGroupIds = [];
-        
-        console.log('🚀 [MODAL] Creating customization groups...');
-        console.log('📋 [MODAL] Groups to create:', customizationGroups.length);
-        
-        for (const group of customizationGroups) {
-          const groupData = {
-            name: group.name,
-            description: group.description || '',
-            isRequired: group.isRequired,
-            minSelections: group.minSelections,
-            maxSelections: group.maxSelections,
-            sortOrder: 0,
-            isActive: true,
-            options: group.options.map((opt, index) => ({
-              name: opt.name,
-              price: parseFloat(opt.price || '0'),
-              isActive: true,
-              sortOrder: index
-            }))
-          };
-          
-          const groupResponse = await fetch(`/api/restaurants/${restaurantId}/customizations`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(groupData),
-          });
-
-          if (groupResponse.ok) {
-            const createdGroup = await groupResponse.json();
-            console.log('✅ [MODAL] Group created:', createdGroup.id, createdGroup.name);
-            createdGroupIds.push(createdGroup.id);
-          } else {
-            const errorData = await groupResponse.json();
-            console.error('❌ [MODAL] Failed to create group:', errorData);
-          }
-        }
-        
-        console.log('✅ [MODAL] All groups created. IDs:', createdGroupIds);
-        
-        // Link ALL groups to item at once
-        if (createdGroupIds.length > 0) {
-          await fetch(`/api/menu-items/${createdItem.id}/link-customizations`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              groupIds: createdGroupIds
-            }),
-          });
+      if (formData.categoryId && simpleAdditionalName.trim()) {
+        try {
+          await saveSimpleAdditional(formData.categoryId);
+        } catch (extraError) {
+          console.error('Erro ao salvar adicional simples:', extraError);
+          toast.error('Produto criado, mas não foi possível salvar o adicional');
         }
       }
 
@@ -383,7 +217,6 @@ export default function AddItemWithCustomizationsModal({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Basic Info */}
             <div>
               <Label>Nome do Produto *</Label>
               <Input
@@ -405,19 +238,12 @@ export default function AddItemWithCustomizationsModal({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>
-                  {hasCustomizations ? 'Preço (opcional se varia por sabor)' : 'Preço *'}
-                </Label>
+                <Label>Preço *</Label>
                 <PriceInput
                   value={formData.price}
                   onChange={(val) => setFormData({...formData, price: val})}
-                  placeholder={hasCustomizations ? "Deixe vazio se o preço varia" : "Ex: 4590 = R$ 45,90"}
+                  placeholder="Ex: 4590 = R$ 45,90"
                 />
-                {hasCustomizations && (
-                  <p className="text-xs text-orange-600 mt-1">
-                    💡 Se deixar vazio, o preço virá das opções de personalização
-                  </p>
-                )}
               </div>
 
               <div>
@@ -435,6 +261,24 @@ export default function AddItemWithCustomizationsModal({
                 </select>
               </div>
             </div>
+
+            {formData.categoryId && (
+              <div className="border border-orange-200 rounded-lg p-4 bg-orange-50">
+                <h4 className="font-semibold text-gray-900 mb-3">Adicional (opcional)</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Input
+                    value={simpleAdditionalName}
+                    onChange={(e) => setSimpleAdditionalName(e.target.value)}
+                    placeholder="Ex: Bacon extra"
+                  />
+                  <PriceInput
+                    value={simpleAdditionalPrice}
+                    onChange={(val) => setSimpleAdditionalPrice(val)}
+                    placeholder="Valor do adicional"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Image - PREVIEW MELHORADO */}
             <div>
@@ -482,229 +326,6 @@ export default function AddItemWithCustomizationsModal({
               )}
             </div>
 
-            {/* Customizations Section - NOVO SISTEMA */}
-            <div className="border-t-2 border-dashed pt-4 mt-4">
-              <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <span className="text-3xl">💡</span>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-blue-900 text-lg mb-2">✨ Novo Sistema de Personalização!</h4>
-                    <p className="text-sm text-blue-700 mb-3">
-                      Agora você pode configurar personalização por <strong>categoria inteira</strong> de forma mais simples e rápida!
-                    </p>
-                    <Button
-                      type="button"
-                      onClick={() => window.open('/admin/customization', '_blank')}
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg"
-                    >
-                      🎨 Acessar Personalização por Categoria
-                    </Button>
-                    <p className="text-xs text-blue-600 mt-3 flex items-center gap-1">
-                      <span>💡</span>
-                      <span>Configure uma vez e todos os produtos da categoria herdam as opções!</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sistema antigo removido - usar apenas o novo sistema por categoria */}
-            {false && hasCustomizations && (
-                <div className="space-y-4 bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-200">
-                  {/* Header com botões */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-lg font-bold text-purple-900 flex items-center gap-2">
-                        ✨ Grupos de Personalização
-                      </h4>
-                      <p className="text-xs text-purple-600 mt-1">Configure sabores, bordas, tamanhos, extras, etc.</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        onClick={applyQuickSuggestions}
-                        className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-bold shadow-lg"
-                        size="sm"
-                        disabled={!formData.categoryId}
-                      >
-                        <span className="mr-2">⚡</span>
-                        Sugestões Rápidas
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={addCustomizationGroup}
-                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md"
-                        size="sm"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Criar Grupo
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Empty state */}
-                  {customizationGroups.length === 0 && (
-                    <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-purple-200">
-                      <span className="text-4xl mb-3 block">⚡</span>
-                      <p className="text-purple-900 font-bold text-lg mb-2">Use "Sugestões Rápidas"!</p>
-                      <p className="text-purple-600 text-sm mb-1">
-                        O sistema cria grupos automaticamente baseado na categoria
-                      </p>
-                      <p className="text-xs text-gray-500 mt-3">
-                        💡 Ou clique em "Criar Grupo" para fazer manualmente
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Grupos */}
-                  {customizationGroups.map((group) => (
-                    <div key={group.id} className="bg-white border-2 border-purple-100 rounded-lg p-4 mb-3">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1 space-y-3">
-                          {/* Nome do Grupo */}
-                          <div>
-                            <Label className="text-sm font-bold text-purple-900">📝 Nome do Grupo *</Label>
-                            <Input
-                              placeholder="Ex: Escolha o sabor, Bordas Irresistíveis"
-                              value={group.name}
-                              onChange={(e) => updateGroupField(group.id, 'name', e.target.value)}
-                              className="border-purple-200 mt-1"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">💡 Esse nome aparecerá para o cliente</p>
-                          </div>
-
-                          {/* Configurações */}
-                          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                            <Label className="text-sm font-bold text-purple-900 flex items-center gap-2">
-                              ⚙️ Configurações
-                            </Label>
-                            <div className="flex items-center gap-4 mt-2">
-                              <label className="flex items-center gap-2">
-                                <input
-                                  type="checkbox"
-                                  checked={group.isRequired}
-                                  onChange={(e) => {
-                                    updateGroupField(group.id, 'isRequired', e.target.checked);
-                                    if (e.target.checked && group.minSelections === 0) {
-                                      updateGroupField(group.id, 'minSelections', 1);
-                                    }
-                                  }}
-                                  className="w-4 h-4"
-                                />
-                                <span className="text-sm font-semibold">Obrigatório?</span>
-                              </label>
-                              <div className="flex items-center gap-2">
-                                <Label className="text-sm">Máximo:</Label>
-                                <Input
-                                  type="number"
-                                  min="1"
-                                  value={group.maxSelections}
-                                  onChange={(e) => updateGroupField(group.id, 'maxSelections', parseInt(e.target.value) || 1)}
-                                  className="w-20 text-center"
-                                />
-                                <span className="text-sm">opções</span>
-                              </div>
-                            </div>
-                            <p className="text-xs text-purple-600 mt-2">
-                              💡 Ex: Pizza com até <strong>2 sabores</strong> ou Tamanho <strong>obrigatório</strong>
-                            </p>
-                          </div>
-
-                          {/* Adicionar Opções */}
-                          <div className="border-t-2 border-dashed border-purple-200 pt-3">
-                            <Label className="text-sm font-bold text-purple-900 mb-2 block">➕ Opções do Grupo</Label>
-                            <div className="flex gap-2">
-                              <Input
-                                placeholder="Nome (ex: Calabresa, Catupiry)"
-                                value={tempGroupInputs[group.id]?.optionName || ''}
-                                onChange={(e) => setTempGroupInputs({
-                                  ...tempGroupInputs,
-                                  [group.id]: { 
-                                    ...tempGroupInputs[group.id], 
-                                    optionName: e.target.value 
-                                  }
-                                })}
-                                className="flex-1"
-                              />
-                              <PriceInput
-                                placeholder="Preço"
-                                value={tempGroupInputs[group.id]?.optionPrice || ''}
-                                onChange={(val) => setTempGroupInputs({
-                                  ...tempGroupInputs,
-                                  [group.id]: { 
-                                    ...tempGroupInputs[group.id], 
-                                    optionPrice: val 
-                                  }
-                                })}
-                                className="w-32"
-                              />
-                              <Button
-                                type="button"
-                                onClick={() => addOptionToGroup(group.id)}
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700"
-                              >
-                                <Plus className="w-4 h-4" />
-                              </Button>
-                            </div>
-                            {!formData.price || parseFloat(formData.price) === 0 ? (
-                              <p className="text-xs text-orange-600 mt-1 font-semibold">
-                                🎯 Produto sem preço base: O preço da opção será o preço final do produto
-                              </p>
-                            ) : (
-                              <p className="text-xs text-gray-500 mt-1">
-                                💰 Deixe em 0 se não cobrar adicional. Ex: Calabresa (R$ 0), Bacon (+R$ 3)
-                              </p>
-                            )}
-
-                            {/* Lista de Opções */}
-                            {group.options.length > 0 && (
-                              <div className="mt-3 space-y-2">
-                                {group.options.map((option) => (
-                                  <div key={option.id} className="flex items-center justify-between bg-gray-50 p-2 rounded border">
-                                    <span className="font-medium">{option.name}</span>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm text-gray-600">
-                                        {parseFloat(option.price) > 0 
-                                          ? (!formData.price || parseFloat(formData.price) === 0 
-                                            ? `R$ ${parseFloat(option.price).toFixed(2)}` 
-                                            : `+R$ ${parseFloat(option.price).toFixed(2)}`)
-                                          : (!formData.price || parseFloat(formData.price) === 0 ? 'Sem preço' : 'Grátis')}
-                                      </span>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => removeOptionFromGroup(group.id, option.id)}
-                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Botão Remover Grupo */}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeCustomizationGroup(group.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
-                        >
-                          <X className="w-5 h-5" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-            )}
-
-            {/* Submit */}
             <div className="flex gap-3 pt-4">
               <Button type="button" variant="outline" onClick={onClose} className="flex-1">
                 Cancelar

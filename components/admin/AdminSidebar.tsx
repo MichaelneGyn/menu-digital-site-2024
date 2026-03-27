@@ -14,7 +14,6 @@ import {
   Calculator,
   BarChart3,
   TrendingUp,
-  Palette,
   Settings,
   PlayCircle,
   Link as LinkIcon,
@@ -72,11 +71,6 @@ export function AdminSidebar() {
       label: 'Upsell',
       icon: TrendingUp,
       href: '/admin/upsell',
-    },
-    {
-      label: 'Personalização',
-      icon: Palette,
-      href: '/admin/customization',
     },
     {
       label: 'Configurações',
