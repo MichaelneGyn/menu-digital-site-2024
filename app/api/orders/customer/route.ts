@@ -62,21 +62,8 @@ export async function GET(request: NextRequest) {
       take: 50
     });
 
-    type OrderWithItems = {
-      id: string;
-      code: string | null;
-      status: string;
-      total: number;
-      createdAt: Date;
-      orderItems: Array<{
-        quantity: number;
-        unitPrice: number;
-        menuItem: { name: string };
-      }>;
-    };
-
     // Formatar resposta
-    const formattedOrders = (orders as OrderWithItems[]).map((order) => ({
+    const formattedOrders = orders.map((order) => ({
       id: order.code || order.id,
       status: order.status,
       total: Number(order.total),
@@ -84,7 +71,7 @@ export async function GET(request: NextRequest) {
       items: order.orderItems.map((item) => ({
         name: item.menuItem.name,
         quantity: item.quantity,
-        price: item.unitPrice,
+        price: Number(item.unitPrice),
       }))
     }));
 
