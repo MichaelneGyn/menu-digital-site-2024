@@ -7,7 +7,8 @@ const STATUS_MESSAGES = {
   PENDING: 'Pedido recebido e aguardando confirmação',
   CONFIRMED: 'Pedido confirmado! Estamos preparando seu pedido',
   PREPARING: 'Seu pedido está sendo preparado na cozinha',
-  READY: 'Pedido pronto! Saindo para entrega',
+  READY: 'Pedido pronto para retirada/entrega',
+  OUT_FOR_DELIVERY: 'Seu pedido saiu para entrega',
   DELIVERED: 'Pedido entregue com sucesso!',
   CANCELLED: 'Pedido cancelado',
 };
@@ -16,7 +17,8 @@ const STATUS_EMOJIS = {
   PENDING: '⏳',
   CONFIRMED: '✅',
   PREPARING: '👨‍🍳',
-  READY: '🎉',
+  READY: '📦',
+  OUT_FOR_DELIVERY: '🚚',
   DELIVERED: '🚚',
   CANCELLED: '❌',
 };
@@ -122,7 +124,7 @@ export async function PATCH(
 
     // 🔔 Envia notificação por WhatsApp APENAS para status IMPORTANTES
     // Evita spam de mensagens! Cliente acompanha pelo link.
-    const shouldNotify = ['CONFIRMED', 'READY'].includes(status);
+    const shouldNotify = ['CONFIRMED', 'READY', 'OUT_FOR_DELIVERY'].includes(status);
     
     if (order.customerPhone && shouldNotify) {
       const whatsappMessage = generateWhatsAppMessage(order, status, estimatedTime);
@@ -184,6 +186,11 @@ function generateWhatsAppMessage(
   }
 
   if (status === 'READY') {
+    text += `📦 Seu pedido está pronto!\n`;
+    text += `\n📱 *Acompanhe em tempo real:*\n${trackingUrl}\n\n`;
+  }
+
+  if (status === 'OUT_FOR_DELIVERY') {
     text += `🚚 Seu pedido já saiu para entrega!\n`;
     if (estimatedTime) {
       text += `⏱️ *Previsão de chegada:* ${estimatedTime} minutos\n`;

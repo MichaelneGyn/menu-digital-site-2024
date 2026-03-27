@@ -24,6 +24,8 @@ interface Order {
   id: string;
   code: string;
   status: string;
+  orderType?: 'DELIVERY' | 'TABLE' | 'TAKEOUT';
+  tableId?: string | null;
   total: number;
   customerName: string | null;
   customerPhone: string | null;
@@ -40,6 +42,7 @@ const STATUS_COLORS: Record<string, string> = {
   'CONFIRMED': 'bg-blue-100 text-blue-800 border-blue-300',
   'PREPARING': 'bg-orange-100 text-orange-800 border-orange-300',
   'READY': 'bg-purple-100 text-purple-800 border-purple-300',
+  'OUT_FOR_DELIVERY': 'bg-indigo-100 text-indigo-800 border-indigo-300',
   'DELIVERED': 'bg-green-100 text-green-800 border-green-300',
   'CANCELLED': 'bg-red-100 text-red-800 border-red-300',
 };
@@ -49,6 +52,7 @@ const STATUS_LABELS: Record<string, string> = {
   'CONFIRMED': '✅ Confirmado', 
   'PREPARING': '👨‍🍳 Preparando',
   'READY': '🍕 Pronto',
+  'OUT_FOR_DELIVERY': '🚚 Em rota de entrega',
   'DELIVERED': '🚚 Entregue',
   'CANCELLED': '❌ Cancelado',
 };
@@ -165,6 +169,17 @@ export default function AdminOrdersPage() {
                           <h3 className="text-2xl font-bold text-gray-800">
                             Pedido #{order.code}
                           </h3>
+                          <div className="mt-2">
+                            {order.orderType === 'DELIVERY' && (
+                              <Badge className="bg-blue-600 text-white">🚗 Entrega</Badge>
+                            )}
+                            {order.orderType === 'TAKEOUT' && (
+                              <Badge className="bg-orange-600 text-white">🛍️ Retirada</Badge>
+                            )}
+                            {order.orderType === 'TABLE' && (
+                              <Badge className="bg-purple-600 text-white">🍽️ Mesa {order.tableId || ''}</Badge>
+                            )}
+                          </div>
                           <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
                             <Clock className="w-4 h-4" />
                             <span>{new Date(order.createdAt).toLocaleString('pt-BR')}</span>
@@ -275,10 +290,18 @@ export default function AdminOrdersPage() {
                         )}
                         {order.status === 'READY' && (
                           <Button 
-                            onClick={() => updateOrderStatus(order.id, 'DELIVERED')}
+                            onClick={() => updateOrderStatus(order.id, order.orderType === 'DELIVERY' ? 'OUT_FOR_DELIVERY' : 'DELIVERED')}
                             className="w-full bg-green-600 hover:bg-green-700"
                           >
-                            🚚 Marcar como Entregue
+                            {order.orderType === 'DELIVERY' ? '🚚 Marcar como Em rota de entrega' : '✅ Marcar como Entregue'}
+                          </Button>
+                        )}
+                        {order.status === 'OUT_FOR_DELIVERY' && (
+                          <Button 
+                            onClick={() => updateOrderStatus(order.id, 'DELIVERED')}
+                            className="w-full bg-emerald-600 hover:bg-emerald-700"
+                          >
+                            ✅ Confirmar Entrega
                           </Button>
                         )}
                         {order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (

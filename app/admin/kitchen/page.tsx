@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
-type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'DELIVERED' | 'CANCELLED';
+type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED';
 type OrderType = 'DELIVERY' | 'TABLE' | 'TAKEOUT';
 
 type Order = {
@@ -74,6 +74,13 @@ const STATUS_CONFIG = {
     icon: Package,
     textColor: 'text-green-600',
     bgLight: 'bg-green-50',
+  },
+  OUT_FOR_DELIVERY: {
+    label: 'Em rota',
+    color: 'bg-indigo-500',
+    icon: Truck,
+    textColor: 'text-indigo-600',
+    bgLight: 'bg-indigo-50',
   },
   DELIVERED: {
     label: 'Entregue',
@@ -315,6 +322,7 @@ export default function KitchenDisplayPage() {
     CONFIRMED: filteredOrders.filter(o => o.status === 'CONFIRMED'),
     PREPARING: filteredOrders.filter(o => o.status === 'PREPARING'),
     READY: filteredOrders.filter(o => o.status === 'READY'),
+    OUT_FOR_DELIVERY: filteredOrders.filter(o => o.status === 'OUT_FOR_DELIVERY'),
   };
 
   if (loading) {
@@ -436,7 +444,7 @@ export default function KitchenDisplayPage() {
 
       {/* Layout em Colunas - Kanban Style */}
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
           {/* Coluna: Aguardando */}
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex items-center justify-between mb-3">
@@ -552,6 +560,35 @@ export default function KitchenDisplayPage() {
               )}
             </div>
           </div>
+
+          {/* Coluna: Em rota */}
+          <div className="bg-indigo-50 rounded-lg p-3">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Truck className="w-4 h-4 text-indigo-600" />
+                Em rota
+              </h3>
+              <Badge variant="outline">{ordersByStatus.OUT_FOR_DELIVERY.length}</Badge>
+            </div>
+
+            <div className="space-y-2">
+              {ordersByStatus.OUT_FOR_DELIVERY.map(order => (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onUpdateStatus={updateOrderStatus}
+                  isUpdating={updatingOrderId === order.id}
+                  getTimeSinceCreation={getTimeSinceCreation}
+                />
+              ))}
+
+              {ordersByStatus.OUT_FOR_DELIVERY.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  Nenhum pedido em rota
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -579,7 +616,8 @@ function OrderCard({
       case 'PENDING': return 'CONFIRMED';
       case 'CONFIRMED': return 'PREPARING';
       case 'PREPARING': return 'READY';
-      case 'READY': return 'DELIVERED';
+      case 'READY': return order.orderType === 'DELIVERY' ? 'OUT_FOR_DELIVERY' : 'DELIVERED';
+      case 'OUT_FOR_DELIVERY': return 'DELIVERED';
       default: return null;
     }
   };

@@ -122,7 +122,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Validar status
-    const validStatuses = ['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DELIVERED', 'CANCELLED'];
+    const validStatuses = ['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ error: 'Status inválido' }, { status: 400 });
     }
