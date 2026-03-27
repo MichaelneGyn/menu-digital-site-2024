@@ -19,12 +19,16 @@ export function ProductCard({
 }: ProductCardProps) {
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   const [hasCustomizations, setHasCustomizations] = useState(false);
+  const [checkingCustomizations, setCheckingCustomizations] = useState(false);
 
   useEffect(() => {
-    checkForCustomizations();
+    checkForCustomizations().catch((error) => {
+      console.error('❌ Error checking customizations on mount:', error);
+    });
   }, [item.id]);
 
-  const checkForCustomizations = async () => {
+  const checkForCustomizations = async (): Promise<boolean> => {
+    setCheckingCustomizations(true);
     try {
       const [groupsResponse, categoryResponse] = await Promise.all([
         fetch(`/api/menu-items/${item.id}/customizations`),
@@ -38,15 +42,21 @@ export function ProductCard({
         ? ((await categoryResponse.json())?.extras || []).length > 0
         : false;
 
-      setHasCustomizations(hasGroups || hasCategoryExtras);
+      const hasAnyCustomization = hasGroups || hasCategoryExtras;
+      setHasCustomizations(hasAnyCustomization);
+      return hasAnyCustomization;
     } catch (error) {
       console.error('❌ Error checking customizations:', error);
+      return false;
+    } finally {
+      setCheckingCustomizations(false);
     }
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (hasCustomizations) {
+    const hasAnyCustomization = hasCustomizations || await checkForCustomizations();
+    if (hasAnyCustomization) {
       setShowCustomizationModal(true);
       return;
     }
@@ -85,6 +95,7 @@ export function ProductCard({
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
             <Button 
               onClick={handleAddToCart}
+              disabled={checkingCustomizations}
               size="sm" 
               className="w-full text-white font-semibold shadow-lg translate-y-4 group-hover:translate-y-0 transition-transform duration-300 cursor-pointer"
               style={{ backgroundColor: primaryColor }}
@@ -121,6 +132,7 @@ export function ProductCard({
             
             <Button 
               onClick={handleAddToCart}
+              disabled={checkingCustomizations}
               size="icon" 
               variant="secondary" 
               className="h-8 w-8 rounded-full sm:hidden shrink-0 cursor-pointer active:scale-95 transition-transform"

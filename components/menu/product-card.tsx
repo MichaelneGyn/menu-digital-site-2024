@@ -33,12 +33,16 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   const [hasCustomizations, setHasCustomizations] = useState(false);
+  const [checkingCustomizations, setCheckingCustomizations] = useState(false);
 
   useEffect(() => {
-    checkForCustomizations();
+    checkForCustomizations().catch((error) => {
+      console.error('❌ Error checking customizations on mount:', error);
+    });
   }, [item.id]);
 
-  const checkForCustomizations = async () => {
+  const checkForCustomizations = async (): Promise<boolean> => {
+    setCheckingCustomizations(true);
     try {
       const [groupsResponse, categoryResponse] = await Promise.all([
         fetch(`/api/menu-items/${item.id}/customizations`),
@@ -52,9 +56,14 @@ export default function ProductCard({
         ? ((await categoryResponse.json())?.extras || []).length > 0
         : false;
 
-      setHasCustomizations(hasGroups || hasCategoryExtras);
+      const hasAnyCustomization = hasGroups || hasCategoryExtras;
+      setHasCustomizations(hasAnyCustomization);
+      return hasAnyCustomization;
     } catch (error) {
       console.error('❌ Error checking customizations:', error);
+      return false;
+    } finally {
+      setCheckingCustomizations(false);
     }
   };
 
@@ -65,8 +74,9 @@ export default function ProductCard({
     }).format(price);
   };
 
-  const handleAddToCart = () => {
-    if (hasCustomizations) {
+  const handleAddToCart = async () => {
+    const hasAnyCustomization = hasCustomizations || await checkForCustomizations();
+    if (hasAnyCustomization) {
       setShowCustomizationModal(true);
       return;
     }
@@ -151,6 +161,7 @@ export default function ProductCard({
             {!viewOnly && (
               <button
                 onClick={handleAddToCart}
+                disabled={checkingCustomizations}
                 className="relative overflow-hidden rounded-full p-2.5 transition-all duration-300 active:scale-95 flex items-center gap-2 pr-4 pl-3"
                 style={{
                   backgroundColor: `${primaryColor}15`, // 15 = approx 10% opacity hex
