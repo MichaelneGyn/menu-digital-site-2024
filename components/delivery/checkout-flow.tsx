@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, MapPin, CreditCard, MessageCircle, Check, CheckCircle2, Package } from 'lucide-react';
 import AddressForm from './address-form';
 import PaymentOptions, { PaymentMethod } from './payment-options';
@@ -35,6 +34,8 @@ interface Address {
     lng: number;
   };
 }
+
+const normalizePhone = (phone: string) => phone.replace(/\D/g, '');
 
 interface PaymentData {
   method: PaymentMethod;
@@ -68,6 +69,27 @@ export default function CheckoutFlow({
   const [couponError, setCouponError] = useState('');
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
   const [createdOrderCode, setCreatedOrderCode] = useState<string | null>(null);
+
+  const persistCustomerProfile = (address: Address) => {
+    const normalizedPhone = normalizePhone(address.customerPhone || '');
+    if (normalizedPhone.length < 10) return;
+
+    const profilesStorageKey = `customer-profiles:${restaurant.id}`;
+    const lastPhoneStorageKey = `last-customer-phone:${restaurant.id}`;
+    try {
+      const raw = localStorage.getItem(profilesStorageKey);
+      const profiles = raw ? JSON.parse(raw) : {};
+      profiles[normalizedPhone] = {
+        ...address,
+        normalizedPhone,
+        updatedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(profilesStorageKey, JSON.stringify(profiles));
+      localStorage.setItem(lastPhoneStorageKey, normalizedPhone);
+    } catch (error) {
+      console.error('Erro ao persistir perfil do cliente:', error);
+    }
+  };
 
   // Configurações de entrega (podem vir de uma API)
   const deliveryConfig = {
@@ -251,6 +273,10 @@ export default function CheckoutFlow({
       const order = await orderResponse.json();
       console.log('✅ Pedido criado com sucesso:', order);
 
+      if (selectedAddress) {
+        persistCustomerProfile(selectedAddress);
+      }
+
       // Salvar ID e código do pedido para mostrar tela de sucesso
       setCreatedOrderId(order.id);
       setCreatedOrderCode(order.code);
@@ -267,9 +293,9 @@ export default function CheckoutFlow({
       // Mudar para step 'success' (vamos adicionar)
       setCurrentStep('success' as CheckoutStep);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Erro ao processar pedido:', error);
-      toast.error(error.message || 'Erro ao processar pedido. Tente novamente.', {
+      toast.error(error instanceof Error ? error.message : 'Erro ao processar pedido. Tente novamente.', {
         duration: 5000,
       });
     } finally {
@@ -461,6 +487,7 @@ export default function CheckoutFlow({
       {currentStep === 'address' && (
         <div className="space-y-4">
           <AddressForm
+            restaurantId={restaurant.id}
             onAddressSelect={handleAddressSelect}
             selectedAddress={selectedAddress || undefined}
           />

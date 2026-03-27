@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,9 +26,33 @@ interface Address {
 interface AddressFormProps {
   onAddressSelect: (address: Address) => void;
   selectedAddress?: Address;
+  restaurantId: string;
 }
 
-export default function AddressForm({ onAddressSelect, selectedAddress }: AddressFormProps) {
+interface SavedCustomerProfile extends Address {
+  normalizedPhone: string;
+  updatedAt: string;
+}
+
+interface GeocodeSuggestion {
+  lat: string;
+  lon: string;
+  display_name: string;
+  address?: {
+    road?: string;
+    house_number?: string;
+    suburb?: string;
+    neighbourhood?: string;
+    city?: string;
+    town?: string;
+    village?: string;
+    postcode?: string;
+  };
+}
+
+const normalizePhone = (phone: string) => phone.replace(/\D/g, '');
+
+export default function AddressForm({ onAddressSelect, selectedAddress, restaurantId }: AddressFormProps) {
   const [address, setAddress] = useState<Address>({
     customerName: '',
     customerPhone: '',
@@ -40,37 +64,117 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
     zipCode: '',
   });
   const [searchQuery, setSearchQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingCEP, setIsLoadingCEP] = useState(false);
+  const profilesStorageKey = `customer-profiles:${restaurantId}`;
+  const lastPhoneStorageKey = `last-customer-phone:${restaurantId}`;
+
+  const readProfiles = useCallback((): Record<string, SavedCustomerProfile> => {
+    try {
+      const raw = localStorage.getItem(profilesStorageKey);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return typeof parsed === 'object' && parsed ? parsed : {};
+    } catch {
+      localStorage.removeItem(profilesStorageKey);
+      return {};
+    }
+  }, [profilesStorageKey]);
+
+  const writeProfiles = useCallback((profiles: Record<string, SavedCustomerProfile>) => {
+    localStorage.setItem(profilesStorageKey, JSON.stringify(profiles));
+  }, [profilesStorageKey]);
+
+  const saveProfileLocally = useCallback((addressData: Address) => {
+    const normalizedPhone = normalizePhone(addressData.customerPhone || '');
+    if (normalizedPhone.length < 10) return;
+    const profiles = readProfiles();
+    profiles[normalizedPhone] = {
+      ...addressData,
+      normalizedPhone,
+      updatedAt: new Date().toISOString(),
+    };
+    writeProfiles(profiles);
+    localStorage.setItem(lastPhoneStorageKey, normalizedPhone);
+  }, [lastPhoneStorageKey, readProfiles, writeProfiles]);
+
+  const applySavedProfile = useCallback((profile: SavedCustomerProfile) => {
+    setAddress(prev => ({
+      ...prev,
+      customerName: profile.customerName || '',
+      customerPhone: profile.customerPhone || prev.customerPhone || '',
+      street: profile.street || '',
+      number: profile.number || '',
+      complement: profile.complement || '',
+      neighborhood: profile.neighborhood || '',
+      city: profile.city || '',
+      zipCode: profile.zipCode || '',
+    }));
+  }, []);
 
   useEffect(() => {
     if (selectedAddress) {
       setAddress(selectedAddress);
+      saveProfileLocally(selectedAddress);
+      return;
     }
-  }, [selectedAddress]);
+    const lastPhone = localStorage.getItem(lastPhoneStorageKey) || '';
+    if (!lastPhone) return;
+    const profiles = readProfiles();
+    const profile = profiles[lastPhone];
+    if (profile) {
+      applySavedProfile(profile);
+    }
+  }, [selectedAddress, applySavedProfile, lastPhoneStorageKey, readProfiles, saveProfileLocally]);
 
-  const enrichAddressWithViaCEP = async (cep: string, currentAddress: Address) => {
-    try {
-      const cleanCEP = cep.replace(/\D/g, '');
-      if (cleanCEP.length !== 8) return;
-      
-      const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
-      const data = await response.json();
-      
-      if (data && !data.erro) {
-        setAddress(prev => ({
-          ...prev,
-          street: data.logradouro || prev.street,
-          neighborhood: data.bairro || prev.neighborhood,
-          city: data.localidade || prev.city,
-          zipCode: data.cep || prev.zipCode
-        }));
+  useEffect(() => {
+    const phone = address.customerPhone || '';
+    const normalizedPhone = normalizePhone(phone);
+    if (normalizedPhone.length < 10) return;
+
+    const timeout = setTimeout(async () => {
+      const profiles = readProfiles();
+      const localProfile = profiles[normalizedPhone];
+      if (localProfile) {
+        applySavedProfile(localProfile);
+        return;
       }
-    } catch (error) {
-      console.log('ViaCEP não disponível, usando dados do Nominatim');
-    }
-  };
+
+      try {
+        const response = await fetch(
+          `/api/orders/customer-profile?restaurantId=${restaurantId}&phone=${encodeURIComponent(phone)}`
+        );
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (!data?.found) return;
+
+        const profileFromApi: SavedCustomerProfile = {
+          customerName: data.customerName || '',
+          customerPhone: data.customerPhone || phone,
+          street: data.street || '',
+          number: data.number || '',
+          complement: data.complement || '',
+          neighborhood: data.neighborhood || '',
+          city: data.city || '',
+          zipCode: data.zipCode || '',
+          normalizedPhone,
+          updatedAt: new Date().toISOString(),
+        };
+
+        profiles[normalizedPhone] = profileFromApi;
+        writeProfiles(profiles);
+        localStorage.setItem(lastPhoneStorageKey, normalizedPhone);
+        applySavedProfile(profileFromApi);
+        toast.success('📌 Dados encontrados e preenchidos automaticamente');
+      } catch (error) {
+        console.error('Erro ao buscar perfil do cliente:', error);
+      }
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [address.customerPhone, restaurantId, applySavedProfile, lastPhoneStorageKey, readProfiles, writeProfiles]);
 
   const fetchAddressByCEP = async (cep: string) => {
     try {
@@ -137,7 +241,7 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
         `/api/geocode?q=${encodeURIComponent(query)}`
       );
       const data = await response.json();
-      setSuggestions(data);
+      setSuggestions(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Erro ao buscar endereços:', error);
       // Não mostra erro ao usuário, apenas falha silenciosamente
@@ -147,7 +251,7 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
     setIsSearching(false);
   };
 
-  const selectSuggestion = (suggestion: any) => {
+  const selectSuggestion = (suggestion: GeocodeSuggestion) => {
     const newAddress: Address = {
       street: suggestion.address?.road || '',
       number: suggestion.address?.house_number || '',
@@ -174,7 +278,7 @@ export default function AddressForm({ onAddressSelect, selectedAddress }: Addres
       toast.error('Por favor, preencha todos os campos obrigatórios');
       return;
     }
-    
+    saveProfileLocally(address);
     onAddressSelect(address);
     toast.success('Endereço de entrega definido!');
   };
