@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   LayoutDashboard,
+  BookOpen,
   Receipt,
   ChefHat,
   UtensilsCrossed,
@@ -36,6 +37,11 @@ export function AdminSidebar() {
       label: 'Dashboard',
       icon: LayoutDashboard,
       href: '/admin/dashboard',
+    },
+    {
+      label: 'Cardápio',
+      icon: BookOpen,
+      href: '/admin/cardapio',
     },
     {
       label: 'Comandas',

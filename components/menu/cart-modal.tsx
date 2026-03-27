@@ -232,11 +232,13 @@ export default function CartModal({
                 <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                   <img 
                     src={
-                      item.image?.startsWith('http')
-                        ? item.image 
-                        : item.image
-                          ? `/api/image?key=${encodeURIComponent(item.image)}`
-                          : '/placeholder-food.png'
+                        item.image?.startsWith('/')
+                          ? item.image
+                          : item.image?.startsWith('http')
+                            ? item.image
+                            : item.image
+                              ? `/api/image?key=${encodeURIComponent(item.image)}`
+                              : '/placeholder-food.png'
                     }
                     alt={item.name || 'Produto'}
                     className="w-full h-full object-cover"

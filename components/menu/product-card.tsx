@@ -100,7 +100,9 @@ export default function ProductCard({
         <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-50">
           <Image
             src={
-              item.image?.startsWith('http')
+              item.image?.startsWith('/')
+                ? item.image
+                : item.image?.startsWith('http')
                   ? item.image 
                   : item.image
                     ? `/api/image?key=${encodeURIComponent(item.image)}`

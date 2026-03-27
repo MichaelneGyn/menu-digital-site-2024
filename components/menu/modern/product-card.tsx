@@ -58,11 +58,13 @@ export function ProductCard({
     setShowCustomizationModal(false);
   };
 
-  const imageUrl = item.image?.startsWith('http')
+  const imageUrl = item.image?.startsWith('/')
     ? item.image
-    : item.image
-      ? `/api/image?key=${encodeURIComponent(item.image)}`
-      : '/placeholder-food.png';
+    : item.image?.startsWith('http')
+      ? item.image
+      : item.image
+        ? `/api/image?key=${encodeURIComponent(item.image)}`
+        : '/placeholder-food.png';
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {

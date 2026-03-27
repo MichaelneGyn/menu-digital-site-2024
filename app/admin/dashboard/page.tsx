@@ -381,7 +381,7 @@ function AdminDashboard() {
             <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col">
               <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                 <h2 className="text-lg font-bold text-gray-900">Cardápio</h2>
-                <Link href={`/${restaurant?.slug}`} target="_blank" className="text-sm font-medium text-red-600 hover:text-red-700">
+                <Link href="/admin/cardapio" className="text-sm font-medium text-red-600 hover:text-red-700">
                   Ver todos
                 </Link>
               </div>
