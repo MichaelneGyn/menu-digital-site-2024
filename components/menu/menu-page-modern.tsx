@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -204,6 +204,18 @@ export default function MenuPageModern({ restaurant, viewOnly = false }: MenuPag
     c.name.toLowerCase().includes('promo')
   ) || restaurant?.categories?.[0];
 
+  const isSpecialHighlightCategory = Boolean(
+    highlightCategory?.name?.toLowerCase().includes('destaque') ||
+    highlightCategory?.name?.toLowerCase().includes('mais pedido') ||
+    highlightCategory?.name?.toLowerCase().includes('promo')
+  );
+  const shouldShowHighlightSection = Boolean(
+    highlightCategory &&
+    highlightCategory.menuItems &&
+    highlightCategory.menuItems.length > 1 &&
+    isSpecialHighlightCategory
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Search Bar & Category Rail - Sticky Header */}
@@ -256,7 +268,7 @@ export default function MenuPageModern({ restaurant, viewOnly = false }: MenuPag
         {adminEmail && <AdminBypassToggle onBypassActivated={() => {}} />}
 
         {/* Highlight Section - Horizontal Scroll */}
-        {highlightCategory && (
+        {shouldShowHighlightSection && highlightCategory && (
             <section className="space-y-4" id={`highlight-section`}>
               <div className="px-4 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-foreground">{highlightCategory.name}</h2>
@@ -290,6 +302,7 @@ export default function MenuPageModern({ restaurant, viewOnly = false }: MenuPag
         {/* Vertical Sections */}
         <div className="space-y-8">
             {filteredCategories
+                .filter((category) => !shouldShowHighlightSection || category.id !== highlightCategory?.id)
                 .map((category) => {
                     const items = category.menuItems?.filter(item => 
                         item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
