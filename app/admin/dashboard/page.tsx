@@ -386,7 +386,7 @@ function AdminDashboard() {
                 </Link>
               </div>
 
-              <div className="flex-1 overflow-auto">
+              <div className="flex-1 max-h-[500px] overflow-y-auto">
                 {restaurant?.menuItems && restaurant.menuItems.length > 0 ? (
                   <div className="divide-y divide-gray-50">
                     {restaurant.menuItems.slice(0, 5).map((item) => (

@@ -294,7 +294,7 @@ export default function ProductCustomizationModalImproved({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {isInitializing && (
             <div className="h-full min-h-[220px] flex items-center justify-center">
               <p className="text-sm text-gray-500">Carregando opções...</p>

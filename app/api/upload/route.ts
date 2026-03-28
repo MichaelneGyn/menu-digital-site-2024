@@ -58,6 +58,8 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    let uploadBuffer = buffer;
+    let uploadFileName = file.name;
 
     // 🔒 SEGURANÇA 1: Validar magic numbers (assinaturas de arquivo)
     // Garante que é REALMENTE uma imagem, não um executável renomeado!
@@ -104,6 +106,15 @@ export async function POST(request: NextRequest) {
         
         console.log(`✅ [Security] Image validated: ${metadata.width}x${metadata.height} (${metadata.format})`);
       }
+
+      if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
+        uploadBuffer = await sharp(buffer)
+          .rotate()
+          .webp({ quality: 90 })
+          .toBuffer();
+        uploadFileName = file.name.replace(/\.(jpg|jpeg)$/i, '.webp');
+        console.log(`🔄 [Upload] JPEG convertido para WEBP: ${uploadFileName}`);
+      }
     } catch (sharpError) {
       // Sharp não disponível ou erro ao processar
       // Continua sem validação de dimensões (fallback)
@@ -123,7 +134,7 @@ export async function POST(request: NextRequest) {
     if (useSupabase) {
       console.log('📸 [Upload] Usando Supabase Storage...');
       try {
-        imageUrl = await uploadFileToSupabase(buffer, file.name);
+        imageUrl = await uploadFileToSupabase(uploadBuffer, uploadFileName);
         console.log('✅ [Upload] Supabase upload bem-sucedido:', imageUrl);
         
         return NextResponse.json({ 
@@ -146,7 +157,7 @@ export async function POST(request: NextRequest) {
     if (useCloudinary) {
       console.log('📸 [Upload] Tentando Cloudinary...');
       try {
-        imageUrl = await uploadFileToCloudinary(buffer, file.name);
+        imageUrl = await uploadFileToCloudinary(uploadBuffer, uploadFileName);
         console.log('✅ [Upload] Cloudinary upload bem-sucedido:', imageUrl);
         
         return NextResponse.json({ 
@@ -169,9 +180,9 @@ export async function POST(request: NextRequest) {
       try {
         const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
         await fs.promises.mkdir(uploadsDir, { recursive: true });
-        const baseName = `${Date.now()}-${file.name}`.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const baseName = `${Date.now()}-${uploadFileName}`.replace(/[^a-zA-Z0-9._-]/g, '_');
         const filePath = path.join(uploadsDir, baseName);
-        await fs.promises.writeFile(filePath, buffer as any);
+        await fs.promises.writeFile(filePath, uploadBuffer as any);
         imageUrl = `/uploads/${baseName}`;
         console.info('Upload salvo localmente em:', filePath);
       } catch (localErr: any) {
@@ -181,7 +192,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Tenta S3 primeiro; se falhar, em DEV salva localmente
       try {
-        cloud_storage_path = await uploadFile(buffer, file.name);
+        cloud_storage_path = await uploadFile(uploadBuffer, uploadFileName);
         imageUrl = `/api/image?key=${encodeURIComponent(cloud_storage_path)}`;
       } catch (err: any) {
         console.error('Falha ao enviar para S3:', err);
@@ -191,9 +202,9 @@ export async function POST(request: NextRequest) {
           try {
             const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
             await fs.promises.mkdir(uploadsDir, { recursive: true });
-            const baseName = `${Date.now()}-${file.name}`.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const baseName = `${Date.now()}-${uploadFileName}`.replace(/[^a-zA-Z0-9._-]/g, '_');
             const filePath = path.join(uploadsDir, baseName);
-            await fs.promises.writeFile(filePath, buffer as any);
+            await fs.promises.writeFile(filePath, uploadBuffer as any);
             imageUrl = `/uploads/${baseName}`;
             console.info('Upload salvo localmente (fallback) em:', filePath);
           } catch (localErr: any) {
