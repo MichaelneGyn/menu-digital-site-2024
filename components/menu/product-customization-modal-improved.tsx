@@ -317,15 +317,15 @@ export default function ProductCustomizationModalImproved({
                       onClick={() => setSelectedSize(size)}
                       className={`p-4 rounded-xl border-2 transition-all ${
                         selectedSize?.id === size.id
-                          ? 'border-orange-500 bg-orange-50 shadow-md'
-                          : 'border-gray-200 hover:border-orange-300 hover:shadow-sm'
+                          ? 'border-red-500 bg-red-50 shadow-md'
+                          : 'border-gray-200 hover:border-red-300 hover:shadow-sm'
                       }`}
                     >
                       <div className="font-bold text-gray-900">{size.name}</div>
                       <div className="text-sm text-gray-600">{size.desc}</div>
                       {/* Removido o preço aqui pois confunde o cliente */}
                       {selectedSize?.id === size.id && (
-                        <Check className="text-orange-500 mt-2 mx-auto" size={20} />
+                        <Check className="text-red-500 mt-2 mx-auto" size={20} />
                       )}
                     </button>
                   );
@@ -367,7 +367,7 @@ export default function ProductCustomizationModalImproved({
                           <span className="font-medium text-gray-900">{flavor.name}</span>
                           {isSelected && <Check className="text-green-600 flex-shrink-0" size={20} />}
                         </div>
-                        <span className="text-lg font-bold text-orange-600">
+                        <span className="text-lg font-bold text-red-600">
                           {formatPrice(flavor.price)}
                         </span>
                       </div>
@@ -496,7 +496,7 @@ export default function ProductCustomizationModalImproved({
                         </div>
                         <div className="flex items-center gap-2">
                           {hasExtraPrice && (
-                            <span className="text-orange-600 font-bold text-sm">
+                            <span className="text-red-600 font-bold text-sm">
                               {formatPrice(ing.price!)}
                             </span>
                           )}
@@ -528,7 +528,7 @@ export default function ProductCustomizationModalImproved({
                   value={observations}
                   onChange={(e) => setObservations(e.target.value)}
                   placeholder="Ex: Sem cebola, bem passado, maionese à parte..."
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none resize-none text-gray-900 flex-1 min-h-[150px]"
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none resize-none text-gray-900 flex-1 min-h-[150px]"
                 />
               </div>
             </div>

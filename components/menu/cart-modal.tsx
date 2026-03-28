@@ -3,8 +3,6 @@
 
 import { useState } from 'react';
 import { X, Plus, Minus, ShoppingCart, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ClientRestaurant, ClientMenuItem } from '@/lib/restaurant';
 import { CartItem } from './menu-page';
 import toast from 'react-hot-toast';
@@ -27,12 +25,6 @@ export default function CartModal({
   onRemoveItem,
   onAddItem
 }: CartModalProps) {
-  const [customerInfo, setCustomerInfo] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    observations: ''
-  });
   const [step, setStep] = useState<'cart' | 'checkout'>('cart');
   
   // Converter CartItem para o formato esperado pelo CheckoutFlow
@@ -59,34 +51,6 @@ export default function CartModal({
     }).format(price);
   };
 
-  // Função para tocar som de sucesso
-  const playSuccessSound = () => {
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const notes = [523.25, 659.25, 783.99]; // Dó, Mi, Sol
-      
-      notes.forEach((frequency, index) => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-        oscillator.type = 'sine';
-        
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime + index * 0.2);
-        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + index * 0.2 + 0.1);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.2 + 0.5);
-        
-        oscillator.start(audioContext.currentTime + index * 0.2);
-        oscillator.stop(audioContext.currentTime + index * 0.2 + 0.5);
-      });
-    } catch (error) {
-      console.log('Audio context not available');
-    }
-  };
-
   const handleQuantityChange = (cartId: string, newQuantity: number) => {
     onUpdateItem(cartId, newQuantity);
   };
@@ -94,73 +58,6 @@ export default function CartModal({
   const handleRemove = (cartId: string) => {
     onRemoveItem(cartId);
     toast.success('Item removido do carrinho');
-  };
-
-  const generateOrderMessage = () => {
-    let message = `🍕 *NOVO PEDIDO - ${restaurant.name}*\n\n`;
-    
-    message += `👤 *Cliente:* ${customerInfo.name}\n`;
-    message += `📱 *Telefone:* ${customerInfo.phone}\n`;
-    if (customerInfo.address) {
-      message += `📍 *Endereço:* ${customerInfo.address}\n`;
-    }
-    message += '\n';
-
-    message += `🛒 *ITENS DO PEDIDO:*\n`;
-    items.forEach((item, index) => {
-      message += `\n${index + 1}. *${item.name}* (${item.quantity}x)\n`;
-      
-      if (item.customization?.flavors?.length) {
-        message += `   🍕 Sabor(es): ${item.customization.flavors.join(', ')}\n`;
-      }
-      
-      if (item.customization?.extras?.length) {
-        message += `   ➕ Extras: ${item.customization.extras.map(e => e.name).join(', ')}\n`;
-      }
-      
-      if (item.customization?.observations) {
-        message += `   📝 Obs: ${item.customization.observations}\n`;
-      }
-      
-      message += `   💰 ${formatPrice(Number(item.price) * item.quantity)}\n`;
-    });
-
-    message += `\n💳 *TOTAL: ${formatPrice(totalPrice)}*\n`;
-    
-    if (customerInfo.observations) {
-      message += `\n📝 *Observações gerais:*\n${customerInfo.observations}\n`;
-    }
-
-    message += `\n🕐 Pedido realizado em: ${new Date().toLocaleString('pt-BR')}`;
-    
-    return encodeURIComponent(message);
-  };
-
-  const handleFinishOrder = () => {
-    if (!customerInfo.name || !customerInfo.phone) {
-      toast.error('Preencha nome e telefone para continuar');
-      return;
-    }
-
-    playSuccessSound();
-    
-    const orderMessage = generateOrderMessage();
-    const whatsappNumber = (restaurant.whatsapp || '5562999999999').replace(/\D/g, '');
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${orderMessage}`;
-    
-    // Abrir WhatsApp
-    window.open(whatsappUrl, '_blank');
-    
-    toast.success('🎉 Pedido enviado para o WhatsApp!', {
-      duration: 4000,
-      style: {
-        background: '#10B981',
-        color: 'white',
-        fontWeight: 'bold',
-      },
-    });
-    
-    onClose();
   };
 
   if (step === 'checkout') {
@@ -252,7 +149,7 @@ export default function CartModal({
                         <h4 className="font-bold text-gray-900 line-clamp-2 text-sm sm:text-base leading-tight">
                             {item.name}
                         </h4>
-                        <div className="font-bold text-primary whitespace-nowrap text-sm sm:text-base">
+                        <div className="font-bold text-red-600 whitespace-nowrap text-sm sm:text-base">
                             {formatPrice(Number(item.price) * item.quantity)}
                         </div>
                     </div>
@@ -276,7 +173,7 @@ export default function CartModal({
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-1 border border-gray-200">
                         <button 
-                            className="w-7 h-7 flex items-center justify-center bg-white rounded-md shadow-sm text-gray-700 hover:text-primary active:scale-95 transition-all disabled:opacity-50"
+                            className="w-7 h-7 flex items-center justify-center bg-white rounded-md shadow-sm text-gray-700 hover:text-red-600 active:scale-95 transition-all disabled:opacity-50"
                             onClick={() => handleQuantityChange(item.cartId, item.quantity - 1)}
                             disabled={item.quantity <= 1}
                         >
@@ -284,7 +181,7 @@ export default function CartModal({
                         </button>
                         <span className="font-bold text-sm w-4 text-center">{item.quantity}</span>
                         <button 
-                            className="w-7 h-7 flex items-center justify-center bg-white rounded-md shadow-sm text-gray-700 hover:text-primary active:scale-95 transition-all"
+                            className="w-7 h-7 flex items-center justify-center bg-white rounded-md shadow-sm text-gray-700 hover:text-red-600 active:scale-95 transition-all"
                             onClick={() => handleQuantityChange(item.cartId, item.quantity + 1)}
                         >
                             <Plus size={14} />

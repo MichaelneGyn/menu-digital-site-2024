@@ -768,7 +768,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  background: var(--primary-color);
+  background: #dc2626;
   color: white;
 }
 
@@ -1191,12 +1191,12 @@
 .total-price {
   font-size: 1.5rem;
   font-weight: bold;
-  color: var(--primary-color);
+  color: #dc2626;
 }
 
 .checkout-button {
   width: 100%;
-  background: var(--primary-color);
+  background: #dc2626;
   color: white;
   border: none;
   border-radius: 12px;
@@ -1208,7 +1208,7 @@
 }
 
 .checkout-button:hover:not(:disabled) {
-  background: var(--primary-dark);
+  background: #b91c1c;
   transform: translateY(-2px);
 }
 
