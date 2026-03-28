@@ -34,22 +34,6 @@ interface SavedCustomerProfile extends Address {
   updatedAt: string;
 }
 
-interface GeocodeSuggestion {
-  lat: string;
-  lon: string;
-  display_name: string;
-  address?: {
-    road?: string;
-    house_number?: string;
-    suburb?: string;
-    neighbourhood?: string;
-    city?: string;
-    town?: string;
-    village?: string;
-    postcode?: string;
-  };
-}
-
 const normalizePhone = (phone: string) => phone.replace(/\D/g, '');
 
 export default function AddressForm({ onAddressSelect, selectedAddress, restaurantId }: AddressFormProps) {
@@ -63,9 +47,6 @@ export default function AddressForm({ onAddressSelect, selectedAddress, restaura
     city: '',
     zipCode: '',
   });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
   const [isLoadingCEP, setIsLoadingCEP] = useState(false);
   const profilesStorageKey = `customer-profiles:${restaurantId}`;
   const lastPhoneStorageKey = `last-customer-phone:${restaurantId}`;
@@ -226,49 +207,6 @@ export default function AddressForm({ onAddressSelect, selectedAddress, restaura
     }
   };
 
-  const searchAddress = async (query: string) => {
-    if (query.length < 3) {
-      setSuggestions([]);
-      return;
-    }
-
-    setIsSearching(true);
-    
-    try {
-      // Usar API route proxy ao invés de chamar OpenStreetMap direto
-      // Isso evita erros de CORS
-      const response = await fetch(
-        `/api/geocode?q=${encodeURIComponent(query)}`
-      );
-      const data = await response.json();
-      setSuggestions(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Erro ao buscar endereços:', error);
-      // Não mostra erro ao usuário, apenas falha silenciosamente
-      setSuggestions([]);
-    }
-    
-    setIsSearching(false);
-  };
-
-  const selectSuggestion = (suggestion: GeocodeSuggestion) => {
-    const newAddress: Address = {
-      street: suggestion.address?.road || '',
-      number: suggestion.address?.house_number || '',
-      neighborhood: suggestion.address?.suburb || suggestion.address?.neighbourhood || '',
-      city: suggestion.address?.city || suggestion.address?.town || suggestion.address?.village || '',
-      zipCode: suggestion.address?.postcode || '',
-      coordinates: {
-        lat: parseFloat(suggestion.lat),
-        lng: parseFloat(suggestion.lon)
-      }
-    };
-    
-    setAddress(newAddress);
-    setSearchQuery(suggestion.display_name);
-    setSuggestions([]);
-  };
-
   const handleInputChange = (field: keyof Address, value: string) => {
     setAddress(prev => ({ ...prev, [field]: value }));
   };
@@ -316,45 +254,6 @@ export default function AddressForm({ onAddressSelect, selectedAddress, restaura
               required
             />
           </div>
-        </div>
-
-        {/* Busca de endereço */}
-        <div className="relative">
-          <Label htmlFor="search" className="text-sm font-medium">Buscar endereço</Label>
-          <div className="relative mt-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              id="search"
-              type="text"
-              placeholder="Digite seu endereço..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                searchAddress(e.target.value);
-              }}
-              className="pl-10"
-            />
-            {isSearching && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            )}
-          </div>
-          
-          {/* Sugestões */}
-          {suggestions.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-              {suggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  onClick={() => selectSuggestion(suggestion)}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
-                >
-                  <div className="font-medium text-sm">{suggestion.display_name}</div>
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Campos do endereço */}

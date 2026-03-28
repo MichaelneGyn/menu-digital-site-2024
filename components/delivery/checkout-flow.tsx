@@ -92,10 +92,12 @@ export default function CheckoutFlow({
   };
 
   // Configurações de entrega (podem vir de uma API)
+  const restaurantDeliveryFee = Number(restaurant.deliveryFee);
+  const restaurantMinOrderValue = Number(restaurant.minOrderValue);
   const deliveryConfig = {
     deliveryTime: '40-50min',
-    deliveryFee: 4.00,
-    minOrderValue: 25.00
+    deliveryFee: Number.isFinite(restaurantDeliveryFee) ? restaurantDeliveryFee : 0,
+    minOrderValue: Number.isFinite(restaurantMinOrderValue) ? restaurantMinOrderValue : 0
   };
 
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);

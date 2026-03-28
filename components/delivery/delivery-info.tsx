@@ -1,7 +1,6 @@
 'use client';
 
 import { Clock, Truck, MapPin, DollarSign } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 
 interface DeliveryInfoProps {
   deliveryTime: string;
