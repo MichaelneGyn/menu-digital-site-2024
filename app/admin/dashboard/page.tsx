@@ -386,7 +386,7 @@ function AdminDashboard() {
                 </Link>
               </div>
 
-              <div className="flex-1 h-[500px] overflow-y-scroll">
+              <div className="flex-1 max-h-[560px] overflow-y-auto admin-scrollbar pr-1">
                 {restaurant?.menuItems && restaurant.menuItems.length > 0 ? (
                   <div className="divide-y divide-gray-50">
                     {restaurant.menuItems.map((item) => (
