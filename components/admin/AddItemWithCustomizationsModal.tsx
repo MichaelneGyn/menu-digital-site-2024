@@ -74,46 +74,45 @@ export default function AddItemWithCustomizationsModal({
     }
   };
 
-  const saveSimpleAdditional = async (categoryId: string) => {
+  const saveSimpleAdditional = async (itemId: string) => {
     const extrasToSave = simpleAdditionals.filter((additional) => additional.name.trim());
     if (extrasToSave.length === 0) return;
 
-    const customizationResponse = await fetch(`/api/customization?categoryId=${categoryId}`);
-    const customizationData = customizationResponse.ok ? await customizationResponse.json() : null;
-    const existingCustomization = customizationData?.customization;
-
-    const upsertResponse = await fetch('/api/customization', {
+    const createGroupResponse = await fetch(`/api/restaurants/${restaurantId}/customizations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        categoryId,
-        isCustomizable: existingCustomization?.is_customizable ?? true,
-        hasSizes: existingCustomization?.has_sizes ?? false,
-        hasFlavors: existingCustomization?.has_flavors ?? false,
-        hasExtras: true,
-        maxFlavors: Math.max(1, Number(maxAdditionals) || existingCustomization?.max_flavors || 5),
-        flavorsRequired: existingCustomization?.flavors_required ?? false
+        name: `Adicionais - ${formData.name || 'Item'}`,
+        description: 'Adicionais do produto',
+        isRequired: false,
+        minSelections: 0,
+        maxSelections: Math.max(1, Number(maxAdditionals) || 5),
+        sortOrder: 0,
+        isActive: true,
+        options: extrasToSave.map((additional, index) => ({
+          name: additional.name.trim(),
+          price: parseFloat(additional.price || '0'),
+          isActive: true,
+          sortOrder: index
+        }))
       })
     });
 
-    if (!upsertResponse.ok) return;
+    if (!createGroupResponse.ok) return;
+    const createdGroup = await createGroupResponse.json();
+    if (!createdGroup?.id) return;
 
-    const upsertData = await upsertResponse.json();
-    if (!upsertData?.customizationId) return;
+    const linkedGroupsResponse = await fetch(`/api/menu-items/${itemId}/link-customizations`);
+    const linkedGroups = linkedGroupsResponse.ok ? await linkedGroupsResponse.json() : [];
+    const existingGroupIds = Array.isArray(linkedGroups) ? linkedGroups.map((group: { id: string }) => group.id) : [];
 
-    await Promise.all(
-      extrasToSave.map((additional) =>
-        fetch('/api/customization/extras', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            customizationId: upsertData.customizationId,
-            name: additional.name.trim(),
-            price: parseFloat(additional.price || '0')
-          })
-        })
-      )
-    );
+    await fetch(`/api/menu-items/${itemId}/link-customizations`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        groupIds: [...new Set([...existingGroupIds, createdGroup.id])]
+      })
+    });
   };
 
   const updateAdditional = (index: number, field: 'name' | 'price', value: string) => {
@@ -210,9 +209,9 @@ export default function AddItemWithCustomizationsModal({
       }
 
       const createdItem = await itemResponse.json();
-      if (formData.categoryId && simpleAdditionals.some((additional) => additional.name.trim())) {
+      if (simpleAdditionals.some((additional) => additional.name.trim())) {
         try {
-          await saveSimpleAdditional(formData.categoryId);
+          await saveSimpleAdditional(createdItem.id);
         } catch (extraError) {
           console.error('Erro ao salvar adicional simples:', extraError);
           toast.error('Produto criado, mas não foi possível salvar o adicional');

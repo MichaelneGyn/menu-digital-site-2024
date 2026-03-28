@@ -89,6 +89,7 @@ export default function ProductCustomizationModalImproved({
   const [selectedFlavors, setSelectedFlavors] = useState<Array<{name: string; price: number}>>([]);
   const [selectedExtras, setSelectedExtras] = useState<Array<{name: string; price: number}>>([]);
   const [categoryExtras, setCategoryExtras] = useState<Array<{name: string; price: number}>>([]);
+  const [itemExtras, setItemExtras] = useState<Array<{name: string; price: number}>>([]);
   const [maxExtras, setMaxExtras] = useState(5);
   const [isInitializing, setIsInitializing] = useState(true);
   const [selectedIngredients, setSelectedIngredients] = useState<number[]>(
@@ -99,7 +100,11 @@ export default function ProductCustomizationModalImproved({
   
   const maxFlavors = selectedSize?.id === 'gigante' ? 4 : 
                      selectedSize?.id === 'grande' ? 3 : 2;
-  const extrasOptions = categoryExtras.length > 0 ? categoryExtras : (isPizza ? PIZZA_EXTRAS : []);
+  const extrasOptions = itemExtras.length > 0
+    ? itemExtras
+    : categoryExtras.length > 0
+      ? categoryExtras
+      : (isPizza ? PIZZA_EXTRAS : []);
   const filteredExtras = extrasOptions.filter((extra) =>
     extra.name.toLowerCase().includes(extraSearchTerm.toLowerCase().trim())
   );
@@ -107,28 +112,66 @@ export default function ProductCustomizationModalImproved({
   useEffect(() => {
     const fetchCategoryExtras = async () => {
       try {
-        const response = await fetch(`/api/menu-items/${item.id}/category-customization`);
-        if (!response.ok) {
-          setCategoryExtras([]);
-          setMaxExtras(5);
-          if (!isPizza && !isBurger) {
-            setCurrentStep('observations');
+        const [itemGroupsResponse, categoryResponse] = await Promise.all([
+          fetch(`/api/menu-items/${item.id}/customizations`),
+          fetch(`/api/menu-items/${item.id}/category-customization`)
+        ]);
+
+        let selectedExtrasSource: Array<{ name: string; price: number }> = [];
+        let selectedMaxExtras = 5;
+
+        if (itemGroupsResponse.ok) {
+          const groups = await itemGroupsResponse.json();
+          const firstGroupWithOptions = Array.isArray(groups)
+            ? groups.find((group: { options?: Array<{ name: string; price: number }>; maxSelections?: number | null }) =>
+                Array.isArray(group.options) && group.options.length > 0
+              )
+            : null;
+
+          if (firstGroupWithOptions) {
+            selectedExtrasSource = firstGroupWithOptions.options.map((option: { name: string; price: number }) => ({
+              name: option.name,
+              price: Number(option.price || 0)
+            }));
+            selectedMaxExtras = Math.max(1, Number(firstGroupWithOptions.maxSelections) || 5);
+            setItemExtras(selectedExtrasSource);
+          } else {
+            setItemExtras([]);
           }
-          return;
+        } else {
+          setItemExtras([]);
         }
-        const data = await response.json();
-        const extras = (data?.extras || []).map((extra: { name: string; price: number }) => ({
-          name: extra.name,
-          price: Number(extra.price || 0)
-        }));
-        setCategoryExtras(extras);
-        setMaxExtras(Math.max(1, Number(data?.maxExtras) || 5));
+
+        if (selectedExtrasSource.length === 0) {
+          if (!categoryResponse.ok) {
+            setCategoryExtras([]);
+            setMaxExtras(5);
+            if (!isPizza && !isBurger) {
+              setCurrentStep('observations');
+            }
+            return;
+          }
+
+          const data = await categoryResponse.json();
+          const extras = (data?.extras || []).map((extra: { name: string; price: number }) => ({
+            name: extra.name,
+            price: Number(extra.price || 0)
+          }));
+          setCategoryExtras(extras);
+          selectedExtrasSource = extras;
+          selectedMaxExtras = Math.max(1, Number(data?.maxExtras) || 5);
+        } else {
+          setCategoryExtras([]);
+        }
+
+        setMaxExtras(selectedMaxExtras);
         if (!isPizza && !isBurger) {
-          setCurrentStep(extras.length > 0 ? 'extras' : 'observations');
+          setCurrentStep(selectedExtrasSource.length > 0 ? 'extras' : 'observations');
         }
       } catch (error) {
         console.error('Erro ao buscar adicionais da categoria:', error);
         setCategoryExtras([]);
+        setItemExtras([]);
         setMaxExtras(5);
       } finally {
         setIsInitializing(false);

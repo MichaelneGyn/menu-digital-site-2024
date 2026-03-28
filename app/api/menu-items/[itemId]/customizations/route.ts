@@ -61,12 +61,13 @@ export async function GET(
   } catch (error) {
     console.error('❌ [API] Error fetching menu item customizations:', error);
     console.error('❌ [API] Stack:', error instanceof Error ? error.stack : 'No stack');
+    const prismaError = error as { code?: string; meta?: unknown } | undefined;
     
     // Log completo do erro
     const errorDetails = {
       message: error instanceof Error ? error.message : 'Unknown error',
-      code: (error as any)?.code,
-      meta: (error as any)?.meta,
+      code: prismaError?.code,
+      meta: prismaError?.meta,
     };
     
     console.error('❌ [API] Error details:', JSON.stringify(errorDetails, null, 2));
