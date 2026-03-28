@@ -386,10 +386,10 @@ function AdminDashboard() {
                 </Link>
               </div>
 
-              <div className="flex-1 max-h-[500px] overflow-y-auto">
+              <div className="flex-1 h-[500px] overflow-y-auto">
                 {restaurant?.menuItems && restaurant.menuItems.length > 0 ? (
                   <div className="divide-y divide-gray-50">
-                    {restaurant.menuItems.slice(0, 5).map((item) => (
+                    {restaurant.menuItems.map((item) => (
                       <div key={item.id} className="p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors group">
                         <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
                           {item.image ? (
