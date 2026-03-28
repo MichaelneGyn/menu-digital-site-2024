@@ -90,6 +90,7 @@ export default function ProductCustomizationModalImproved({
   const [selectedExtras, setSelectedExtras] = useState<Array<{name: string; price: number}>>([]);
   const [categoryExtras, setCategoryExtras] = useState<Array<{name: string; price: number}>>([]);
   const [maxExtras, setMaxExtras] = useState(5);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [selectedIngredients, setSelectedIngredients] = useState<number[]>(
     BURGER_INGREDIENTS.filter(i => i.included).map(i => i.id)
   );
@@ -109,23 +110,33 @@ export default function ProductCustomizationModalImproved({
         const response = await fetch(`/api/menu-items/${item.id}/category-customization`);
         if (!response.ok) {
           setCategoryExtras([]);
+          setMaxExtras(5);
+          if (!isPizza && !isBurger) {
+            setCurrentStep('observations');
+          }
           return;
         }
         const data = await response.json();
-        setCategoryExtras((data?.extras || []).map((extra: { name: string; price: number }) => ({
+        const extras = (data?.extras || []).map((extra: { name: string; price: number }) => ({
           name: extra.name,
           price: Number(extra.price || 0)
-        })));
+        }));
+        setCategoryExtras(extras);
         setMaxExtras(Math.max(1, Number(data?.maxExtras) || 5));
+        if (!isPizza && !isBurger) {
+          setCurrentStep(extras.length > 0 ? 'extras' : 'observations');
+        }
       } catch (error) {
         console.error('Erro ao buscar adicionais da categoria:', error);
         setCategoryExtras([]);
         setMaxExtras(5);
+      } finally {
+        setIsInitializing(false);
       }
     };
 
     fetchCategoryExtras();
-  }, [item.id]);
+  }, [item.id, isBurger, isPizza]);
 
   const calculateTotalPrice = () => {
     let total = 0;
@@ -277,13 +288,19 @@ export default function ProductCustomizationModalImproved({
         {/* Progress Bar */}
         <div className="h-1 bg-gray-200">
           <div 
-            className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-300"
+            className="h-full bg-red-600 transition-all duration-300"
             style={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
           />
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
+          {isInitializing && (
+            <div className="h-full min-h-[220px] flex items-center justify-center">
+              <p className="text-sm text-gray-500">Carregando opções...</p>
+            </div>
+          )}
+          {!isInitializing && (
           <div className="pb-4">
           {/* STEP: Tamanho (Pizza) */}
           {currentStep === 'size' && isPizza && (
@@ -366,7 +383,7 @@ export default function ProductCustomizationModalImproved({
             <div className="space-y-4">
               <div className="px-4 sm:px-6 pt-4">
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">{item.name}</h3>
-                <p className="text-3xl font-black text-orange-600 mb-2">{formatPrice(Number(item.price))}</p>
+                <p className="text-3xl font-black text-red-600 mb-2">{formatPrice(Number(item.price))}</p>
                 {item.description && (
                   <p className="text-sm text-gray-600 mb-3">{item.description}</p>
                 )}
@@ -376,7 +393,7 @@ export default function ProductCustomizationModalImproved({
                     value={extraSearchTerm}
                     onChange={(e) => setExtraSearchTerm(e.target.value)}
                     placeholder="Pesquise pelo nome"
-                    className="w-full h-10 rounded-lg border border-gray-300 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    className="w-full h-10 rounded-lg border border-gray-300 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
               </div>
@@ -402,8 +419,8 @@ export default function ProductCustomizationModalImproved({
                       onClick={() => handleExtraToggle(extra)}
                       disabled={isDisabled}
                       className={`w-full px-4 py-3 transition-colors ${
-                        isSelected ? 'bg-orange-50' : 'bg-white'
-                      } ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-orange-50/40'}`}
+                        isSelected ? 'bg-red-50' : 'bg-white'
+                      } ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-red-50/40'}`}
                     >
                       <div className="flex items-center justify-between gap-4 text-left">
                         <div className="min-w-0">
@@ -412,7 +429,7 @@ export default function ProductCustomizationModalImproved({
                             {extra.price > 0 ? `+ ${formatPrice(extra.price)}` : 'Grátis'}
                           </p>
                         </div>
-                        <div className="text-xl font-bold text-orange-700 flex-shrink-0">
+                        <div className="text-xl font-bold text-red-600 flex-shrink-0">
                           {isSelected ? (
                             <Minus size={22} />
                           ) : (
@@ -438,7 +455,7 @@ export default function ProductCustomizationModalImproved({
                   onChange={(e) => setObservations(e.target.value)}
                   maxLength={100}
                   placeholder="Ex: Tirar cebola, ovo, etc."
-                  className="w-full p-4 border border-gray-200 rounded-b-lg focus:border-orange-500 focus:outline-none resize-none text-gray-900 min-h-[110px]"
+                  className="w-full p-4 border border-gray-200 rounded-b-lg focus:border-red-500 focus:outline-none resize-none text-gray-900 min-h-[110px]"
                 />
                 <p className="text-right text-xs text-gray-500 mt-1">{observations.length}/100</p>
               </div>
@@ -517,6 +534,7 @@ export default function ProductCustomizationModalImproved({
             </div>
           )}
           </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -536,14 +554,14 @@ export default function ProductCustomizationModalImproved({
             {/* Botão Continuar/Adicionar */}
             <button
               onClick={handleNext}
-              disabled={!canProceed()}
+              disabled={!canProceed() || isInitializing}
               className={`flex-1 py-4 rounded-xl font-bold text-lg transition-all ${
-                canProceed()
-                  ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl active:scale-95'
+                canProceed() && !isInitializing
+                  ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg hover:shadow-xl active:scale-95'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
-              {isLastStep ? (
+              {isInitializing ? 'Carregando...' : isLastStep ? (
                 currentStep === 'extras'
                   ? <>Avançar</>
                   : <>Adicionar • {formatPrice(calculateTotalPrice())}</>
