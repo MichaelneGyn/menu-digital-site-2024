@@ -468,7 +468,7 @@ export default function ProductCustomizationModalImproved({
                       <div className="flex items-center justify-between gap-4 text-left">
                         <div className="min-w-0">
                           <p className="font-bold text-gray-900 uppercase truncate">{extra.name}</p>
-                          <p className="text-base font-bold text-blue-900">
+                          <p className="text-base font-bold text-red-600">
                             {extra.price > 0 ? `+ ${formatPrice(extra.price)}` : 'Grátis'}
                           </p>
                         </div>
