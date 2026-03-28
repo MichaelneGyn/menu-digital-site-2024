@@ -72,7 +72,7 @@ export default async function CardapioPage() {
               <p className="text-gray-500">Nenhum item cadastrado no cardápio.</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100 max-h-[70vh] overflow-y-auto">
+            <div className="divide-y divide-gray-100 max-h-[70vh] overflow-y-scroll">
               {menuItems.map((item) => (
                 <div key={item.id} className="px-6 py-4 flex items-center gap-4">
                   <div className="w-14 h-14 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
