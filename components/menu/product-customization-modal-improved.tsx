@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, Check, ChevronLeft } from 'lucide-react';
+import { X, Check, ChevronLeft, Search, Plus, Minus } from 'lucide-react';
 import { ClientMenuItem } from '@/lib/restaurant';
 
 export interface ProductCustomization {
@@ -93,11 +93,15 @@ export default function ProductCustomizationModalImproved({
   const [selectedIngredients, setSelectedIngredients] = useState<number[]>(
     BURGER_INGREDIENTS.filter(i => i.included).map(i => i.id)
   );
+  const [extraSearchTerm, setExtraSearchTerm] = useState('');
   const [observations, setObservations] = useState('');
   
   const maxFlavors = selectedSize?.id === 'gigante' ? 4 : 
                      selectedSize?.id === 'grande' ? 3 : 2;
   const extrasOptions = categoryExtras.length > 0 ? categoryExtras : (isPizza ? PIZZA_EXTRAS : []);
+  const filteredExtras = extrasOptions.filter((extra) =>
+    extra.name.toLowerCase().includes(extraSearchTerm.toLowerCase().trim())
+  );
 
   useEffect(() => {
     const fetchCategoryExtras = async () => {
@@ -207,16 +211,12 @@ export default function ProductCustomizationModalImproved({
 
   const getSteps = (): Step[] => {
     if (isPizza) {
-      return extrasOptions.length > 0
-        ? ['size', 'flavors', 'extras', 'observations']
-        : ['size', 'flavors', 'observations'];
+      return extrasOptions.length > 0 ? ['size', 'flavors', 'extras'] : ['size', 'flavors', 'observations'];
     }
     if (isBurger) {
-      return extrasOptions.length > 0
-        ? ['ingredients', 'extras', 'observations']
-        : ['ingredients', 'observations'];
+      return extrasOptions.length > 0 ? ['ingredients', 'extras'] : ['ingredients', 'observations'];
     }
-    return extrasOptions.length > 0 ? ['extras', 'observations'] : ['observations'];
+    return extrasOptions.length > 0 ? ['extras'] : ['observations'];
   };
 
   const steps = getSteps();
@@ -249,7 +249,7 @@ export default function ProductCustomizationModalImproved({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-2xl sm:rounded-2xl rounded-t-3xl max-h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-red-50 flex-shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-white flex-shrink-0">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {currentStepIndex > 0 && (
               <button
@@ -364,21 +364,36 @@ export default function ProductCustomizationModalImproved({
           {/* STEP: Extras */}
           {currentStep === 'extras' && (
             <div className="space-y-4">
-              <div className="sticky top-0 bg-white pt-4 pb-3 px-4 sm:px-6 z-10 border-b-2 border-gray-200 mb-4 -mx-4 sm:-mx-6 shadow-sm">
-                <div className="flex items-center justify-between gap-3">
+              <div className="px-4 sm:px-6 pt-4">
+                <h3 className="text-2xl font-bold text-gray-900 mb-1">{item.name}</h3>
+                <p className="text-3xl font-black text-orange-600 mb-2">{formatPrice(Number(item.price))}</p>
+                {item.description && (
+                  <p className="text-sm text-gray-600 mb-3">{item.description}</p>
+                )}
+                <div className="relative">
+                  <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    value={extraSearchTerm}
+                    onChange={(e) => setExtraSearchTerm(e.target.value)}
+                    placeholder="Pesquise pelo nome"
+                    className="w-full h-10 rounded-lg border border-gray-300 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  />
+                </div>
+              </div>
+
+              <div className="mx-4 sm:mx-6 rounded-lg overflow-hidden border border-gray-200">
+                <div className="bg-gray-100 px-4 py-3 flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">ADICIONAIS</h3>
-                    <p className="text-base text-gray-600 font-medium">
-                      Escolha até {maxExtras} opções
-                    </p>
+                    <h4 className="font-extrabold text-gray-900 text-lg leading-none">ADICIONAIS</h4>
+                    <p className="text-sm text-gray-700">Escolha até {maxExtras} itens</p>
                   </div>
                   <span className="px-3 py-1 rounded-md bg-gray-700 text-white text-sm font-bold">
                     {selectedExtras.length}/{maxExtras}
                   </span>
                 </div>
-              </div>
-              <div className="space-y-3 px-4 sm:px-6">
-                {extrasOptions.map(extra => {
+
+                <div className="divide-y divide-gray-100 bg-white">
+                  {filteredExtras.map(extra => {
                   const isSelected = selectedExtras.some(e => e.name === extra.name);
                   const isDisabled = !isSelected && selectedExtras.length >= maxExtras;
                   return (
@@ -386,32 +401,46 @@ export default function ProductCustomizationModalImproved({
                       key={extra.name}
                       onClick={() => handleExtraToggle(extra)}
                       disabled={isDisabled}
-                      className={`w-full p-4 rounded-xl border-2 transition-all bg-white ${
-                        isSelected
-                          ? 'border-orange-300 shadow-md'
-                          : isDisabled
-                            ? 'border-gray-200 opacity-60 cursor-not-allowed'
-                            : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                      }`}
+                      className={`w-full px-4 py-3 transition-colors ${
+                        isSelected ? 'bg-orange-50' : 'bg-white'
+                      } ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-orange-50/40'}`}
                     >
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="text-left">
-                          <p className="font-semibold text-gray-900 uppercase">{extra.name}</p>
+                      <div className="flex items-center justify-between gap-4 text-left">
+                        <div className="min-w-0">
+                          <p className="font-bold text-gray-900 uppercase truncate">{extra.name}</p>
                           <p className="text-base font-bold text-blue-900">
                             {extra.price > 0 ? `+ ${formatPrice(extra.price)}` : 'Grátis'}
                           </p>
                         </div>
-                        <div className="text-xl font-bold text-red-600">
+                        <div className="text-xl font-bold text-orange-700 flex-shrink-0">
                           {isSelected ? (
-                            <Check className="text-green-600" size={20} />
+                            <Minus size={22} />
                           ) : (
-                            '+'
+                            <Plus size={22} />
                           )}
                         </div>
                       </div>
                     </button>
                   );
                 })}
+                  {filteredExtras.length === 0 && (
+                    <p className="px-4 py-6 text-sm text-gray-500 text-center">Nenhum adicional encontrado</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="mx-4 sm:mx-6">
+                <div className="bg-gray-100 px-4 py-3 rounded-t-lg border border-gray-200 border-b-0">
+                  <h4 className="font-bold text-gray-900">Observações</h4>
+                </div>
+                <textarea
+                  value={observations}
+                  onChange={(e) => setObservations(e.target.value)}
+                  maxLength={100}
+                  placeholder="Ex: Tirar cebola, ovo, etc."
+                  className="w-full p-4 border border-gray-200 rounded-b-lg focus:border-orange-500 focus:outline-none resize-none text-gray-900 min-h-[110px]"
+                />
+                <p className="text-right text-xs text-gray-500 mt-1">{observations.length}/100</p>
               </div>
             </div>
           )}
@@ -515,7 +544,9 @@ export default function ProductCustomizationModalImproved({
               }`}
             >
               {isLastStep ? (
-                <>Adicionar • {formatPrice(calculateTotalPrice())}</>
+                currentStep === 'extras'
+                  ? <>Avançar</>
+                  : <>Adicionar • {formatPrice(calculateTotalPrice())}</>
               ) : (
                 'Continuar'
               )}
