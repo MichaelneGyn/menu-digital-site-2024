@@ -17,7 +17,7 @@ interface ProductCardProps {
 
 export interface ProductCustomization {
   flavors?: string[];
-  extras?: Array<{name: string; price: number}>;
+  extras?: Array<{name: string; price: number; quantity?: number}>;
   observations?: string;
   size?: string;
   ingredients?: string[];

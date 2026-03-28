@@ -8,7 +8,7 @@ import { ClientMenuItem } from '@/lib/restaurant';
 export interface ProductCustomization {
   size?: string;
   flavors: string[];
-  extras: Array<{name: string; price: number}>;
+  extras: Array<{name: string; price: number; quantity?: number}>;
   ingredients: string[];
   observations: string;
   totalPrice: number;
@@ -223,12 +223,17 @@ export default function ProductCustomizationModalImproved({
     }
   };
 
-  const handleExtraToggle = (extra: {name: string; price: number}) => {
-    if (selectedExtras.some(e => e.name === extra.name)) {
-      setSelectedExtras(selectedExtras.filter(e => e.name !== extra.name));
-    } else if (selectedExtras.length < maxExtras) {
-      setSelectedExtras([...selectedExtras, extra]);
-    }
+  const getExtraQuantity = (extraName: string) => selectedExtras.filter((e) => e.name === extraName).length;
+
+  const handleExtraIncrease = (extra: {name: string; price: number}) => {
+    if (selectedExtras.length >= maxExtras) return;
+    setSelectedExtras([...selectedExtras, extra]);
+  };
+
+  const handleExtraDecrease = (extraName: string) => {
+    const index = selectedExtras.findIndex((e) => e.name === extraName);
+    if (index === -1) return;
+    setSelectedExtras(selectedExtras.filter((_, i) => i !== index));
   };
 
   const handleIngredientToggle = (ingredientId: number) => {
@@ -240,10 +245,20 @@ export default function ProductCustomizationModalImproved({
   };
 
   const handleAddToCart = () => {
+    const extrasWithQuantity = selectedExtras.reduce<Array<{name: string; price: number; quantity: number}>>((acc, extra) => {
+      const existing = acc.find((item) => item.name === extra.name);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        acc.push({ name: extra.name, price: extra.price, quantity: 1 });
+      }
+      return acc;
+    }, []);
+
     const customization: ProductCustomization = {
       size: selectedSize?.name,
       flavors: selectedFlavors.map(f => f.name),
-      extras: selectedExtras,
+      extras: extrasWithQuantity,
       ingredients: BURGER_INGREDIENTS
         .filter(ing => selectedIngredients.includes(ing.id))
         .map(ing => ing.name),
@@ -454,16 +469,14 @@ export default function ProductCustomizationModalImproved({
 
                 <div className="divide-y divide-gray-100 bg-white">
                   {filteredExtras.map(extra => {
-                  const isSelected = selectedExtras.some(e => e.name === extra.name);
-                  const isDisabled = !isSelected && selectedExtras.length >= maxExtras;
+                  const quantity = getExtraQuantity(extra.name);
+                  const isDisabled = quantity === 0 && selectedExtras.length >= maxExtras;
                   return (
-                    <button
+                    <div
                       key={extra.name}
-                      onClick={() => handleExtraToggle(extra)}
-                      disabled={isDisabled}
                       className={`w-full px-4 py-3 transition-colors ${
-                        isSelected ? 'bg-red-50' : 'bg-white'
-                      } ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-red-50/40'}`}
+                        quantity > 0 ? 'bg-red-50' : 'bg-white'
+                      } ${isDisabled ? 'opacity-60' : 'hover:bg-red-50/40'}`}
                     >
                       <div className="flex items-center justify-between gap-4 text-left">
                         <div className="min-w-0">
@@ -472,15 +485,35 @@ export default function ProductCustomizationModalImproved({
                             {extra.price > 0 ? `+ ${formatPrice(extra.price)}` : 'Grátis'}
                           </p>
                         </div>
-                        <div className="text-xl font-bold text-red-600 flex-shrink-0">
-                          {isSelected ? (
-                            <Minus size={22} />
-                          ) : (
-                            <Plus size={22} />
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {quantity > 0 && (
+                            <span className="px-2 py-0.5 rounded-md bg-red-600 text-white text-xs font-bold">
+                              {quantity}
+                            </span>
                           )}
+                          <button
+                            type="button"
+                            onClick={() => handleExtraDecrease(extra.name)}
+                            disabled={quantity === 0}
+                            className={`w-8 h-8 rounded-md border flex items-center justify-center ${
+                              quantity > 0 ? 'border-red-300 text-red-600' : 'border-gray-200 text-gray-300 cursor-not-allowed'
+                            }`}
+                          >
+                            <Minus size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleExtraIncrease(extra)}
+                            disabled={isDisabled}
+                            className={`w-8 h-8 rounded-md border flex items-center justify-center ${
+                              isDisabled ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-red-300 text-red-600'
+                            }`}
+                          >
+                            <Plus size={16} />
+                          </button>
                         </div>
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
                   {filteredExtras.length === 0 && (

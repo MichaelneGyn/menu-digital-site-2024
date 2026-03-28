@@ -26,6 +26,9 @@ export default function CartModal({
   onAddItem
 }: CartModalProps) {
   const [step, setStep] = useState<'cart' | 'checkout'>('cart');
+
+  const formatExtras = (extras: Array<{name: string; quantity?: number}> = []) =>
+    extras.map((extra) => `${extra.quantity && extra.quantity > 1 ? `${extra.quantity}x ` : ''}${extra.name}`);
   
   // Converter CartItem para o formato esperado pelo CheckoutFlow
   const orderItems = items.map(item => ({
@@ -36,7 +39,7 @@ export default function CartModal({
     quantity: item.quantity,
     customizations: item.customization ? [
       ...(item.customization.flavors || []),
-      ...(item.customization.extras?.map(e => e.name) || []),
+      ...(formatExtras(item.customization.extras || []) || []),
       ...(item.customization.observations ? [item.customization.observations] : [])
     ] : undefined
   }));
@@ -160,7 +163,7 @@ export default function CartModal({
                         ) : null}
                         
                         {item.customization?.extras?.length ? (
-                            <p>➕ {item.customization.extras.map(e => e.name).join(', ')}</p>
+                            <p>➕ {formatExtras(item.customization.extras).join(', ')}</p>
                         ) : null}
                         
                         {item.customization?.observations ? (
